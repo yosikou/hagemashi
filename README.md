@@ -26,7 +26,7 @@ CIはUbuntu 24.04ランナーに導入済みのAndroid SDKを利用します。
 | --- | --- |
 | JDK / Java・Kotlin JVMターゲット | 17 |
 | Gradle Wrapper | 8.11.1 |
-| Android Gradle Plugin（AGP） | 8.9.2 |
+| Android Gradle Plugin（AGP） | 8.10.1 |
 | Kotlin / Compose compiler Gradle plugin | 2.2.21 |
 | Compose BOM | 2025.04.01 |
 | Activity Compose | 1.10.1 |
@@ -37,7 +37,8 @@ CIはUbuntu 24.04ランナーに導入済みのAndroid SDKを利用します。
 確認根拠:
 
 - [Kotlin公式互換性表](https://github.com/JetBrains/kotlin-web-site/blob/52e6b6cafda7e0542d2166ea7fb62c990ede8a11/docs/topics/gradle/gradle-configure-project.md): Kotlin 2.2.20–2.2.21はGradle 7.6.3–8.14、AGP 7.3.1–8.11.1をサポートします。
-- [AGP 8.9公式リリース情報](https://developer.android.com/build/releases/past-releases/agp-8-9-0-release-notes): Gradle 8.11.1・JDK 17、API 35に対応する系列です。公式配布のAGP 8.9.2 JAR内の `VersionCheckPlugin.GRADLE_MIN_VERSION` も8.11.1であることを確認しています。
+- [AGP 8.10公式リリース情報](https://developer.android.com/build/releases/past-releases/agp-8-10-0-release-notes): Gradle 8.11.1・JDK 17に対応する系列です。公式配布のAGP 8.10.1 JAR内の `VersionCheckPlugin.GRADLE_MIN_VERSION` も8.11.1であることを確認しています。
+- [AndroidのKotlin対応表](https://developer.android.com/build/kotlin-support): Kotlin 2.2に必要なAGP 8.10以上という条件も満たします。
 - [Gradle 8.11.1の公式互換性情報](https://github.com/gradle/gradle/blob/v8.11.1/platforms/documentation/docs/src/docs/userguide/releases/compatibility.adoc): JDK 17で実行できます。
 - [Kotlin公式Compose移行ガイド](https://github.com/JetBrains/kotlin-web-site/blob/52e6b6cafda7e0542d2166ea7fb62c990ede8a11/docs/topics/compose-compiler-migration-guide.md): Kotlin 2.0以降は同じバージョンのComposeコンパイラプラグインを使います。BOMはComposeライブラリを管理し、コンパイラのバージョンは管理しません。
 - [Google MavenのCompose BOM定義](https://dl.google.com/dl/android/maven2/androidx/compose/compose-bom/2025.04.01/compose-bom-2025.04.01.pom)でComposeライブラリを揃えています。
