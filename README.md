@@ -3,6 +3,12 @@
 Kotlin / Jetpack Compose の単一Activityアプリです。画面中央に「Hello Android」を表示します。
 Android 8.0（API 26）以上に対応し、Android Studioは不要です。
 
+## ChatGPT接続の技術調査
+
+[公式仕様の調査結果・適用上の未確認事項・実機試験計画](docs/chatgpt-connection-spike.md)を参照してください。
+2026-10-30時点ではAndroidへの適用と無操作の定期生成条件を確定できず、接続機能の実装は保留です。
+現在のAPKは「Hello Android」の土台のみで、サインイン・生成・予約通知の機能は含みません。
+
 ## Android端末だけで開発する
 
 1. Android端末のブラウザでGitHubを開き、作業ブランチを作成します。
