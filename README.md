@@ -1,13 +1,14 @@
 # hagemashi
 
-Kotlin / Jetpack Compose の単一Activityアプリです。画面中央に「Hello Android」を表示します。
+Kotlin / Jetpack Compose の単一Activityアプリです。このブランチはChatGPTの手動接続検証版です。
 Android 8.0（API 26）以上に対応し、Android Studioは不要です。
 
 ## ChatGPT接続の技術調査
 
 [公式仕様の調査結果・適用上の未確認事項・実機試験計画](docs/chatgpt-connection-spike.md)を参照してください。
-2026-10-30時点ではAndroidへの適用と無操作の定期生成条件を確定できず、接続機能の実装は保留です。
-現在のAPKは「Hello Android」の土台のみで、サインイン・生成・予約通知の機能は含みません。
+初回調査後、ユーザーの指示で手動サインイン・保護された接続情報保存・固定ダミーデータ生成・接続解除に限定した検証版を実装しました。
+[検証版の仕様・APK取得方法・Android実機テスト手順](docs/manual-chatgpt-test.md)を参照してください。
+Androidへの正式適用と実機動作は未確認です。定期生成・通知は含みません。
 
 MIT採用後の[SIWC適用条件の整理](docs/siwc-applicability-after-mit.md)も参照してください。
 MITの採用だけで、SIWCの利用条件やAndroid対応を満たしたとは判断していません。
@@ -69,6 +70,7 @@ SDKの `cmdline-tools/latest/bin` と `platform-tools` をPATHに追加します
 sdkmanager --licenses
 sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 ./gradlew --no-daemon :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
+./gradlew --no-daemon :app:testDebugUnitTest
 ```
 
 Windowsでは `./gradlew` を `gradlew.bat` に置き換えます。
@@ -81,8 +83,8 @@ Gradle本体やKotlinコンパイラの別途インストールは不要です�
 
 ## テスト
 
-CIはAndroid Lint、アプリAPKとUIテストAPKのコンパイルを行います。エミュレーターは起動しません。
-`MainActivityTest` は起動後の「Hello Android」の表示を確認する実機・エミュレーター用テストです。
+CIはJVM単体テスト、Android Lint、アプリAPKとUIテストAPKのコンパイルを行います。エミュレーターは起動しません。
+`MainActivityTest` は手動接続画面と未接続時の生成無効を確認します。`CredentialVaultTest` は実機での暗号化保存・改ざん拒否を確認します。
 API 26以上のデバイスをADBで接続した環境で実行します。
 
 ```sh
@@ -91,4 +93,5 @@ adb devices
 ```
 
 UIテストAPKのビルド成功は、UIテストの実行成功を意味しません。
-単体テストは現時点ではありません。画面中央への配置やシステムバーとの見え方は実機でも確認してください。
+単体テスト用にJUnit 4.13.2とorg.json 20240303を固定しました。JVMテスト用でAPKへ追加する実行時依存ではありません。
+システムバーとの重なりや外部ブラウザからの復帰、Keystoreの動作は実機でも確認してください。
