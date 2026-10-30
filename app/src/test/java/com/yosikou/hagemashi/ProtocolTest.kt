@@ -65,6 +65,10 @@ class ProtocolTest {
 
     @Test fun verifiedIdentityComesFromSignedClaims() {
         assertEquals("person", validateIdToken(token(), "oaiapp_a", "nonce", keys(), 1000).subject)
+        val nullable = claims().put("name", JSONObject.NULL).put("email", JSONObject.NULL)
+        val identity = validateIdToken(token(nullable), "oaiapp_a", "nonce", keys(), 1000)
+        assertEquals("", identity.name)
+        assertEquals("", identity.email)
     }
 
     @Test fun rejectsTamperingAndUnsignedAlgorithm() {
@@ -76,7 +80,7 @@ class ProtocolTest {
 
     @Test fun rejectsWrongIssuerAudienceNonceAndExpiredToken() {
         for (claims in listOf(claims().put("iss", "https://example.invalid"), claims().put("aud", "other"),
-            claims().put("nonce", "wrong"), claims().put("exp", 999), claims().put("iat", 2000))) {
+            claims().put("nonce", "wrong"), claims().put("exp", 999), claims().put("iat", 2000), claims().put("sub", JSONObject.NULL))) {
             rejected(Failure.IDENTITY) { validateIdToken(token(claims), "oaiapp_a", "nonce", keys(), 1000) }
         }
     }

@@ -174,12 +174,12 @@ internal class ConnectionRepository(context: Context) {
     }
 
     private fun tokenRecord(tokens: JSONObject, client: String, identity: Identity, previous: JSONObject?): JSONObject {
-        if (!tokens.getString("token_type").equals("Bearer", ignoreCase = true)) throw Problem(Failure.PROTOCOL)
+        if (!(tokens.opt("token_type") as? String).orEmpty().equals("Bearer", ignoreCase = true)) throw Problem(Failure.PROTOCOL)
         val expires = tokens.getLong("expires_in")
-        val access = tokens.getString("access_token")
+        val access = tokens.opt("access_token") as? String ?: throw Problem(Failure.PROTOCOL)
         if (access.isBlank() || access.contains('\r') || access.contains('\n') || expires !in 1..86400) throw Problem(Failure.PROTOCOL)
-        val scope = if (tokens.has("scope")) tokens.getString("scope") else previous?.getString("scope") ?: throw Problem(Failure.PROTOCOL)
-        val refresh = tokens.optString("refresh_token")
+        val scope = if (tokens.has("scope")) (tokens.opt("scope") as? String ?: throw Problem(Failure.PROTOCOL)) else previous?.getString("scope") ?: throw Problem(Failure.PROTOCOL)
+        val refresh = (tokens.opt("refresh_token") as? String).orEmpty()
         if ("offline_access" in scope.split(' ') && refresh.isEmpty()) throw Problem(Failure.PROTOCOL)
         return JSONObject().put("client", client).put("subject", identity.subject).put("name", identity.name).put("email", identity.email)
             .put("access", access).put("refresh", refresh).put("id", tokens.optString("id_token", previous?.optString("id").orEmpty()))

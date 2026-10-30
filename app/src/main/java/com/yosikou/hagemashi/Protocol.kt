@@ -117,8 +117,8 @@ internal fun validateIdToken(token: String, clientId: String, nonce: String?, ke
             claims.getLong("exp") <= now || claims.getLong("iat") > now + 60 ||
             (claims.has("nbf") && claims.getLong("nbf") > now + 60) ||
             (nonce != null && !sameSecret(nonce, claims.optString("nonce")))) throw Problem(Failure.IDENTITY)
-        val subject = claims.getString("sub").takeIf { it.isNotBlank() } ?: throw Problem(Failure.IDENTITY)
-        return Identity(subject, claims.optString("name").take(200), claims.optString("email").take(254))
+        val subject = (claims.opt("sub") as? String)?.takeIf { it.isNotBlank() } ?: throw Problem(Failure.IDENTITY)
+        return Identity(subject, (claims.opt("name") as? String).orEmpty().take(200), (claims.opt("email") as? String).orEmpty().take(254))
     } catch (e: Problem) { throw e } catch (_: Exception) { throw Problem(Failure.IDENTITY) }
 }
 
