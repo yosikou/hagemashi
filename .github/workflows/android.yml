@@ -14,6 +14,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
@@ -23,12 +25,24 @@ jobs:
         run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"'
       - name: Set up Gradle and validate wrapper
         uses: gradle/actions/setup-gradle@v5
-      - name: Lint and build app and UI test APKs
-        run: ./gradlew --no-daemon :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
+      - name: Test, lint and build app and UI test APKs
+        run: ./gradlew --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
+      - name: Check whitespace
+        run: git diff --check HEAD^
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: hagemashi-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+          retention-days: 14
+      - name: Upload check reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hagemashi-check-reports
+          path: |
+            app/build/reports/tests/testDebugUnitTest/
+            app/build/test-results/testDebugUnitTest/
+            app/build/reports/lint-results-debug.html
           retention-days: 14

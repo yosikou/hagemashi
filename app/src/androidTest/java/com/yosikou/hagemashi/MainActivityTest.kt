@@ -1,6 +1,8 @@
 package com.yosikou.hagemashi
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -14,7 +16,9 @@ class MainActivityTest {
     val composeRule = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun helloAndroidIsDisplayed() {
-        composeRule.onNodeWithText("Hello Android").assertIsDisplayed()
+    fun manualConnectionScreenShowsDummyTestAndDisablesGenerationBeforeSignIn() {
+        composeRule.onNodeWithText("ChatGPT 手動接続の検証").assertIsDisplayed()
+        composeRule.onNodeWithText("Continue with ChatGPT").assertIsDisplayed()
+        composeRule.onNodeWithText("ダミーデータで生成").performScrollTo().assertIsNotEnabled()
     }
 }
