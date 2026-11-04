@@ -21,12 +21,30 @@ internal enum class Stage {
 internal enum class Phase { IDLE, RUNNING, SUCCEEDED, FAILED, CANCELLED }
 internal enum class NetworkFailure { HTTP, DNS, TLS, TIMEOUT, CONNECTION, IO, PERMISSION }
 internal enum class SavedConnection { NONE, PRESENT, UNKNOWN }
+internal enum class FixedError { DNS_LOOKUP_FAILED, TLS_FAILED, TIMEOUT, CONNECTION_FAILED, IO_FAILED, PERMISSION_DENIED, HTTP_ERROR, INVALID_ENDPOINT, IDENTITY_REJECTED, STORAGE_FAILED, PROTOCOL_ERROR, OTHER_FAILURE }
 internal data class Progress(val stage: Stage = Stage.NONE, val phase: Phase = Phase.IDLE, val completed: Stage = Stage.NONE)
-internal data class SafeDiagnostic(val failure: Failure, val network: NetworkFailure?, val httpStatus: Int?)
+internal data class SafeDiagnostic(val failure: Failure, val network: NetworkFailure?, val httpStatus: Int?, val host: TargetHost? = null, val errorClass: FixedError = FixedError.PROTOCOL_ERROR)
 
 internal fun diagnosticOf(error: Exception): SafeDiagnostic {
     val problem = safeProblem(error)
-    return SafeDiagnostic(problem.kind, problem.network, problem.status?.takeIf { it in 100..599 })
+    val errorClass = problem.fixedError ?: when (problem.network) {
+        NetworkFailure.DNS -> FixedError.DNS_LOOKUP_FAILED
+        NetworkFailure.TLS -> FixedError.TLS_FAILED
+        NetworkFailure.TIMEOUT -> FixedError.TIMEOUT
+        NetworkFailure.CONNECTION -> FixedError.CONNECTION_FAILED
+        NetworkFailure.IO -> FixedError.IO_FAILED
+        NetworkFailure.PERMISSION -> FixedError.PERMISSION_DENIED
+        NetworkFailure.HTTP -> FixedError.HTTP_ERROR
+        null -> when (problem.kind) {
+            Failure.IDENTITY -> FixedError.IDENTITY_REJECTED
+            Failure.STORAGE -> FixedError.STORAGE_FAILED
+            Failure.TIMEOUT -> FixedError.TIMEOUT
+            Failure.PERMISSION -> FixedError.PERMISSION_DENIED
+            Failure.PROTOCOL -> FixedError.PROTOCOL_ERROR
+            else -> FixedError.OTHER_FAILURE
+        }
+    }
+    return SafeDiagnostic(problem.kind, problem.network, problem.status?.takeIf { it in 100..599 }, problem.targetHost, errorClass)
 }
 
 internal fun savedConnection(connected: Boolean?): SavedConnection = when (connected) {

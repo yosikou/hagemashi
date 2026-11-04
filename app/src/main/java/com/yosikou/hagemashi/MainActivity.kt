@@ -94,6 +94,8 @@ private fun ConnectionScreen(model: ConnectionViewModel, openUsage: () -> Unit) 
             Text(stringResource(R.string.diagnostic_completed, stringResource(stageText(ui.progress.completed))))
         }
         ui.diagnostic?.let { diagnostic ->
+            Text(stringResource(R.string.diagnostic_host, diagnostic.host?.hostname ?: stringResource(R.string.host_unconfirmed)))
+            Text(stringResource(R.string.diagnostic_error_class, diagnostic.errorClass.name))
             diagnostic.network?.let { Text(stringResource(R.string.diagnostic_network, stringResource(networkText(it)))) }
             if (diagnostic.httpStatus != null) Text(stringResource(R.string.diagnostic_http, diagnostic.httpStatus))
             else if (diagnostic.network != null) Text(stringResource(R.string.diagnostic_no_http))

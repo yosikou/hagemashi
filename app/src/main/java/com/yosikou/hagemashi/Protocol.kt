@@ -28,7 +28,8 @@ internal const val SCOPES = "openid profile email offline_access resource.invoke
 internal enum class Failure { NETWORK, PROTOCOL, IDENTITY, STORAGE, DENIED, EXPIRED, PERMISSION, LIMIT, POLICY, SERVER, TIMEOUT }
 
 // Never attach a raw response, URL, exception message or token to a diagnostic.
-internal class Problem(val kind: Failure, val status: Int? = null, val code: String? = null, val network: NetworkFailure? = null) : Exception()
+internal class Problem(val kind: Failure, val status: Int? = null, val code: String? = null, val network: NetworkFailure? = null,
+    val targetHost: TargetHost? = null, val fixedError: FixedError? = null) : Exception()
 
 internal fun randomSecret(): String = b64(ByteArray(32).also { SecureRandom().nextBytes(it) })
 internal fun b64(bytes: ByteArray): String = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
@@ -249,10 +250,12 @@ internal class Http(private val open: (java.net.URL) -> HttpsURLConnection = { i
         }
 
     private fun <T> request(url: String, operation: Operation, body: String?, contentType: String, bearer: String?, read: (InputStream) -> T): T {
-        val uri = URI(url)
-        if (uri.scheme != "https" || uri.host !in setOf("auth.openai.com", "api.openai.com") || uri.userInfo != null || uri.port !in setOf(-1, 443)) throw Problem(Failure.PROTOCOL)
+        val uri = checkedEndpoint(url)
         operation.check()
-        val connection = open(uri.toURL())
+        val connection = try { open(uri.toURL()) } catch (e: Exception) {
+            val problem = safeProblem(e)
+            throw Problem(problem.kind, problem.status, problem.code, problem.network, trustedHost(uri), problem.fixedError)
+        }
         val closer = Closeable { connection.disconnect() }
         operation.attach(closer)
         var receivedStatus: Int? = null
@@ -283,7 +286,7 @@ internal class Http(private val open: (java.net.URL) -> HttpsURLConnection = { i
             val problem = try { operation.check(); safeProblem(e) }
                 catch (cancelled: CancellationException) { throw cancelled }
                 catch (timeout: Problem) { timeout }
-            throw Problem(problem.kind, problem.status ?: receivedStatus, problem.code, problem.network)
+            throw Problem(problem.kind, problem.status ?: receivedStatus, problem.code, problem.network, trustedHost(uri), problem.fixedError)
         } finally {
             operation.detach(closer)
             connection.disconnect()

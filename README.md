@@ -5,6 +5,8 @@ Android 8.0（API 26）以上に対応し、Android Studioは不要です。
 
 ## ChatGPT接続の技術調査
 
+[認可コード交換のDNS失敗：ホスト照合・Android確認手順](docs/android-dns-check.md)を追加しました。原因は未確定で、DNS変更や固定IPへの接続は行いません。
+
 [公式仕様の調査結果・適用上の未確認事項・実機試験計画](docs/chatgpt-connection-spike.md)を参照してください。
 初回調査後、ユーザーの指示で手動サインイン・保護された接続情報保存・固定ダミーデータ生成・接続解除に限定した検証版を実装しました。
 [検証版の仕様・APK取得方法・Android実機テスト手順](docs/manual-chatgpt-test.md)を参照してください。

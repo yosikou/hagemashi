@@ -64,6 +64,9 @@
     <string name="diagnostic_stage">処理段階：%1$s（%2$s）</string>
     <string name="diagnostic_completed">最後に完了した段階：%1$s</string>
     <string name="diagnostic_network">通信分類：%1$s</string>
+    <string name="diagnostic_host">接続先ホスト：%1$s</string>
+    <string name="host_unconfirmed">未確定（通信以外の処理、または許可対象外）</string>
+    <string name="diagnostic_error_class">固定エラー分類：%1$s</string>
     <string name="diagnostic_http">HTTP状態：%1$d</string>
     <string name="diagnostic_no_http">HTTP状態：未取得</string>
     <string name="diagnostic_away">画面非表示中に到達した段階：%1$s</string>

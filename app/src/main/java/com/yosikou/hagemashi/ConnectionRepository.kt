@@ -100,7 +100,7 @@ internal class ConnectionRepository(context: Context) {
                 saved
             }
             completeSignIn(operation,
-                exchange = { http.json("$ISSUER/api/accounts/oauth/token", operation, mapOf(
+                exchange = { http.json(TOKEN_ENDPOINT, operation, mapOf(
                     "grant_type" to "authorization_code", "client_id" to result.clientId, "code" to result.code,
                     "code_verifier" to attempt.verifier, "redirect_uri" to attempt.redirect, "resource" to RESOURCE)) },
                 discovery = { discovery(operation) },
@@ -177,7 +177,7 @@ internal class ConnectionRepository(context: Context) {
         if (!canGenerate(session)) throw Problem(Failure.PERMISSION)
         if (session.getLong("expires") > now() + 60) return session
         if (session.optString("refresh").isEmpty()) throw Problem(Failure.EXPIRED)
-        val tokens = operation.step(Stage.REFRESH) { http.json("$ISSUER/api/accounts/oauth/token", operation, mapOf("grant_type" to "refresh_token", "client_id" to session.getString("client"),
+        val tokens = operation.step(Stage.REFRESH) { http.json(TOKEN_ENDPOINT, operation, mapOf("grant_type" to "refresh_token", "client_id" to session.getString("client"),
             "refresh_token" to session.getString("refresh"), "resource" to RESOURCE)) }
         val keys = if (tokens.has("id_token")) jwks(operation) else null
         val identity = if (keys != null) operation.step(Stage.ID_TOKEN) {
