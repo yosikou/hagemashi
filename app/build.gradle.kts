@@ -9,12 +9,36 @@ android {
     compileSdk = 35
     buildToolsVersion = "35.0.0"
 
+    val buildIdentifier = System.getenv("HAGEMASHI_BUILD_ID") ?: "local"
+    require(buildIdentifier.matches(Regex("[A-Za-z0-9._-]{1,100}")))
+    val signingPath = System.getenv("HAGEMASHI_SIGNING_FILE")
+    signingConfigs {
+        getByName("debug") {
+            if (signingPath != null) {
+                storeFile = file(signingPath)
+                storeType = "PKCS12"
+                storePassword = System.getenv("HAGEMASHI_SIGNING_PASSWORD")
+                keyAlias = "hagemashi-diagnostic"
+                keyPassword = System.getenv("HAGEMASHI_SIGNING_PASSWORD")
+            }
+        }
+    }
+    buildTypes {
+        create("diagnostic") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".diagnostic"
+            versionNameSuffix = "-diagnostic"
+            matchingFallbacks += "debug"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.yosikou.hagemashi"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("String", "BUILD_IDENTIFIER", "\"$buildIdentifier\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -24,6 +48,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

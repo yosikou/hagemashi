@@ -1,4 +1,13 @@
 <resources>
+    <string name="build_identifier">ビルド：%1$s</string>
+    <string name="open_probes">通信診断（認証不要）</string>
+    <string name="probe_title">認証情報なしの通信診断</string>
+    <string name="probe_notice">固定ホスト auth.openai.com のDNS・HTTPS GET・空POSTを個別に実行します。HTTP 400・403・リダイレクトも応答受信として記録します。本文・IP・認証情報は取得表示せず、端末設定も変更しません。結果は画面のメモリ内だけに保持します。</string>
+    <string name="probe_dns">DNS名前解決を実行</string>
+    <string name="probe_get">HTTPS GETを実行</string>
+    <string name="probe_post">認証情報なしの空POSTを実行</string>
+    <string name="probe_copy">安全な診断結果をコピー</string>
+    <string name="probe_back">手動接続画面へ戻る</string>
     <string name="app_name">hagemashi</string>
     <string name="screen_title">ChatGPT 手動接続の検証</string>
     <string name="preview_notice">検証版：Androidへの正式適用・実機動作は未確認です。健康データの実取得・予約生成・通知・履歴保存は行いません。</string>

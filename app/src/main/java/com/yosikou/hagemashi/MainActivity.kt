@@ -2,6 +2,9 @@ package com.yosikou.hagemashi
 
 import android.os.Bundle
 import android.content.Intent
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,6 +31,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -35,10 +40,13 @@ import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : ComponentActivity() {
     private lateinit var model: ConnectionViewModel
+    private lateinit var probes: NetworkProbeViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         model = ViewModelProvider(this)[ConnectionViewModel::class.java]
+        probes = ViewModelProvider(this)[NetworkProbeViewModel::class.java]
         setContent {
+            var showProbes by rememberSaveable { mutableStateOf(false) }
             val url = model.ui.browserUrl
             LaunchedEffect(url) {
                 if (url != null) {
@@ -50,7 +58,8 @@ class MainActivity : ComponentActivity() {
             }
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    ConnectionScreen(model) {
+                    if (showProbes) ProbeScreen(probes) { showProbes = false }
+                    else ConnectionScreen(model, openProbes = { showProbes = true }) {
                         runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://chatgpt.com/settings/usage"))) }
                     }
                 }
@@ -58,17 +67,19 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onStart() { super.onStart(); model.setForeground(true) }
-    override fun onStop() { model.setForeground(false); super.onStop() }
+    override fun onStart() { super.onStart(); model.setForeground(true); probes.setForeground(true) }
+    override fun onStop() { model.setForeground(false); probes.setForeground(false); super.onStop() }
 }
 
 @Composable
-private fun ConnectionScreen(model: ConnectionViewModel, openUsage: () -> Unit) {
+private fun ConnectionScreen(model: ConnectionViewModel, openProbes: () -> Unit, openUsage: () -> Unit) {
     val ui = model.ui
     var confirmErase by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(stringResource(R.string.screen_title), style = MaterialTheme.typography.headlineSmall)
+        Text(stringResource(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER))
+        OutlinedButton(onClick = openProbes, enabled = !ui.busy) { Text(stringResource(R.string.open_probes)) }
         Text(stringResource(R.string.preview_notice))
         Text(stringResource(if (ui.savedConnection == SavedConnection.UNKNOWN) R.string.connection_unknown
             else if (ui.connected) R.string.connected else R.string.disconnected), style = MaterialTheme.typography.titleMedium)
@@ -147,6 +158,29 @@ private fun ConnectionScreen(model: ConnectionViewModel, openUsage: () -> Unit) 
 }
 
 @Composable
+private fun ProbeScreen(model: NetworkProbeViewModel, back: () -> Unit) {
+    val context = LocalContext.current
+    val report = model.report()
+    Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(stringResource(R.string.probe_title), style = MaterialTheme.typography.headlineSmall)
+        Text(stringResource(R.string.probe_notice))
+        Text(stringResource(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER))
+        OutlinedButton(onClick = { model.runProbe(ProbeKind.DNS) }, enabled = !model.busy) { Text(stringResource(R.string.probe_dns)) }
+        OutlinedButton(onClick = { model.runProbe(ProbeKind.HTTPS_GET) }, enabled = !model.busy) { Text(stringResource(R.string.probe_get)) }
+        OutlinedButton(onClick = { model.runProbe(ProbeKind.EMPTY_POST) }, enabled = !model.busy) { Text(stringResource(R.string.probe_post)) }
+        if (model.busy) OutlinedButton(onClick = model::cancel) { Text(stringResource(R.string.cancel)) }
+        Text(stringResource(R.string.diagnostic_stage, stringResource(stageText(model.progress.stage)), stringResource(phaseText(model.progress.phase))))
+        SelectionContainer { Text(report) }
+        OutlinedButton(onClick = {
+            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            clipboard.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.probe_copy), report))
+        }, enabled = !model.busy && model.results.isNotEmpty()) { Text(stringResource(R.string.probe_copy)) }
+        OutlinedButton(onClick = back, enabled = !model.busy) { Text(stringResource(R.string.probe_back)) }
+    }
+}
+
+@Composable
 private fun exceptionNames(classes: List<SafeException>): String = if (classes.isEmpty()) stringResource(R.string.no_exception_classes)
     else classes.joinToString(" → ") { it.displayName }
 
@@ -216,4 +250,7 @@ private fun stageText(stage: Stage): Int = when (stage) {
     Stage.GENERATION -> R.string.stage_generation
     Stage.REFRESH -> R.string.stage_refresh
     Stage.REVOCATION -> R.string.stage_revocation
+    Stage.PROBE_DNS -> R.string.probe_dns
+    Stage.PROBE_GET -> R.string.probe_get
+    Stage.PROBE_POST -> R.string.probe_post
 }

@@ -5,6 +5,8 @@ Android 8.0（API 26）以上に対応し、Android Studioは不要です。
 
 ## ChatGPT接続の技術調査
 
+[認証不要の通信診断・継続署名・別IDでの併存試験](docs/network-probe-test.md)を追加しています。診断APKは `hagemashi-diagnostic-apk`、アプリ名は「hagemashi 診断」です。Secret未設定時はAPKを配布しません。
+
 [例外クラスと認証前・callback後・復帰時のDNS比較](docs/dns-cause-comparison.md)を追加しています。通常認証とは分けた診断用操作で、原因は未確定です。
 
 [認可コード交換のDNS失敗：ホスト照合・Android確認手順](docs/android-dns-check.md)を追加しました。原因は未確定で、DNS変更や固定IPへの接続は行いません。
@@ -40,8 +42,7 @@ Artifactsは14日間保持します。期限切れの場合は再実行してく
 
 ビルドはGitHubのLinuxランナーで行うため、Android端末にJDK・SDKを入れる必要はありません。
 CIはUbuntu 24.04ランナーに導入済みのAndroid SDKを利用します。
-デバッグAPKは自動生成したデバッグ鍵で署名します。配布用のリリース署名ではなく、別の鍵で作られたAPKへの上書きインストールは失敗することがあります。
-その場合は既存アプリをアンインストールして再インストールします（アプリのデータは削除されます）。
+CIで配布するAPKは所有者が登録するActions Secretの同じ診断署名鍵を継続利用します。配布用のリリース鍵ではありません。過去の自動生成鍵で署名した通常版へは上書きできないため、既存版を削除せず、別applicationIdの診断版を併存させてください。鍵の再生成は更新不能につながるため行わず、[鍵の準備と試験手順](docs/network-probe-test.md)を参照してください。
 
 ## 採用バージョンと互換性
 

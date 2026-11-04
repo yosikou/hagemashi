@@ -232,6 +232,11 @@ internal fun responseProblem(status: Int, body: JSONObject): Problem {
 }
 
 internal class Http(private val open: (java.net.URL) -> HttpsURLConnection = { it.openConnection() as HttpsURLConnection }) {
+    // Same connection, TLS, timeout, redirect and exception handling as OAuth; no credentials or body parsing.
+    fun probe(post: Boolean, operation: Operation): Int =
+        request(if (post) TOKEN_ENDPOINT else "$ISSUER/", operation, if (post) "" else null,
+            "application/x-www-form-urlencoded", null, onStatus = { it }) { throw Problem(Failure.PROTOCOL) }
+
     fun revoke(url: String, fields: Map<String, String>, operation: Operation) {
         request(url, operation, form(fields), "application/x-www-form-urlencoded", null) {
             if (readLimited(it, 65536).isNotBlank()) throw Problem(Failure.PROTOCOL)
@@ -249,7 +254,8 @@ internal class Http(private val open: (java.net.URL) -> HttpsURLConnection = { i
             consumeSse(it.bufferedReader(Charsets.UTF_8), operation)
         }
 
-    private fun <T> request(url: String, operation: Operation, body: String?, contentType: String, bearer: String?, read: (InputStream) -> T): T {
+    private fun <T> request(url: String, operation: Operation, body: String?, contentType: String, bearer: String?,
+        onStatus: ((Int) -> T)? = null, read: (InputStream) -> T): T {
         val uri = checkedEndpoint(url)
         operation.check()
         val connection = try { open(uri.toURL()) } catch (e: Exception) {
@@ -274,6 +280,10 @@ internal class Http(private val open: (java.net.URL) -> HttpsURLConnection = { i
             val status = connection.responseCode
             receivedStatus = status.takeIf { it in 100..599 }
             operation.check()
+            if (onStatus != null) {
+                if (receivedStatus == null) throw Problem(Failure.PROTOCOL)
+                return onStatus(status)
+            }
             if (status != 200) {
                 val error = runCatching { JSONObject(readLimited(connection.errorStream, 65536)) }.getOrDefault(JSONObject())
                 throw responseProblem(status, error)

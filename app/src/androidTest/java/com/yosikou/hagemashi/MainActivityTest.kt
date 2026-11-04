@@ -3,6 +3,7 @@ package com.yosikou.hagemashi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -22,9 +23,18 @@ class MainActivityTest {
     @Test
     fun manualConnectionScreenShowsDummyTestAndDisablesGenerationBeforeSignIn() {
         composeRule.onNodeWithText("ChatGPT 手動接続の検証").assertIsDisplayed()
-        composeRule.onNodeWithText("Continue with ChatGPT").assertIsDisplayed()
+        composeRule.onNodeWithText("Continue with ChatGPT").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("診断用：DNS比較付きでサインイン").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("ダミーデータで生成").performScrollTo().assertIsNotEnabled()
+    }
+
+    @Test fun diagnosticsOpenWithoutSignInOrAutomaticNetworkRequests() {
+        composeRule.onNodeWithText("通信診断（認証不要）").performScrollTo().performClick()
+        composeRule.onNodeWithText("認証情報なしの通信診断").assertIsDisplayed()
+        composeRule.onNodeWithText("DNS名前解決を実行").assertIsDisplayed()
+        composeRule.onNodeWithText("HTTPS GETを実行").assertIsDisplayed()
+        composeRule.onNodeWithText("認証情報なしの空POSTを実行").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("安全な診断結果をコピー").performScrollTo().assertIsNotEnabled()
     }
 
     @Test fun installedAppHasInternetAndDisallowsCleartext() {
