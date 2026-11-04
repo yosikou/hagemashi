@@ -180,4 +180,27 @@ class DiagnosticsTest {
         assertEquals(SavedConnection.PRESENT, savedConnection(true))
         assertEquals(SavedConnection.UNKNOWN, savedConnection(null))
     }
+
+    @Test fun dnsClassificationRequiresAnExceptionTypeNotMessageText() {
+        val misleading = IOException("UnknownHostException DNS_LOOKUP_FAILED synthetic-private")
+        val diagnostic = diagnosticOf(misleading)
+        assertEquals(NetworkFailure.IO, diagnostic.network)
+        assertEquals(listOf(SafeException.IO), diagnostic.exceptionClasses)
+        assertFalse(diagnostic.toString().contains("synthetic-private"))
+    }
+
+    @Test fun causeChainSurvivesHttpSanitizationInOuterToInnerOrder() {
+        val error = httpFailure(FakeConnection(failure = IOException("synthetic-private", UnknownHostException("synthetic-host"))))
+        val diagnostic = diagnosticOf(error)
+        assertEquals(listOf(SafeException.IO, SafeException.UNKNOWN_HOST), diagnostic.exceptionClasses)
+        assertEquals(FixedError.DNS_LOOKUP_FAILED, diagnostic.errorClass)
+        assertFalse(diagnostic.toString().contains("synthetic"))
+    }
+
+    @Test fun arbitraryExceptionClassNamesAreNotReflectedIntoDiagnostics() {
+        class UnapprovedPrivateException : IOException("synthetic-private")
+        val diagnostic = diagnosticOf(UnapprovedPrivateException())
+        assertEquals(listOf(SafeException.OTHER), diagnostic.exceptionClasses)
+        assertFalse(diagnostic.toString().contains("UnapprovedPrivateException"))
+    }
 }

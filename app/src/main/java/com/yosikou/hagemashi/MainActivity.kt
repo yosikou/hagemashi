@@ -84,7 +84,10 @@ private fun ConnectionScreen(model: ConnectionViewModel, openUsage: () -> Unit) 
             }
             OutlinedButton(onClick = { model.selectAccount(null) }, enabled = !ui.busy) { Text(stringResource(R.string.new_account)) }
         }
-        Button(onClick = model::signIn, enabled = !ui.busy && !ui.connected && ui.failure != Failure.STORAGE) { Text(stringResource(R.string.continue_chatgpt)) }
+        Button(onClick = { model.signIn() }, enabled = !ui.busy && !ui.connected && ui.failure != Failure.STORAGE) { Text(stringResource(R.string.continue_chatgpt)) }
+        OutlinedButton(onClick = { model.signIn(compareDns = true) }, enabled = !ui.busy && !ui.connected && ui.failure != Failure.STORAGE) {
+            Text(stringResource(R.string.dns_compare_sign_in))
+        }
         OutlinedButton(onClick = model::disconnect, enabled = ui.connected) { Text(stringResource(R.string.disconnect)) }
         if (ui.busy) OutlinedButton(onClick = { model.cancel() }) { Text(stringResource(R.string.cancel)) }
         Text(stringResource(ui.status))
@@ -99,6 +102,16 @@ private fun ConnectionScreen(model: ConnectionViewModel, openUsage: () -> Unit) 
             diagnostic.network?.let { Text(stringResource(R.string.diagnostic_network, stringResource(networkText(it)))) }
             if (diagnostic.httpStatus != null) Text(stringResource(R.string.diagnostic_http, diagnostic.httpStatus))
             else if (diagnostic.network != null) Text(stringResource(R.string.diagnostic_no_http))
+            Text(stringResource(R.string.diagnostic_exceptions, exceptionNames(diagnostic.exceptionClasses)))
+        }
+        if (ui.dnsObservations.isNotEmpty()) {
+            Text(stringResource(R.string.dns_comparison_notice))
+            ui.dnsObservations.forEach { sample ->
+                Text(stringResource(R.string.dns_observation, stringResource(dnsPointText(sample.point)),
+                    stringResource(visibilityText(sample.visibility)),
+                    if (sample.resolved) stringResource(R.string.dns_resolved) else sample.diagnostic?.errorClass?.name.orEmpty()))
+                Text(stringResource(R.string.diagnostic_exceptions, exceptionNames(sample.diagnostic?.exceptionClasses.orEmpty())))
+            }
         }
         if (ui.failure != null) Text(stringResource(savedText(ui.savedConnection)))
         if (ui.lastWhileAway != Stage.NONE) Text(stringResource(R.string.diagnostic_away, stringResource(stageText(ui.lastWhileAway))))
@@ -131,6 +144,22 @@ private fun ConnectionScreen(model: ConnectionViewModel, openUsage: () -> Unit) 
         title = { Text(stringResource(R.string.erase_storage)) }, text = { Text(stringResource(R.string.erase_warning)) },
         confirmButton = { TextButton(onClick = { confirmErase = false; model.eraseUnrecoverable() }) { Text(stringResource(R.string.erase)) } },
         dismissButton = { TextButton(onClick = { confirmErase = false }) { Text(stringResource(R.string.cancel)) } })
+}
+
+@Composable
+private fun exceptionNames(classes: List<SafeException>): String = if (classes.isEmpty()) stringResource(R.string.no_exception_classes)
+    else classes.joinToString(" → ") { it.displayName }
+
+private fun dnsPointText(point: DnsPoint): Int = when (point) {
+    DnsPoint.BEFORE_BROWSER -> R.string.dns_before_browser
+    DnsPoint.AFTER_CALLBACK -> R.string.dns_after_callback
+    DnsPoint.AFTER_RESUME -> R.string.dns_after_resume
+}
+
+private fun visibilityText(visibility: AppVisibility): Int = when (visibility) {
+    AppVisibility.VISIBLE -> R.string.app_visible
+    AppVisibility.HIDDEN -> R.string.app_hidden
+    AppVisibility.CHANGED -> R.string.app_visibility_changed
 }
 
 private fun failureText(failure: Failure): Int = when (failure) {

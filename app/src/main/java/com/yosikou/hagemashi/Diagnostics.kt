@@ -12,7 +12,7 @@ import java.util.concurrent.CancellationException
 import javax.net.ssl.SSLException
 
 // Diagnostic data is an allowlist of enums and a bounded numeric HTTP status.
-// Exception messages, class names, URLs, request/response data and tokens never enter it.
+// Exception names are mapped to fixed allowlisted values; messages and payloads never enter it.
 internal enum class Stage {
     NONE, READ_SAVED_STATE, PREPARE_LOGIN, WAIT_CALLBACK, SAVE_REGISTRATION,
     CODE_EXCHANGE, DISCOVERY, SIGNING_KEYS, ID_TOKEN, TOKEN_FIELDS, SAVE_CREDENTIALS,
@@ -23,7 +23,18 @@ internal enum class NetworkFailure { HTTP, DNS, TLS, TIMEOUT, CONNECTION, IO, PE
 internal enum class SavedConnection { NONE, PRESENT, UNKNOWN }
 internal enum class FixedError { DNS_LOOKUP_FAILED, TLS_FAILED, TIMEOUT, CONNECTION_FAILED, IO_FAILED, PERMISSION_DENIED, HTTP_ERROR, INVALID_ENDPOINT, IDENTITY_REJECTED, STORAGE_FAILED, PROTOCOL_ERROR, OTHER_FAILURE }
 internal data class Progress(val stage: Stage = Stage.NONE, val phase: Phase = Phase.IDLE, val completed: Stage = Stage.NONE)
-internal data class SafeDiagnostic(val failure: Failure, val network: NetworkFailure?, val httpStatus: Int?, val host: TargetHost? = null, val errorClass: FixedError = FixedError.PROTOCOL_ERROR)
+internal enum class SafeException(val displayName: String) {
+    UNKNOWN_HOST("java.net.UnknownHostException"), IO("java.io.IOException"), SOCKET("java.net.SocketException"),
+    SOCKET_TIMEOUT("java.net.SocketTimeoutException"), CONNECT("java.net.ConnectException"), NO_ROUTE("java.net.NoRouteToHostException"),
+    SSL("javax.net.ssl.SSLException"), SSL_HANDSHAKE("javax.net.ssl.SSLHandshakeException"), SSL_PROTOCOL("javax.net.ssl.SSLProtocolException"),
+    SSL_PEER("javax.net.ssl.SSLPeerUnverifiedException"), CERTIFICATE("java.security.cert.CertificateException"),
+    CERT_PATH("java.security.cert.CertPathValidatorException"), SECURITY("java.lang.SecurityException"),
+    INTERRUPTED_IO("java.io.InterruptedIOException"), EXECUTION("java.util.concurrent.ExecutionException"),
+    FUTURE_TIMEOUT("java.util.concurrent.TimeoutException"), GAI("android.system.GaiException"), ERRNO("android.system.ErrnoException"),
+    OTHER("OTHER"), TRUNCATED("TRUNCATED")
+}
+internal data class SafeDiagnostic(val failure: Failure, val network: NetworkFailure?, val httpStatus: Int?, val host: TargetHost? = null,
+    val errorClass: FixedError = FixedError.PROTOCOL_ERROR, val exceptionClasses: List<SafeException> = emptyList())
 
 internal fun diagnosticOf(error: Exception): SafeDiagnostic {
     val problem = safeProblem(error)
@@ -44,7 +55,7 @@ internal fun diagnosticOf(error: Exception): SafeDiagnostic {
             else -> FixedError.OTHER_FAILURE
         }
     }
-    return SafeDiagnostic(problem.kind, problem.network, problem.status?.takeIf { it in 100..599 }, problem.targetHost, errorClass)
+    return SafeDiagnostic(problem.kind, problem.network, problem.status?.takeIf { it in 100..599 }, problem.targetHost, errorClass, problem.exceptionClasses.toList())
 }
 
 internal fun savedConnection(connected: Boolean?): SavedConnection = when (connected) {
@@ -66,7 +77,7 @@ internal fun safeProblem(error: Exception): Problem {
     }
     val network = when {
         chain.any { it is UnknownHostException } -> NetworkFailure.DNS
-        chain.any { it is SocketTimeoutException } -> NetworkFailure.TIMEOUT
+        chain.any { it is SocketTimeoutException || it is java.util.concurrent.TimeoutException } -> NetworkFailure.TIMEOUT
         chain.any { it is SSLException || it is CertificateException || it is CertPathValidatorException } -> NetworkFailure.TLS
         chain.any { it is ConnectException || it is NoRouteToHostException } -> NetworkFailure.CONNECTION
         chain.any { it is SecurityException } -> NetworkFailure.PERMISSION
@@ -78,7 +89,9 @@ internal fun safeProblem(error: Exception): Problem {
         NetworkFailure.PERMISSION -> Failure.PERMISSION
         null -> Failure.PROTOCOL
         else -> Failure.NETWORK
-    }, network = network)
+    }, network = network, exceptionClasses = chain.map { throwable ->
+        SafeException.entries.firstOrNull { it.displayName == throwable.javaClass.name } ?: SafeException.OTHER
+    } + if (next != null && chain.size == 8) listOf(SafeException.TRUNCATED) else emptyList())
 }
 
 // The actual post-callback pipeline is injectable for offline failure-path tests.

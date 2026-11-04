@@ -17,7 +17,8 @@ internal data class ConnectionUi(
     val answer: String = "", val status: Int = R.string.loading, val failure: Failure? = null,
     val diagnostic: SafeDiagnostic? = null, val browserUrl: String? = null, val welcome: Boolean = false,
     val progress: Progress = Progress(), val savedConnection: SavedConnection = SavedConnection.UNKNOWN,
-    val lastWhileAway: Stage = Stage.NONE, val networkFacts: NetworkFacts? = null
+    val lastWhileAway: Stage = Stage.NONE, val networkFacts: NetworkFacts? = null,
+    val dnsObservations: List<DnsObservation> = emptyList()
 )
 
 internal class ConnectionViewModel(application: Application) : AndroidViewModel(application) {
@@ -28,32 +29,71 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
     private val main = Handler(Looper.getMainLooper())
     private var epoch = 0L
     private var operation: Operation? = null
+    private val dnsComparison = DnsComparison()
+    private val comparisonCoordinator = Executors.newSingleThreadExecutor()
+    private var comparisonGeneration = -1L
+    private var comparisonOperation: Operation? = null
+    private var comparisonAway = false
+    private var returnSampleQueued = false
     @Volatile private var foreground = false
     private data class Result(val status: Int = 0, val answer: String? = null, val models: List<Model>? = null)
 
     init { run(R.string.loading) { Result() } }
-    fun setForeground(value: Boolean) { foreground = value }
+    fun setForeground(value: Boolean) {
+        val wasVisible = foreground
+        foreground = value
+        if (!value && comparisonGeneration == epoch) comparisonAway = true
+        if (value && !wasVisible && comparisonAway && !returnSampleQueued && comparisonGeneration == epoch) {
+            val op = comparisonOperation ?: return
+            val generation = comparisonGeneration
+            returnSampleQueued = true
+            comparisonCoordinator.execute { sampleDns(DnsPoint.AFTER_RESUME, op, generation) }
+        }
+    }
     fun selectAccount(id: String?) { if (!ui.busy && !ui.connected) ui = ui.copy(selectedAccount = id, forceNew = id == null) }
     fun selectModel(id: String) { if (!ui.busy && ui.models.any { it.slug == id }) ui = ui.copy(model = id) }
     fun browserOpened() { ui = ui.copy(browserUrl = null) }
     fun browserFailed() { cancel(R.string.browser_failed) }
 
-    fun signIn() {
+    fun signIn(compareDns: Boolean = false) {
         if (ui.busy || ui.connected) return
         val selected = ui.selectedAccount
         val forceNew = ui.forceNew
         val networkFacts = ui.networkFacts
         val generation = epoch + 1
+        comparisonGeneration = if (compareDns) generation else -1L
+        comparisonAway = false
+        returnSampleQueued = false
+        ui = ui.copy(dnsObservations = emptyList())
         run(R.string.signing_in, 300000) { op ->
             val app = getApplication<Application>()
             val attempt = op.step(Stage.PREPARE_LOGIN) {
                 if (networkFacts?.internetGranted == false) throw Problem(Failure.PERMISSION, network = NetworkFailure.PERMISSION)
                 repository.prepareLogin(selected, app.getString(R.string.app_name), op, forceNew)
             }
+            if (compareDns) sampleDns(DnsPoint.BEFORE_BROWSER, op, generation)
+            op.check()
             main.post { if (epoch == generation) ui = ui.copy(browserUrl = attempt.url, forceNew = false) }
-            repository.finishLogin(attempt, op, app.getString(R.string.browser_reply), app.getString(R.string.browser_rejected))
+            repository.finishLogin(attempt, op, app.getString(R.string.browser_reply), app.getString(R.string.browser_rejected)) {
+                if (compareDns) sampleDns(DnsPoint.AFTER_CALLBACK, op, generation)
+                op.check()
+            }
             Result(R.string.sign_in_done)
         }
+        comparisonOperation = if (compareDns) operation else null
+    }
+
+    private fun sampleDns(point: DnsPoint, op: Operation, generation: Long) {
+        try {
+            op.check()
+            val observation = dnsComparison.sample(point) { foreground }
+            op.check()
+            main.post {
+                if (generation == epoch) ui = ui.copy(dnsObservations =
+                    (ui.dnsObservations.filterNot { it.point == point } + observation).sortedBy { it.point.ordinal })
+            }
+        } catch (_: CancellationException) { /* Old trials cannot update the UI. */ }
+        catch (_: Problem) { /* The main authentication operation reports its own deadline. */ }
     }
 
     fun loadModels() {
@@ -147,6 +187,8 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
     override fun onCleared() {
         ++epoch
         operation?.cancel()
+        dnsComparison.close()
+        comparisonCoordinator.shutdownNow()
         executor.shutdownNow()
     }
 }

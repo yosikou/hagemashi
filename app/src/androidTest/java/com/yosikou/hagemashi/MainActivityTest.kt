@@ -23,6 +23,7 @@ class MainActivityTest {
     fun manualConnectionScreenShowsDummyTestAndDisablesGenerationBeforeSignIn() {
         composeRule.onNodeWithText("ChatGPT 手動接続の検証").assertIsDisplayed()
         composeRule.onNodeWithText("Continue with ChatGPT").assertIsDisplayed()
+        composeRule.onNodeWithText("診断用：DNS比較付きでサインイン").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("ダミーデータで生成").performScrollTo().assertIsNotEnabled()
     }
 

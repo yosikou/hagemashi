@@ -5,6 +5,8 @@ Android 8.0（API 26）以上に対応し、Android Studioは不要です。
 
 ## ChatGPT接続の技術調査
 
+[例外クラスと認証前・callback後・復帰時のDNS比較](docs/dns-cause-comparison.md)を追加しています。通常認証とは分けた診断用操作で、原因は未確定です。
+
 [認可コード交換のDNS失敗：ホスト照合・Android確認手順](docs/android-dns-check.md)を追加しました。原因は未確定で、DNS変更や固定IPへの接続は行いません。
 
 [公式仕様の調査結果・適用上の未確認事項・実機試験計画](docs/chatgpt-connection-spike.md)を参照してください。

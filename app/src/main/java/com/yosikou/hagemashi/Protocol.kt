@@ -29,7 +29,7 @@ internal enum class Failure { NETWORK, PROTOCOL, IDENTITY, STORAGE, DENIED, EXPI
 
 // Never attach a raw response, URL, exception message or token to a diagnostic.
 internal class Problem(val kind: Failure, val status: Int? = null, val code: String? = null, val network: NetworkFailure? = null,
-    val targetHost: TargetHost? = null, val fixedError: FixedError? = null) : Exception()
+    val targetHost: TargetHost? = null, val fixedError: FixedError? = null, val exceptionClasses: List<SafeException> = emptyList()) : Exception()
 
 internal fun randomSecret(): String = b64(ByteArray(32).also { SecureRandom().nextBytes(it) })
 internal fun b64(bytes: ByteArray): String = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
@@ -254,7 +254,7 @@ internal class Http(private val open: (java.net.URL) -> HttpsURLConnection = { i
         operation.check()
         val connection = try { open(uri.toURL()) } catch (e: Exception) {
             val problem = safeProblem(e)
-            throw Problem(problem.kind, problem.status, problem.code, problem.network, trustedHost(uri), problem.fixedError)
+            throw Problem(problem.kind, problem.status, problem.code, problem.network, trustedHost(uri), problem.fixedError, problem.exceptionClasses)
         }
         val closer = Closeable { connection.disconnect() }
         operation.attach(closer)
@@ -286,7 +286,7 @@ internal class Http(private val open: (java.net.URL) -> HttpsURLConnection = { i
             val problem = try { operation.check(); safeProblem(e) }
                 catch (cancelled: CancellationException) { throw cancelled }
                 catch (timeout: Problem) { timeout }
-            throw Problem(problem.kind, problem.status ?: receivedStatus, problem.code, problem.network, trustedHost(uri), problem.fixedError)
+            throw Problem(problem.kind, problem.status ?: receivedStatus, problem.code, problem.network, trustedHost(uri), problem.fixedError, problem.exceptionClasses)
         } finally {
             operation.detach(closer)
             connection.disconnect()

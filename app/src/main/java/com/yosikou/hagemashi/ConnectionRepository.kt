@@ -61,7 +61,7 @@ internal class ConnectionRepository(context: Context) {
             "$ISSUER/api/accounts/authorize?${form(fields)}", redirect)
     }
 
-    fun finishLogin(attempt: LoginAttempt, operation: Operation, browserReply: String, browserRejected: String) {
+    fun finishLogin(attempt: LoginAttempt, operation: Operation, browserReply: String, browserRejected: String, afterCallback: () -> Unit = {}) {
         try {
             val result = operation.step(Stage.WAIT_CALLBACK) {
                 var callback: Callback? = null
@@ -99,6 +99,7 @@ internal class ConnectionRepository(context: Context) {
                 }
                 saved
             }
+            afterCallback()
             completeSignIn(operation,
                 exchange = { http.json(TOKEN_ENDPOINT, operation, mapOf(
                     "grant_type" to "authorization_code", "client_id" to result.clientId, "code" to result.code,
