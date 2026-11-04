@@ -28,7 +28,7 @@ internal const val SCOPES = "openid profile email offline_access resource.invoke
 internal enum class Failure { NETWORK, PROTOCOL, IDENTITY, STORAGE, DENIED, EXPIRED, PERMISSION, LIMIT, POLICY, SERVER, TIMEOUT }
 
 // Never attach a raw response, URL, exception message or token to a diagnostic.
-internal class Problem(val kind: Failure, val status: Int? = null, val code: String? = null) : Exception()
+internal class Problem(val kind: Failure, val status: Int? = null, val code: String? = null, val network: NetworkFailure? = null) : Exception()
 
 internal fun randomSecret(): String = b64(ByteArray(32).also { SecureRandom().nextBytes(it) })
 internal fun b64(bytes: ByteArray): String = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
@@ -40,13 +40,38 @@ internal fun form(values: Map<String, String>): String = values.entries.joinToSt
 
 private val resourceCloser = Executors.newCachedThreadPool { task -> Thread(task, "connection-cleanup").apply { isDaemon = true } }
 
-internal class Operation(timeoutMillis: Long = 180000) {
+internal class Operation(timeoutMillis: Long = 180000, private val onProgress: (Progress) -> Unit = {}) {
     private val deadline = System.nanoTime() + timeoutMillis * 1_000_000
     private var cancelled = false
     private val resources = mutableSetOf<Closeable>()
+    @Volatile var progress = Progress()
+        private set
+    @Volatile var lastDiagnostic: SafeDiagnostic? = null
+        private set
+
+    fun <T> step(stage: Stage, block: () -> T): T {
+        lastDiagnostic = null
+        publish(Progress(stage, Phase.RUNNING, progress.completed))
+        try {
+            check()
+            val result = block()
+            check()
+            publish(Progress(stage, Phase.SUCCEEDED, stage))
+            return result
+        } catch (e: CancellationException) {
+            publish(Progress(stage, Phase.CANCELLED, progress.completed))
+            throw e
+        } catch (e: Exception) {
+            lastDiagnostic = diagnosticOf(e)
+            publish(Progress(stage, Phase.FAILED, progress.completed))
+            throw safeProblem(e)
+        }
+    }
+
+    private fun publish(value: Progress) { progress = value; onProgress(value) }
     @Synchronized fun check() {
         if (cancelled) throw CancellationException()
-        if (System.nanoTime() > deadline) throw Problem(Failure.TIMEOUT)
+        if (System.nanoTime() > deadline) throw Problem(Failure.TIMEOUT, network = NetworkFailure.TIMEOUT)
     }
     @Synchronized fun <T> commit(block: () -> T): T { check(); return block() }
     @Synchronized fun attach(resource: Closeable) {
@@ -202,10 +227,10 @@ internal fun responseProblem(status: Int, body: JSONObject): Problem {
         status >= 500 -> Failure.SERVER
         else -> Failure.PROTOCOL
     }
-    return Problem(kind, status.takeIf { it > 0 }, code)
+    return Problem(kind, status.takeIf { it in 100..599 }, code, status.takeIf { it in 100..599 }?.let { NetworkFailure.HTTP })
 }
 
-internal class Http {
+internal class Http(private val open: (java.net.URL) -> HttpsURLConnection = { it.openConnection() as HttpsURLConnection }) {
     fun revoke(url: String, fields: Map<String, String>, operation: Operation) {
         request(url, operation, form(fields), "application/x-www-form-urlencoded", null) {
             if (readLimited(it, 65536).isNotBlank()) throw Problem(Failure.PROTOCOL)
@@ -227,9 +252,10 @@ internal class Http {
         val uri = URI(url)
         if (uri.scheme != "https" || uri.host !in setOf("auth.openai.com", "api.openai.com") || uri.userInfo != null || uri.port !in setOf(-1, 443)) throw Problem(Failure.PROTOCOL)
         operation.check()
-        val connection = uri.toURL().openConnection() as HttpsURLConnection
+        val connection = open(uri.toURL())
         val closer = Closeable { connection.disconnect() }
         operation.attach(closer)
+        var receivedStatus: Int? = null
         try {
             connection.instanceFollowRedirects = false
             connection.connectTimeout = 15000
@@ -243,6 +269,7 @@ internal class Http {
                 connection.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
             }
             val status = connection.responseCode
+            receivedStatus = status.takeIf { it in 100..599 }
             operation.check()
             if (status != 200) {
                 val error = runCatching { JSONObject(readLimited(connection.errorStream, 65536)) }.getOrDefault(JSONObject())
@@ -250,6 +277,13 @@ internal class Http {
             }
             if (url.endsWith("/responses") && !connection.contentType.orEmpty().startsWith("text/event-stream", ignoreCase = true)) throw Problem(Failure.PROTOCOL)
             return connection.inputStream.use(read)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            val problem = try { operation.check(); safeProblem(e) }
+                catch (cancelled: CancellationException) { throw cancelled }
+                catch (timeout: Problem) { timeout }
+            throw Problem(problem.kind, problem.status ?: receivedStatus, problem.code, problem.network)
         } finally {
             operation.detach(closer)
             connection.disconnect()

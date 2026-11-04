@@ -61,63 +61,79 @@ internal class ConnectionRepository(context: Context) {
             "$ISSUER/api/accounts/authorize?${form(fields)}", redirect)
     }
 
-    fun finishLogin(attempt: LoginAttempt, operation: Operation, browserReply: String) {
+    fun finishLogin(attempt: LoginAttempt, operation: Operation, browserReply: String, browserRejected: String) {
         try {
-            var callback: Callback? = null
-            while (callback == null) {
-                operation.check()
-                val connection = try { attempt.socket.accept() } catch (_: SocketTimeoutException) { continue }
-                connection.use { socket ->
-                    val closer = Closeable { socket.close() }
-                    operation.attach(closer)
-                    try {
-                        socket.soTimeout = 3000
-                        val request = readBoundedLine(socket.getInputStream().bufferedReader(Charsets.US_ASCII), 8192).orEmpty().split(' ')
-                        if (request.size == 3 && request[0] == "GET") {
-                            val candidate = runCatching { parseCallback(request[1], attempt.state, attempt.client) }
-                            // A forged local request must not consume a valid pending authorization.
-                            val error = candidate.exceptionOrNull()
-                            if (error is Problem && error.kind == Failure.DENIED) throw error
-                            callback = candidate.getOrNull()
-                        }
-                        val reply = browserReply.toByteArray(Charsets.UTF_8)
-                        runCatching { socket.getOutputStream().write(("HTTP/1.1 ${if (callback != null) "200 OK" else "400 Bad Request"}\r\n" +
-                            "Content-Type: text/plain; charset=utf-8\r\nContent-Length: ${reply.size}\r\n" +
-                            "Cache-Control: no-store\r\nReferrer-Policy: no-referrer\r\nConnection: close\r\n\r\n").toByteArray(Charsets.US_ASCII) + reply) }
-                    } catch (_: SocketTimeoutException) { /* Ignore a stalled local connection; the overall attempt is bounded. */ }
-                    finally { operation.detach(closer) }
+            val result = operation.step(Stage.WAIT_CALLBACK) {
+                var callback: Callback? = null
+                while (callback == null) {
+                    operation.check()
+                    val connection = try { attempt.socket.accept() } catch (_: SocketTimeoutException) { continue }
+                    connection.use { socket ->
+                        val closer = Closeable { socket.close() }
+                        operation.attach(closer)
+                        try {
+                            socket.soTimeout = 3000
+                            val request = readBoundedLine(socket.getInputStream().bufferedReader(Charsets.US_ASCII), 8192).orEmpty().split(' ')
+                            if (request.size == 3 && request[0] == "GET") {
+                                val candidate = runCatching { parseCallback(request[1], attempt.state, attempt.client) }
+                                // A forged local request must not consume a valid pending authorization.
+                                val error = candidate.exceptionOrNull()
+                                if (error is Problem && error.kind == Failure.DENIED) throw error
+                                callback = candidate.getOrNull()
+                            }
+                            val reply = (if (callback != null) browserReply else browserRejected).toByteArray(Charsets.UTF_8)
+                            runCatching { socket.getOutputStream().write(("HTTP/1.1 ${if (callback != null) "200 OK" else "400 Bad Request"}\r\n" +
+                                "Content-Type: text/plain; charset=utf-8\r\nContent-Length: ${reply.size}\r\n" +
+                                "Cache-Control: no-store\r\nReferrer-Policy: no-referrer\r\nConnection: close\r\n\r\n").toByteArray(Charsets.US_ASCII) + reply) }
+                        } catch (_: SocketTimeoutException) { /* Ignore a stalled local connection; the overall attempt is bounded. */ }
+                        finally { operation.detach(closer) }
+                    }
                 }
+                callback ?: throw Problem(Failure.PROTOCOL)
             }
-            val result = callback ?: throw Problem(Failure.PROTOCOL)
-            val root = vault.read()
-            if (attempt.client == null || attempt.subject == null) {
-                root.put("pending_client", result.clientId)
-                operation.commit { vault.write(root) }
+            val root = operation.step(Stage.SAVE_REGISTRATION) {
+                val saved = vault.read()
+                if (attempt.client == null || attempt.subject == null) {
+                    saved.put("pending_client", result.clientId)
+                    operation.commit { vault.write(saved) }
+                }
+                saved
             }
-            val tokens = http.json("$ISSUER/api/accounts/oauth/token", operation, mapOf(
-                "grant_type" to "authorization_code", "client_id" to result.clientId, "code" to result.code,
-                "code_verifier" to attempt.verifier, "redirect_uri" to attempt.redirect, "resource" to RESOURCE))
-            val identity = validateIdToken(tokens.getString("id_token"), result.clientId, attempt.nonce, jwks(operation), now())
-            if (attempt.subject != null && identity.subject != attempt.subject) throw Problem(Failure.IDENTITY)
-            val session = tokenRecord(tokens, result.clientId, identity, null)
-            val accounts = root.optJSONArray("accounts") ?: JSONArray()
-            val known = (0 until accounts.length()).map { accounts.getJSONObject(it) }.find { it.optString("client") == result.clientId }
-            if (known != null && known.getString("subject") != identity.subject) throw Problem(Failure.IDENTITY)
-            val already = (0 until accounts.length()).any { accounts.getJSONObject(it).optString("client") == result.clientId }
-            if (!already) accounts.put(JSONObject().put("client", result.clientId).put("subject", identity.subject).put("name", identity.name).put("email", identity.email))
-            root.put("accounts", accounts).put("session", session).remove("pending_client")
-            operation.commit { vault.write(root) }
+            completeSignIn(operation,
+                exchange = { http.json("$ISSUER/api/accounts/oauth/token", operation, mapOf(
+                    "grant_type" to "authorization_code", "client_id" to result.clientId, "code" to result.code,
+                    "code_verifier" to attempt.verifier, "redirect_uri" to attempt.redirect, "resource" to RESOURCE)) },
+                discovery = { discovery(operation) },
+                keys = { configuration -> signingKeys(configuration, operation) },
+                verify = { tokens, keys ->
+                    val identity = validateIdToken(tokens.getString("id_token"), result.clientId, attempt.nonce, keys, now())
+                    if (attempt.subject != null && identity.subject != attempt.subject) throw Problem(Failure.IDENTITY)
+                    val accounts = root.optJSONArray("accounts") ?: JSONArray()
+                    val known = (0 until accounts.length()).map { accounts.getJSONObject(it) }.find { it.optString("client") == result.clientId }
+                    if (known != null && known.getString("subject") != identity.subject) throw Problem(Failure.IDENTITY)
+                    identity
+                },
+                record = { tokens, identity -> tokenRecord(tokens, result.clientId, identity, null) },
+                persist = { session, identity ->
+                    val accounts = root.optJSONArray("accounts") ?: JSONArray()
+                    val already = (0 until accounts.length()).any { accounts.getJSONObject(it).optString("client") == result.clientId }
+                    if (!already) accounts.put(JSONObject().put("client", result.clientId).put("subject", identity.subject).put("name", identity.name).put("email", identity.email))
+                    root.put("accounts", accounts).put("session", session).remove("pending_client")
+                    operation.commit { vault.write(root) }
+                })
         } finally {
             operation.detach(attempt.socket)
-            attempt.socket.close()
+            runCatching { attempt.socket.close() }
         }
     }
 
     fun models(operation: Operation): List<Model> {
         val session = usableSession(operation)
-        val items = http.json("$RESOURCE/models", operation, bearer = session.getString("access")).getJSONArray("models")
-        return (0 until items.length()).map { items.getJSONObject(it) }.filter { it.optString("visibility") == "list" }
-            .map { Model(it.getString("slug"), it.getString("display_name")) }.take(100)
+        return operation.step(Stage.MODELS) {
+            val items = http.json("$RESOURCE/models", operation, bearer = session.getString("access")).getJSONArray("models")
+            (0 until items.length()).map { items.getJSONObject(it) }.filter { it.optString("visibility") == "list" }
+                .map { Model(it.getString("slug"), it.getString("display_name")) }.take(100)
+        }
     }
 
     fun generate(model: String, instructions: String, dummy: String, operation: Operation): String {
@@ -126,7 +142,7 @@ internal class ConnectionRepository(context: Context) {
         val session = usableSession(operation)
         val body = JSONObject().put("model", model).put("instructions", instructions).put("store", false).put("stream", true)
             .put("input", JSONArray().put(JSONObject().put("role", "user").put("content", dummy)))
-        return http.generate(body, session.getString("access"), operation)
+        return operation.step(Stage.GENERATION) { http.generate(body, session.getString("access"), operation) }
     }
 
     fun disconnect(operation: Operation): Boolean {
@@ -136,9 +152,9 @@ internal class ConnectionRepository(context: Context) {
         if (session != null && session.optString("refresh").isNotEmpty()) {
             // One bounded, user-initiated attempt. Do not retain tokens for background retries.
             confirmed = runCatching {
-                val endpoint = discovery(operation).getString("revocation_endpoint")
+                val endpoint = operation.step(Stage.DISCOVERY) { discovery(operation).getString("revocation_endpoint") }
                 if (!endpoint.startsWith("$ISSUER/")) throw Problem(Failure.PROTOCOL)
-                http.revoke(endpoint, mapOf("token" to session.getString("refresh"), "token_type_hint" to "refresh_token", "client_id" to session.getString("client")), operation)
+                operation.step(Stage.REVOCATION) { http.revoke(endpoint, mapOf("token" to session.getString("refresh"), "token_type_hint" to "refresh_token", "client_id" to session.getString("client")), operation) }
             }.isSuccess
         }
         root.remove("session")
@@ -161,14 +177,18 @@ internal class ConnectionRepository(context: Context) {
         if (!canGenerate(session)) throw Problem(Failure.PERMISSION)
         if (session.getLong("expires") > now() + 60) return session
         if (session.optString("refresh").isEmpty()) throw Problem(Failure.EXPIRED)
-        val tokens = http.json("$ISSUER/api/accounts/oauth/token", operation, mapOf("grant_type" to "refresh_token", "client_id" to session.getString("client"),
-            "refresh_token" to session.getString("refresh"), "resource" to RESOURCE))
-        val identity = if (tokens.has("id_token")) validateIdToken(tokens.getString("id_token"), session.getString("client"), null, jwks(operation), now())
+        val tokens = operation.step(Stage.REFRESH) { http.json("$ISSUER/api/accounts/oauth/token", operation, mapOf("grant_type" to "refresh_token", "client_id" to session.getString("client"),
+            "refresh_token" to session.getString("refresh"), "resource" to RESOURCE)) }
+        val keys = if (tokens.has("id_token")) jwks(operation) else null
+        val identity = if (keys != null) operation.step(Stage.ID_TOKEN) {
+            validateIdToken(tokens.getString("id_token"), session.getString("client"), null, keys, now()).also {
+                if (it.subject != session.getString("subject")) throw Problem(Failure.IDENTITY)
+            }
+        }
             else Identity(session.getString("subject"), session.optString("name"), session.optString("email"))
-        if (identity.subject != session.getString("subject")) throw Problem(Failure.IDENTITY)
-        val replacement = tokenRecord(tokens, session.getString("client"), identity, session)
+        val replacement = operation.step(Stage.TOKEN_FIELDS) { tokenRecord(tokens, session.getString("client"), identity, session) }
         root.put("session", replacement)
-        operation.commit { vault.write(root) }
+        operation.step(Stage.SAVE_CREDENTIALS) { operation.commit { vault.write(root) } }
         if (!canGenerate(replacement)) throw Problem(Failure.PERMISSION)
         return replacement
     }
@@ -192,7 +212,11 @@ internal class ConnectionRepository(context: Context) {
         if (it.getString("issuer") != ISSUER) throw Problem(Failure.IDENTITY)
     }
     private fun jwks(operation: Operation): JSONObject {
-        val uri = discovery(operation).getString("jwks_uri")
+        val configuration = operation.step(Stage.DISCOVERY) { discovery(operation) }
+        return operation.step(Stage.SIGNING_KEYS) { signingKeys(configuration, operation) }
+    }
+    private fun signingKeys(configuration: JSONObject, operation: Operation): JSONObject {
+        val uri = configuration.getString("jwks_uri")
         if (!uri.startsWith("$ISSUER/")) throw Problem(Failure.IDENTITY)
         return http.json(uri, operation)
     }

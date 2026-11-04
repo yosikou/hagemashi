@@ -34,9 +34,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : ComponentActivity() {
+    private lateinit var model: ConnectionViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val model = ViewModelProvider(this)[ConnectionViewModel::class.java]
+        model = ViewModelProvider(this)[ConnectionViewModel::class.java]
         setContent {
             val url = model.ui.browserUrl
             LaunchedEffect(url) {
@@ -56,6 +57,9 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onStart() { super.onStart(); model.setForeground(true) }
+    override fun onStop() { model.setForeground(false); super.onStop() }
 }
 
 @Composable
@@ -66,7 +70,8 @@ private fun ConnectionScreen(model: ConnectionViewModel, openUsage: () -> Unit) 
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(stringResource(R.string.screen_title), style = MaterialTheme.typography.headlineSmall)
         Text(stringResource(R.string.preview_notice))
-        Text(stringResource(if (ui.connected) R.string.connected else R.string.disconnected), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(if (ui.savedConnection == SavedConnection.UNKNOWN) R.string.connection_unknown
+            else if (ui.connected) R.string.connected else R.string.disconnected), style = MaterialTheme.typography.titleMedium)
         if (ui.name.isNotEmpty()) Text(stringResource(R.string.account_name, ui.name))
         if (ui.email.isNotEmpty()) Text(stringResource(R.string.account_email, ui.email))
         if (ui.connected) Text(stringResource(if (ui.permitted) R.string.using_plan else R.string.no_permission))
@@ -84,7 +89,21 @@ private fun ConnectionScreen(model: ConnectionViewModel, openUsage: () -> Unit) 
         if (ui.busy) OutlinedButton(onClick = { model.cancel() }) { Text(stringResource(R.string.cancel)) }
         Text(stringResource(ui.status))
         ui.failure?.let { Text(stringResource(failureText(it)), color = MaterialTheme.colorScheme.error) }
-        if (ui.diagnostic.isNotEmpty()) Text(ui.diagnostic)
+        if (ui.progress.stage != Stage.NONE) {
+            Text(stringResource(R.string.diagnostic_stage, stringResource(stageText(ui.progress.stage)), stringResource(phaseText(ui.progress.phase))))
+            Text(stringResource(R.string.diagnostic_completed, stringResource(stageText(ui.progress.completed))))
+        }
+        ui.diagnostic?.let { diagnostic ->
+            diagnostic.network?.let { Text(stringResource(R.string.diagnostic_network, stringResource(networkText(it)))) }
+            if (diagnostic.httpStatus != null) Text(stringResource(R.string.diagnostic_http, diagnostic.httpStatus))
+            else if (diagnostic.network != null) Text(stringResource(R.string.diagnostic_no_http))
+        }
+        if (ui.failure != null) Text(stringResource(savedText(ui.savedConnection)))
+        if (ui.lastWhileAway != Stage.NONE) Text(stringResource(R.string.diagnostic_away, stringResource(stageText(ui.lastWhileAway))))
+        ui.networkFacts?.let {
+            Text(stringResource(if (it.internetGranted) R.string.internet_granted else R.string.internet_missing))
+            Text(stringResource(if (it.cleartextPermitted) R.string.cleartext_allowed else R.string.https_only))
+        } ?: Text(stringResource(R.string.network_settings_unknown))
         TextButton(onClick = openUsage) { Text(stringResource(R.string.manage_usage)) }
         if (ui.failure == Failure.STORAGE) OutlinedButton(onClick = { confirmErase = true }, enabled = !ui.busy) { Text(stringResource(R.string.erase_storage)) }
         HorizontalDivider()
@@ -124,4 +143,46 @@ private fun failureText(failure: Failure): Int = when (failure) {
     Failure.POLICY -> R.string.error_policy
     Failure.SERVER -> R.string.error_server
     Failure.TIMEOUT -> R.string.error_timeout
+}
+
+private fun savedText(state: SavedConnection): Int = when (state) {
+    SavedConnection.NONE -> R.string.saved_none
+    SavedConnection.PRESENT -> R.string.saved_present
+    SavedConnection.UNKNOWN -> R.string.saved_unknown
+}
+
+private fun phaseText(phase: Phase): Int = when (phase) {
+    Phase.IDLE -> R.string.phase_idle
+    Phase.RUNNING -> R.string.phase_running
+    Phase.SUCCEEDED -> R.string.phase_succeeded
+    Phase.FAILED -> R.string.phase_failed
+    Phase.CANCELLED -> R.string.phase_cancelled
+}
+
+private fun networkText(network: NetworkFailure): Int = when (network) {
+    NetworkFailure.HTTP -> R.string.network_http
+    NetworkFailure.DNS -> R.string.network_dns
+    NetworkFailure.TLS -> R.string.network_tls
+    NetworkFailure.TIMEOUT -> R.string.network_timeout
+    NetworkFailure.CONNECTION -> R.string.network_connection
+    NetworkFailure.IO -> R.string.network_io
+    NetworkFailure.PERMISSION -> R.string.network_permission
+}
+
+private fun stageText(stage: Stage): Int = when (stage) {
+    Stage.NONE -> R.string.stage_none
+    Stage.READ_SAVED_STATE -> R.string.stage_read_saved
+    Stage.PREPARE_LOGIN -> R.string.stage_prepare
+    Stage.WAIT_CALLBACK -> R.string.stage_callback
+    Stage.SAVE_REGISTRATION -> R.string.stage_registration
+    Stage.CODE_EXCHANGE -> R.string.stage_exchange
+    Stage.DISCOVERY -> R.string.stage_discovery
+    Stage.SIGNING_KEYS -> R.string.stage_keys
+    Stage.ID_TOKEN -> R.string.stage_identity
+    Stage.TOKEN_FIELDS -> R.string.stage_token_fields
+    Stage.SAVE_CREDENTIALS -> R.string.stage_save
+    Stage.MODELS -> R.string.stage_models
+    Stage.GENERATION -> R.string.stage_generation
+    Stage.REFRESH -> R.string.stage_refresh
+    Stage.REVOCATION -> R.string.stage_revocation
 }

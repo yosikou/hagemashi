@@ -10,6 +10,9 @@ Android 8.0（API 26）以上に対応し、Android Studioは不要です。
 [検証版の仕様・APK取得方法・Android実機テスト手順](docs/manual-chatgpt-test.md)を参照してください。
 Androidへの正式適用と実機動作は未確認です。定期生成・通知は含みません。
 
+2026-11-02の実機報告を受け、callback後の処理段階・通信分類・HTTP状態・保存状態を表示する診断を追加しています。
+元の失敗原因と修正版の実機動作は、[診断の再試験手順](docs/manual-chatgpt-test.md)で確認します。機密情報やレスポンス本文は診断に含めません。
+
 MIT採用後の[SIWC適用条件の整理](docs/siwc-applicability-after-mit.md)も参照してください。
 MITの採用だけで、SIWCの利用条件やAndroid対応を満たしたとは判断していません。
 
