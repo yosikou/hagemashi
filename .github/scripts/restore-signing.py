@@ -17,14 +17,16 @@ if not raw:
     sys.exit(0)
 try:
     data = json.loads(raw)
-    assert data["version"] == 1
+    if data["version"] != 1:
+        raise ValueError()
     password = data["password"]
-    assert re.fullmatch(r"[a-f0-9]{64}", password)
-    assert re.fullmatch(r"[a-f0-9]{64}", data["certificateSha256"])
+    if not re.fullmatch(r"[a-f0-9]{64}", password) or not re.fullmatch(r"[a-f0-9]{64}", data["certificateSha256"]):
+        raise ValueError()
+    key_bytes = base64.b64decode(data["keystore"], validate=True)
+    if not 1000 <= len(key_bytes) <= 20000:
+        raise ValueError()
     print("::add-mask::" + password)
     print("::add-mask::" + data["keystore"])
-    key_bytes = base64.b64decode(data["keystore"], validate=True)
-    assert 1000 <= len(key_bytes) <= 20000
     key = Path(os.environ["RUNNER_TEMP"]) / "hagemashi-signing.p12"
     key.write_bytes(key_bytes)
     key.chmod(0o600)
@@ -32,7 +34,8 @@ try:
                              "-storepass:env", "HAGEMASHI_KEY_PASSWORD"],
                             env=dict(os.environ, HAGEMASHI_KEY_PASSWORD=password),
                             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-    assert result.returncode == 0 and hashlib.sha256(result.stdout).hexdigest() == data["certificateSha256"]
+    if result.returncode != 0 or hashlib.sha256(result.stdout).hexdigest() != data["certificateSha256"]:
+        raise ValueError()
     with open(os.environ["GITHUB_ENV"], "a") as output:
         output.write("HAGEMASHI_SIGNING_FILE=" + str(key) + "\nHAGEMASHI_SIGNING_PASSWORD=" + password + "\n")
         output.write("HAGEMASHI_SIGNING_SHA256=" + data["certificateSha256"] + "\n")

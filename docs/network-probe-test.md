@@ -8,7 +8,7 @@ ChromeとTermuxでは同一端末・回線でHTTPS応答を受信でき、既存
 
 ## 最初の一度だけ：Termuxで署名Secretを登録
 
-個人のTermuxでPython、GitHub CLI、keytoolを用意する。例は `pkg install python gh openjdk-17`。Termuxの配布元によってJDKのパッケージ名が異なる場合は、`pkg search openjdk` でkeytoolを含む提供版を確認する。端末側の鍵生成はJDK17でなくてもよい。CIビルドはJDK17を維持する。
+個人のTermuxでPython、GitHub CLI、keytoolを用意する。例は `pkg install python gh openjdk-21`。実機の配布元ではopenjdk-17が見つからなかったため、鍵生成には提供されるJDK21等を使う。JDK21も見つからない場合は `pkg search openjdk` でkeytoolを含む提供版を確認する。端末側の鍵生成はJDK17でなくてもよい。CIビルドはJDK17を維持する。
 
 `gh auth login` で自分のGitHubへ接続し、yosikou/hagemashiのActions Secretを書き込める権限を使う。トークンをコマンド引数・チャット・ログへ貼り付けない。
 
@@ -22,7 +22,7 @@ PRでレビューした `scripts/register-signing-secret.py` を端末内へ取�
 
 CIはSecretを一時ディレクトリへ復元し、パスワード・鍵文字列をマスクしてからGradleへ渡す。公開ArtifactsはAPKと検証レポートに限定し、終了時に一時鍵を削除する。鍵をキャッシュ・Gitへ保存しない。Secret未設定時もチェックを実行するが、ランダム鍵のAPKは配布しない。フォークPRへSecretは渡らない。
 
-Secret登録前に開始したCIには新しいSecretが反映されない場合がある。その場合は登録後に既存ジョブを再実行する。Secretの削除・再生成は更新不能につながるため、通常のビルド時は変更しない。署名継続の確認は、異なる実行の証明書SHA-256を比較する。
+Secret登録前に開始したCIには新しいSecretが反映されない場合がある。その場合は登録後に既存ジョブを再実行する。同じ実行の再試行ではArtifactsを新しいものへ置換する。Secretの削除・再生成は更新不能につながるため、通常のビルド時は変更しない。署名継続の確認は、異なる実行の証明書SHA-256を比較する。
 
 ## APKの取得と併存
 
