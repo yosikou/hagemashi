@@ -14,7 +14,7 @@ import javax.net.ssl.SSLException
 // Diagnostic data is an allowlist of enums and a bounded numeric HTTP status.
 // Exception names are mapped to fixed allowlisted values; messages and payloads never enter it.
 internal enum class Stage {
-    NONE, READ_SAVED_STATE, PREPARE_LOGIN, WAIT_CALLBACK, SAVE_REGISTRATION,
+    NONE, READ_SAVED_STATE, PREPARE_LOGIN, WAIT_CALLBACK, SAVE_REGISTRATION, WAIT_APP_RETURN,
     CODE_EXCHANGE, DISCOVERY, SIGNING_KEYS, ID_TOKEN, TOKEN_FIELDS, SAVE_CREDENTIALS,
     MODELS, GENERATION, REFRESH, REVOCATION, PROBE_DNS, PROBE_GET, PROBE_POST
 }
@@ -102,10 +102,14 @@ internal fun completeSignIn(
     keys: (JSONObject) -> JSONObject,
     verify: (JSONObject, JSONObject) -> Identity,
     record: (JSONObject, Identity) -> JSONObject,
-    persist: (JSONObject, Identity) -> Unit
+    persist: (JSONObject, Identity) -> Unit,
+    beforeNetwork: () -> Unit = {}
 ) {
+    beforeNetwork()
     val tokens = operation.step(Stage.CODE_EXCHANGE, exchange)
+    beforeNetwork()
     val configuration = operation.step(Stage.DISCOVERY, discovery)
+    beforeNetwork()
     val signingKeys = operation.step(Stage.SIGNING_KEYS) { keys(configuration) }
     val identity = operation.step(Stage.ID_TOKEN) { verify(tokens, signingKeys) }
     val session = operation.step(Stage.TOKEN_FIELDS) { record(tokens, identity) }

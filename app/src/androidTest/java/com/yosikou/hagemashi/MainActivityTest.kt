@@ -13,6 +13,8 @@ import org.junit.runner.RunWith
 import org.junit.Assert.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import android.content.Intent
+import android.net.Uri
 import java.util.concurrent.atomic.AtomicReference
 
 @RunWith(AndroidJUnit4::class)
@@ -42,6 +44,17 @@ class MainActivityTest {
         assertNotNull(facts)
         assertTrue(facts!!.internetGranted)
         assertFalse(facts.cleartextPermitted)
+    }
+
+    @Test fun returnLinkResolvesToTheSameActivityWithoutCarryingAnAuthorizationResult() {
+        val activity = composeRule.activity
+        val navigation = Intent(Intent.ACTION_VIEW, Uri.parse("${BuildConfig.APPLICATION_ID}://auth-return/"))
+            .addCategory(Intent.CATEGORY_BROWSABLE).setPackage(BuildConfig.APPLICATION_ID)
+        val component = navigation.resolveActivity(activity.packageManager)
+        assertNotNull(component)
+        assertEquals(MainActivity::class.java.name, component!!.className)
+        assertNull(navigation.data?.query)
+        assertNull(navigation.extras)
     }
 
     @Test fun connectionViewModelSurvivesStopAndRecreation() {

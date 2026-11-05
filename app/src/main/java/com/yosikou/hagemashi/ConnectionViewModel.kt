@@ -25,6 +25,7 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
     var ui by mutableStateOf(ConnectionUi(networkFacts = readNetworkFacts(application)))
         private set
     private val repository = ConnectionRepository(application)
+    private val loginReturn = LoginReturn()
     private val executor = Executors.newSingleThreadExecutor()
     private val main = Handler(Looper.getMainLooper())
     private var epoch = 0L
@@ -39,6 +40,7 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
     private data class Result(val status: Int = 0, val answer: String? = null, val models: List<Model>? = null)
 
     init { run(R.string.loading) { Result() } }
+    fun setResumed(value: Boolean) { loginReturn.setResumed(value) }
     fun setForeground(value: Boolean) {
         val wasVisible = foreground
         foreground = value
@@ -74,7 +76,9 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
             if (compareDns) sampleDns(DnsPoint.BEFORE_BROWSER, op, generation)
             op.check()
             main.post { if (epoch == generation) ui = ui.copy(browserUrl = attempt.url, forceNew = false) }
-            repository.finishLogin(attempt, op, app.getString(R.string.browser_reply), app.getString(R.string.browser_rejected)) {
+            repository.finishLogin(attempt, op, app.getString(R.string.browser_reply), app.getString(R.string.browser_rejected),
+                app.getString(R.string.browser_return, app.getString(R.string.app_name)), BuildConfig.APPLICATION_ID,
+                beforeNetwork = { loginReturn.await(op) }) {
                 if (compareDns) sampleDns(DnsPoint.AFTER_CALLBACK, op, generation)
                 op.check()
             }

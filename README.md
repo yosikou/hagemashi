@@ -5,6 +5,8 @@ Android 8.0（API 26）以上に対応し、Android Studioは不要です。
 
 ## ChatGPT接続の技術調査
 
+[通常のブラウザ認証後にアプリへ戻って接続を完了する修正](docs/login-return-fix.md)。分割画面を不要にするため、callback受信後のコード交換等をActivity再開まで待つ構成です。修正版の実機結果は未確認です。
+
 [認証不要の通信診断・継続署名・別IDでの併存試験](docs/network-probe-test.md)を追加しています。診断APKは `hagemashi-diagnostic-apk`、アプリ名は「hagemashi 診断」です。Secret未設定時はAPKを配布しません。
 
 [例外クラスと認証前・callback後・復帰時のDNS比較](docs/dns-cause-comparison.md)を追加しています。通常認証とは分けた診断用操作で、原因は未確定です。

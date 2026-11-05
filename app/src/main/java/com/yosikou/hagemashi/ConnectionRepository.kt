@@ -61,7 +61,8 @@ internal class ConnectionRepository(context: Context) {
             "$ISSUER/api/accounts/authorize?${form(fields)}", redirect)
     }
 
-    fun finishLogin(attempt: LoginAttempt, operation: Operation, browserReply: String, browserRejected: String, afterCallback: () -> Unit = {}) {
+    fun finishLogin(attempt: LoginAttempt, operation: Operation, browserReply: String, browserRejected: String,
+        returnLabel: String, applicationId: String, beforeNetwork: () -> Unit, afterCallback: () -> Unit = {}) {
         try {
             val result = operation.step(Stage.WAIT_CALLBACK) {
                 var callback: Callback? = null
@@ -81,9 +82,10 @@ internal class ConnectionRepository(context: Context) {
                                 if (error is Problem && error.kind == Failure.DENIED) throw error
                                 callback = candidate.getOrNull()
                             }
-                            val reply = (if (callback != null) browserReply else browserRejected).toByteArray(Charsets.UTF_8)
+                            val reply = loginReplyPage(if (callback != null) browserReply else browserRejected, returnLabel, applicationId).toByteArray(Charsets.UTF_8)
                             runCatching { socket.getOutputStream().write(("HTTP/1.1 ${if (callback != null) "200 OK" else "400 Bad Request"}\r\n" +
-                                "Content-Type: text/plain; charset=utf-8\r\nContent-Length: ${reply.size}\r\n" +
+                                "Content-Type: text/html; charset=utf-8\r\nContent-Length: ${reply.size}\r\n" +
+                                "Content-Security-Policy: default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'\r\n" +
                                 "Cache-Control: no-store\r\nReferrer-Policy: no-referrer\r\nConnection: close\r\n\r\n").toByteArray(Charsets.US_ASCII) + reply) }
                         } catch (_: SocketTimeoutException) { /* Ignore a stalled local connection; the overall attempt is bounded. */ }
                         finally { operation.detach(closer) }
@@ -91,6 +93,8 @@ internal class ConnectionRepository(context: Context) {
                 }
                 callback ?: throw Problem(Failure.PROTOCOL)
             }
+            operation.detach(attempt.socket)
+            runCatching { attempt.socket.close() }
             val root = operation.step(Stage.SAVE_REGISTRATION) {
                 val saved = vault.read()
                 if (attempt.client == null || attempt.subject == null) {
@@ -121,7 +125,7 @@ internal class ConnectionRepository(context: Context) {
                     if (!already) accounts.put(JSONObject().put("client", result.clientId).put("subject", identity.subject).put("name", identity.name).put("email", identity.email))
                     root.put("accounts", accounts).put("session", session).remove("pending_client")
                     operation.commit { vault.write(root) }
-                })
+                }, beforeNetwork = beforeNetwork)
         } finally {
             operation.detach(attempt.socket)
             runCatching { attempt.socket.close() }

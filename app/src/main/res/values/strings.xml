@@ -27,7 +27,9 @@
     <string name="cancel">処理をキャンセル</string>
     <string name="loading">保存状態を確認しています…</string>
     <string name="signing_in">ブラウザで認証してください。5分でタイムアウトします。戻ったらこの画面を開いてください。</string>
-    <string name="browser_reply">認証結果を受信しました。接続はまだ完了していません。hagemashiへ戻り、コード交換・本人検証・保存の結果を確認してください。</string>
+    <string name="browser_reply">ブラウザでの認証結果を受け付けました。下のリンクからアプリへ戻ると、接続の検証と保存を続けます。分割画面は不要です。リンクで開けない場合は、最近使ったアプリから戻ってください。</string>
+    <string name="browser_return">%1$sへ戻って接続を完了</string>
+    <string name="wait_app_return">アプリへの復帰を待っています。戻るとコード交換・本人検証・保存を続けます。</string>
     <string name="browser_rejected">このリクエストは受け付けられませんでした。hagemashiへ戻って認証状態を確認してください。</string>
     <string name="browser_failed">外部ブラウザを開けませんでした。再試行してください。</string>
     <string name="sign_in_done">サインイン処理が完了しました。</string>

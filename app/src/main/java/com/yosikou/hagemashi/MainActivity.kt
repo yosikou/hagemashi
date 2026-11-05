@@ -69,6 +69,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() { super.onStart(); model.setForeground(true); probes.setForeground(true) }
     override fun onStop() { model.setForeground(false); probes.setForeground(false); super.onStop() }
+    override fun onResume() { super.onResume(); model.setResumed(true) }
+    override fun onPause() { model.setResumed(false); super.onPause() }
 }
 
 @Composable
@@ -102,6 +104,7 @@ private fun ConnectionScreen(model: ConnectionViewModel, openProbes: () -> Unit,
         OutlinedButton(onClick = model::disconnect, enabled = ui.connected) { Text(stringResource(R.string.disconnect)) }
         if (ui.busy) OutlinedButton(onClick = { model.cancel() }) { Text(stringResource(R.string.cancel)) }
         Text(stringResource(ui.status))
+        if (ui.progress.stage == Stage.WAIT_APP_RETURN && ui.progress.phase == Phase.RUNNING) Text(stringResource(R.string.wait_app_return))
         ui.failure?.let { Text(stringResource(failureText(it)), color = MaterialTheme.colorScheme.error) }
         if (ui.progress.stage != Stage.NONE) {
             Text(stringResource(R.string.diagnostic_stage, stringResource(stageText(ui.progress.stage)), stringResource(phaseText(ui.progress.phase))))
@@ -239,6 +242,7 @@ private fun stageText(stage: Stage): Int = when (stage) {
     Stage.READ_SAVED_STATE -> R.string.stage_read_saved
     Stage.PREPARE_LOGIN -> R.string.stage_prepare
     Stage.WAIT_CALLBACK -> R.string.stage_callback
+    Stage.WAIT_APP_RETURN -> R.string.wait_app_return
     Stage.SAVE_REGISTRATION -> R.string.stage_registration
     Stage.CODE_EXCHANGE -> R.string.stage_exchange
     Stage.DISCOVERY -> R.string.stage_discovery
