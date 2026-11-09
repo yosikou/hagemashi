@@ -116,6 +116,18 @@ class ProtocolTest {
         assertEquals("応援しています", consume(": heartbeat\n\ndata: $text\n\n"))
     }
 
+    @Test fun sseAcceptsTheOptionalInitialUtf8Bom() {
+        assertEquals("応援しています", consume("\uFEFF" + sse(completed())))
+    }
+
+    @Test fun sseAcceptsCrOnlyLineEndings() {
+        assertEquals("応援しています", consume(sse(JSONObject().put("type", "response.created"), completed()).replace("\n", "\r")))
+    }
+
+    @Test fun eofDoesNotDispatchAnUnterminatedCompletionEvent() {
+        rejected { consume("data: ${completed()}") }
+    }
+
     @Test fun boundedInputAndUnknownErrorsDoNotLeakMessages() {
         rejected { readBoundedLine(StringReader("12345\n").buffered(), 4) }
         val error = responseProblem(403, JSONObject().put("error", JSONObject().put("code", "secret-looking-value").put("message", "private")))

@@ -1,4 +1,7 @@
 <resources>
+    <string name="generation_diagnostic_title">直近の生成診断</string>
+    <string name="generation_diagnostic_notice">固定分類と有無だけを記録します。HTTP 200だけでは成功としません。完了イベントの検証と、画面の回答本文を確認してください。コピーにはトークン・プロンプト・回答本文・生の応答は含みません。</string>
+    <string name="copy_generation_diagnostic">生成の安全な診断をコピー</string>
     <string name="build_identifier">ビルド：%1$s</string>
     <string name="open_probes">通信診断（認証不要）</string>
     <string name="probe_title">認証情報なしの通信診断</string>
@@ -10,7 +13,7 @@
     <string name="probe_back">手動接続画面へ戻る</string>
     <string name="app_name">hagemashi</string>
     <string name="screen_title">ChatGPT 手動接続の検証</string>
-    <string name="preview_notice">検証版：Androidへの正式適用・実機動作は未確認です。健康データの実取得・予約生成・通知・履歴保存は行いません。</string>
+    <string name="preview_notice">検証版：ブラウザからアプリへ戻る認証を使用します。Androidへの正式適用と全体の動作は検証中です。健康データの実取得・予約生成・通知・履歴保存は行いません。</string>
     <string name="continue_chatgpt">Continue with ChatGPT</string>
     <string name="connected">接続済み</string>
     <string name="disconnected">未接続</string>

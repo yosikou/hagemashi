@@ -18,7 +18,8 @@ internal data class ConnectionUi(
     val diagnostic: SafeDiagnostic? = null, val browserUrl: String? = null, val welcome: Boolean = false,
     val progress: Progress = Progress(), val savedConnection: SavedConnection = SavedConnection.UNKNOWN,
     val lastWhileAway: Stage = Stage.NONE, val networkFacts: NetworkFacts? = null,
-    val dnsObservations: List<DnsObservation> = emptyList()
+    val dnsObservations: List<DnsObservation> = emptyList(),
+    val generationDiagnostic: GenerationDiagnostic? = null
 )
 
 internal class ConnectionViewModel(application: Application) : AndroidViewModel(application) {
@@ -111,7 +112,7 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
     fun generate() {
         val model = ui.model ?: return
         if (ui.busy || !ui.permitted) return
-        ui = ui.copy(answer = "")
+        ui = ui.copy(answer = "", generationDiagnostic = null)
         run(R.string.generating) { op ->
             val app = getApplication<Application>()
             Result(R.string.generation_success, answer = repository.generate(model, app.getString(R.string.persona_prompt), app.getString(R.string.dummy_prompt), op))
@@ -119,7 +120,7 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
     }
 
     fun disconnect() {
-        ui = ui.copy(answer = "", models = emptyList(), model = null)
+        ui = ui.copy(answer = "", models = emptyList(), model = null, generationDiagnostic = null)
         run(R.string.disconnecting, 60000) { op ->
             Result(if (repository.disconnect(op)) R.string.disconnected_confirmed else R.string.disconnected_unconfirmed)
         }
@@ -135,7 +136,11 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
         run(R.string.saving) { repository.eraseUnrecoverable(); Result(R.string.disconnected_unconfirmed) }
     }
 
-    fun cancel(status: Int = R.string.cancelled) { run(R.string.cancelling) { Result(status) } }
+    fun cancel(status: Int = R.string.cancelled) {
+        operation?.generationDiagnostic?.let { ui = ui.copy(generationDiagnostic = it.copy(end = StreamEnd.CANCELLED,
+            reason = GenerationReason.CANCELLED, answerInUi = false)) }
+        run(R.string.cancelling) { Result(status) }
+    }
 
     // Storage, code exchange and rotating refresh tokens share one serialized executor.
     private fun run(status: Int, timeout: Long = 180000, work: (Operation) -> Result) {
@@ -166,7 +171,10 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
                             models = models, model = ui.model?.takeIf { selected -> models.any { it.slug == selected } } ?: models.firstOrNull()?.slug,
                             answer = result.answer ?: ui.answer, status = result.status.takeIf { it != 0 } ?: if (snapshot.connected) R.string.connected else R.string.disconnected,
                             welcome = snapshot.welcome, browserUrl = null, savedConnection = savedConnection(snapshot.connected),
-                            progress = op.progress, diagnostic = op.lastDiagnostic, failure = op.lastDiagnostic?.failure)
+                            progress = op.progress, diagnostic = op.lastDiagnostic, failure = op.lastDiagnostic?.failure,
+                            generationDiagnostic = op.generationDiagnostic?.let {
+                                if (!result.answer.isNullOrBlank()) it.copy(step = GenerationStep.UI, answerInUi = true) else it
+                            } ?: ui.generationDiagnostic)
                     }
                 }
             } catch (e: Exception) {
@@ -181,7 +189,10 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
                             name = snapshot?.name.orEmpty(), email = snapshot?.email.orEmpty(), accounts = snapshot?.accounts ?: ui.accounts,
                             welcome = snapshot?.welcome ?: false, browserUrl = null,
                             models = if (snapshot?.connected == true) ui.models else emptyList(), model = if (snapshot?.connected == true) ui.model else null,
-                            diagnostic = diagnostic, progress = op.progress, savedConnection = savedConnection(snapshot?.connected))
+                            diagnostic = diagnostic, progress = op.progress, savedConnection = savedConnection(snapshot?.connected),
+                            generationDiagnostic = op.generationDiagnostic?.let {
+                                if (it.completionValidated) it.copy(end = StreamEnd.RESULT_WITHHELD, reason = GenerationReason.RESULT_NOT_DISPLAYED) else it
+                            } ?: ui.generationDiagnostic)
                     }
                 }
             }

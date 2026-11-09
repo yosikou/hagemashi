@@ -6,6 +6,7 @@ import java.io.BufferedReader
 import java.io.Closeable
 import java.io.InputStream
 import java.io.ByteArrayOutputStream
+import java.io.PushbackInputStream
 import java.net.URI
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -49,6 +50,9 @@ internal class Operation(timeoutMillis: Long = 180000, private val onProgress: (
         private set
     @Volatile var lastDiagnostic: SafeDiagnostic? = null
         private set
+    @Volatile var generationDiagnostic: GenerationDiagnostic? = null
+        private set
+    fun recordGeneration(value: GenerationDiagnostic) { generationDiagnostic = value }
 
     fun <T> step(stage: Stage, block: () -> T): T {
         lastDiagnostic = null
@@ -159,25 +163,72 @@ internal fun readBoundedLine(reader: BufferedReader, limit: Int = 65536): String
     }
 }
 
-// Ignore [DONE] as a success signal. Only a completed Responses event succeeds.
-internal fun consumeSse(reader: BufferedReader, operation: Operation): String {
+// CR, LF and CRLF are SSE line endings. Do not read ahead after CR: a terminal event may arrive on an open connection.
+private class SseLines(private val reader: BufferedReader, private val trace: GenerationTrace) {
+    private var skipLf = false
+    fun read(): String? {
+        val out = StringBuilder()
+        while (true) {
+            val ch = reader.read()
+            if (ch == -1) return out.toString().takeIf { it.isNotEmpty() }
+            if (skipLf) { skipLf = false; if (ch == 10) continue }
+            if (ch == 13) { skipLf = true; return out.toString() }
+            if (ch == 10) return out.toString()
+            if (out.length >= 65536) trace.reject(GenerationReason.INPUT_LIMIT, StreamEnd.LIMIT_EXCEEDED)
+            out.append(ch.toChar())
+        }
+    }
+}
+
+internal fun generationRequest(model: String, instructions: String, input: String): JSONObject =
+    JSONObject().put("model", model).put("instructions", instructions).put("store", false).put("stream", true)
+        .put("input", JSONArray().put(JSONObject().put("role", "user").put("content", input)))
+
+// Only a fully framed response.completed with nonblank output succeeds. Never expose a partial answer on failure.
+internal fun consumeSse(reader: BufferedReader, operation: Operation, trace: GenerationTrace = GenerationTrace()): String {
     var size = 0
     var events = 0
+    var firstLine = true
+    var refusal = false
+    val lines = SseLines(reader, trace)
     val data = StringBuilder()
     val answer = StringBuilder()
+    trace.update { it.copy(step = GenerationStep.EVENTS, end = StreamEnd.READING) }
     fun dispatch(): String? {
         if (data.isEmpty()) return null
-        val payload = data.toString().trimEnd('\n')
+        val payload = data.toString().dropLast(1)
         data.setLength(0)
         if (payload == "[DONE]") return null
-        val event = JSONObject(payload)
+        val event = try {
+            val tokener = org.json.JSONTokener(payload)
+            val value = tokener.nextValue()
+            if (value !is JSONObject || tokener.nextClean() != 0.toChar()) trace.reject(GenerationReason.INVALID_JSON)
+            value
+        } catch (_: org.json.JSONException) { trace.reject(GenerationReason.INVALID_JSON) }
+        val type = event.opt("type") as? String ?: trace.reject(GenerationReason.INVALID_EVENT_DATA)
+        val known = KnownStreamEvent.entries.firstOrNull { it != KnownStreamEvent.NONE && it.wireName == type }
+        trace.update { if (known == null) it.copy(unknownEventSeen = true) else it.copy(lastKnown = known) }
         when (event.optString("type")) {
-            "response.output_text.delta" -> answer.append(event.getString("delta"))
-            "response.failed", "error" -> throw responseProblem(0, event.optJSONObject("response") ?: event)
-            "response.incomplete" -> throw Problem(Failure.PROTOCOL)
+            "response.output_text.delta" -> {
+                answer.append(event.opt("delta") as? String ?: trace.reject(GenerationReason.INVALID_EVENT_DATA))
+                trace.update { it.copy(answerPresent = answer.isNotBlank()) }
+            }
+            "response.refusal.delta", "response.refusal.done" -> refusal = true
+            "response.failed", "error" -> {
+                val failed = type == "response.failed"
+                trace.update { it.copy(terminal = if (failed) StreamTerminal.FAILED else StreamTerminal.ERROR,
+                    end = if (failed) StreamEnd.FAILED else StreamEnd.ERROR,
+                    reason = if (failed) GenerationReason.FAILED else GenerationReason.SERVER_ERROR) }
+                throw responseProblem(0, event.optJSONObject("response") ?: event)
+            }
+            "response.incomplete" -> {
+                trace.update { it.copy(terminal = StreamTerminal.INCOMPLETE) }
+                trace.reject(GenerationReason.INCOMPLETE, StreamEnd.INCOMPLETE)
+            }
             "response.completed" -> {
+                trace.update { it.copy(step = GenerationStep.COMPLETION, terminal = StreamTerminal.COMPLETED) }
                 val response = event.getJSONObject("response")
-                if (response.optString("status") != "completed" || response.has("error") && !response.isNull("error")) throw Problem(Failure.PROTOCOL)
+                if (response.optString("status") != "completed" || response.has("error") && !response.isNull("error")) trace.reject(GenerationReason.INVALID_COMPLETION)
                 val finalText = StringBuilder()
                 val output = response.optJSONArray("output") ?: JSONArray()
                 for (i in 0 until output.length()) {
@@ -185,26 +236,42 @@ internal fun consumeSse(reader: BufferedReader, operation: Operation): String {
                     val content = item.optJSONArray("content") ?: continue
                     for (j in 0 until content.length()) {
                         val part = content.getJSONObject(j)
-                        if (part.optString("type") == "output_text") finalText.append(part.getString("text"))
+                        if (part.optString("type") == "output_text") finalText.append(part.opt("text") as? String ?: trace.reject(GenerationReason.INVALID_EVENT_DATA))
+                        if (part.optString("type") == "refusal") refusal = true
                     }
                 }
                 val text = finalText.toString().ifEmpty { answer.toString() }
-                if (text.isBlank() || text.length > 20000) throw Problem(Failure.PROTOCOL)
+                trace.update { it.copy(answerPresent = text.isNotBlank()) }
+                if (text.length > 20000) trace.reject(GenerationReason.INPUT_LIMIT, StreamEnd.LIMIT_EXCEEDED)
+                if (text.isBlank()) trace.reject(if (refusal) GenerationReason.REFUSAL else GenerationReason.EMPTY_ANSWER)
+                trace.update { it.copy(end = StreamEnd.COMPLETED, completionValidated = true) }
                 return text
             }
         }
-        if (answer.length > 20000) throw Problem(Failure.PROTOCOL)
+        if (answer.length > 20000) trace.reject(GenerationReason.INPUT_LIMIT, StreamEnd.LIMIT_EXCEEDED)
         return null
     }
-    while (true) {
-        operation.check()
-        val line = readBoundedLine(reader) ?: break
-        size += line.length
-        if (size > 2_000_000 || ++events > 50000) throw Problem(Failure.PROTOCOL)
-        if (line.isEmpty()) dispatch()?.let { return it }
-        else if (line.startsWith("data:")) data.append(line.substring(5).removePrefix(" ")).append('\n')
+    try {
+        while (true) {
+            operation.check()
+            var line = lines.read() ?: break
+            trace.update { it.copy(body = BodyPresence.PRESENT) }
+            if (firstLine) { line = line.removePrefix("\uFEFF"); firstLine = false }
+            size += line.length + 1
+            if (size > 2_000_000 || ++events > 50000) trace.reject(GenerationReason.INPUT_LIMIT, StreamEnd.LIMIT_EXCEEDED)
+            if (line.isEmpty()) dispatch()?.let { return it }
+            else if (line == "data") data.append('\n')
+            else if (line.startsWith("data:")) data.append(line.substring(5).removePrefix(" ")).append('\n')
+        }
+        if (trace.value.body == BodyPresence.UNKNOWN) trace.update { it.copy(body = BodyPresence.ABSENT) }
+        if (data.isNotEmpty()) trace.reject(GenerationReason.UNTERMINATED_EVENT, StreamEnd.EOF_IN_EVENT)
+        trace.reject(if (trace.value.body == BodyPresence.ABSENT) GenerationReason.EMPTY_BODY else GenerationReason.NO_COMPLETION, StreamEnd.EOF_WITHOUT_COMPLETION)
+    } catch (_: org.json.JSONException) {
+        trace.reject(GenerationReason.INVALID_EVENT_DATA)
+    } catch (e: Exception) {
+        trace.interrupted(e)
+        throw e
     }
-    return dispatch() ?: throw Problem(Failure.PROTOCOL)
 }
 
 private val knownCodes = setOf(
@@ -249,13 +316,20 @@ internal class Http(private val open: (java.net.URL) -> HttpsURLConnection = { i
             if (text.isBlank()) JSONObject() else JSONObject(text)
         }
 
-    fun generate(body: JSONObject, bearer: String, operation: Operation): String =
-        request("$RESOURCE/responses", operation, body.toString(), "application/json", bearer) {
-            consumeSse(it.bufferedReader(Charsets.UTF_8), operation)
+    fun generate(body: JSONObject, bearer: String, operation: Operation): String {
+        val trace = GenerationTrace(operation::recordGeneration)
+        try {
+            return request("$RESOURCE/responses", operation, body.toString(), "application/json", bearer, trace = trace) {
+                consumeSse(it.bufferedReader(Charsets.UTF_8), operation, trace)
+            }
+        } catch (e: Exception) {
+            trace.interrupted(e)
+            throw e
         }
+    }
 
     private fun <T> request(url: String, operation: Operation, body: String?, contentType: String, bearer: String?,
-        onStatus: ((Int) -> T)? = null, read: (InputStream) -> T): T {
+        onStatus: ((Int) -> T)? = null, trace: GenerationTrace? = null, read: (InputStream) -> T): T {
         val uri = checkedEndpoint(url)
         operation.check()
         val connection = try { open(uri.toURL()) } catch (e: Exception) {
@@ -279,17 +353,23 @@ internal class Http(private val open: (java.net.URL) -> HttpsURLConnection = { i
             }
             val status = connection.responseCode
             receivedStatus = status.takeIf { it in 100..599 }
+            trace?.update { it.copy(step = GenerationStep.CONTENT_TYPE, httpStatus = receivedStatus, media = streamMedia(connection.contentType)) }
             operation.check()
             if (onStatus != null) {
                 if (receivedStatus == null) throw Problem(Failure.PROTOCOL)
                 return onStatus(status)
             }
             if (status != 200) {
-                val error = runCatching { JSONObject(readLimited(connection.errorStream, 65536)) }.getOrDefault(JSONObject())
+                trace?.update { it.copy(reason = GenerationReason.HTTP_REJECTED, end = StreamEnd.HTTP_REJECTED) }
+                val errorStream = connection.errorStream
+                val error = runCatching { JSONObject(readLimited(if (trace != null && errorStream != null) observeBody(errorStream, trace) else errorStream, 65536)) }.getOrDefault(JSONObject())
                 throw responseProblem(status, error)
             }
-            if (url.endsWith("/responses") && !connection.contentType.orEmpty().startsWith("text/event-stream", ignoreCase = true)) throw Problem(Failure.PROTOCOL)
-            return connection.inputStream.use(read)
+            return connection.inputStream.use { stream ->
+                val observed = if (trace != null) observeBody(stream, trace) else stream
+                if (trace != null && trace.value.media != StreamMedia.EVENT_STREAM) trace.reject(GenerationReason.CONTENT_TYPE_REJECTED, StreamEnd.MEDIA_REJECTED)
+                read(observed)
+            }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -301,6 +381,14 @@ internal class Http(private val open: (java.net.URL) -> HttpsURLConnection = { i
             operation.detach(closer)
             connection.disconnect()
         }
+    }
+
+    private fun observeBody(stream: InputStream, trace: GenerationTrace): InputStream {
+        val input = PushbackInputStream(stream, 1)
+        val first = input.read()
+        trace.update { it.copy(body = if (first == -1) BodyPresence.ABSENT else BodyPresence.PRESENT) }
+        if (first != -1) input.unread(first)
+        return input
     }
 
     private fun readLimited(stream: InputStream?, limit: Int): String {

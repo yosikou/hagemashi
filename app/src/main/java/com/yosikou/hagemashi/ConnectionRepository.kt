@@ -145,8 +145,7 @@ internal class ConnectionRepository(context: Context) {
         // Re-fetch account-specific availability for each manual request; never fall back to a hardcoded slug.
         if (models(operation).none { it.slug == model }) throw Problem(Failure.POLICY)
         val session = usableSession(operation)
-        val body = JSONObject().put("model", model).put("instructions", instructions).put("store", false).put("stream", true)
-            .put("input", JSONArray().put(JSONObject().put("role", "user").put("content", dummy)))
+        val body = generationRequest(model, instructions, dummy)
         return operation.step(Stage.GENERATION) { http.generate(body, session.getString("access"), operation) }
     }
 

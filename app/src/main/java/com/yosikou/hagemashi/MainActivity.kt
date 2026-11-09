@@ -76,6 +76,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun ConnectionScreen(model: ConnectionViewModel, openProbes: () -> Unit, openUsage: () -> Unit) {
     val ui = model.ui
+    val context = LocalContext.current
     var confirmErase by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -149,6 +150,16 @@ private fun ConnectionScreen(model: ConnectionViewModel, openProbes: () -> Unit,
         if (ui.answer.isNotEmpty()) {
             Text(stringResource(R.string.answer_title), style = MaterialTheme.typography.titleMedium)
             SelectionContainer { Text(ui.answer) }
+        }
+        ui.generationDiagnostic?.let { state ->
+            val report = generationReport(BuildConfig.BUILD_IDENTIFIER, BuildConfig.APPLICATION_ID, BuildConfig.BUILD_TYPE, state)
+            Text(stringResource(R.string.generation_diagnostic_title), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.generation_diagnostic_notice))
+            SelectionContainer { Text(report) }
+            OutlinedButton(onClick = {
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.copy_generation_diagnostic), report))
+            }, enabled = !ui.busy) { Text(stringResource(R.string.copy_generation_diagnostic)) }
         }
     }
     if (ui.welcome && !ui.busy) AlertDialog(onDismissRequest = model::dismissWelcome,
