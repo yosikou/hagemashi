@@ -9,6 +9,15 @@ Android 8.0（API 26）以上に対応し、Android Studioは不要です。
 2026-10-30時点ではAndroidへの適用と無操作の定期生成条件を確定できず、接続機能の実装は保留です。
 現在のAPKは「Hello Android」の土台のみで、サインイン・生成・予約通知の機能は含みません。
 
+MIT採用後の[SIWC適用条件の整理](docs/siwc-applicability-after-mit.md)も参照してください。
+MITの採用だけで、SIWCの利用条件やAndroid対応を満たしたとは判断していません。
+
+## ライセンス
+
+hagemashiの独自コード・ドキュメントは [MIT License](LICENSE) で提供します。
+既存のGradle Wrapperなどの第三者コード・依存ライブラリには、それぞれのライセンスが適用されます。
+`gradlew` と `gradlew.bat` の既存の著作権表示・Apache-2.0表記は保持しています。
+
 ## Android端末だけで開発する
 
 1. Android端末のブラウザでGitHubを開き、作業ブランチを作成します。
