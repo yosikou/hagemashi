@@ -6,3 +6,6 @@ local.properties
 *.iml
 *.jks
 *.keystore
+*.p12
+signing-bundle.json
+**/__pycache__/

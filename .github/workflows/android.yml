@@ -14,6 +14,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
@@ -23,12 +25,54 @@ jobs:
         run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"'
       - name: Set up Gradle and validate wrapper
         uses: gradle/actions/setup-gradle@v5
-      - name: Lint and build app and UI test APKs
-        run: ./gradlew --no-daemon :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
+      - name: Restore stable signing key
+        id: signing
+        env:
+          SIGNING_BUNDLE: ${{ secrets.HAGEMASHI_SIGNING_BUNDLE }}
+        run: python3 .github/scripts/restore-signing.py
+      - name: Test signing secret handling
+        run: python3 -m unittest discover -s .github/scripts -p 'test_*.py'
+      - name: Test, lint and build app and UI test APKs
+        env:
+          HAGEMASHI_BUILD_ID: ${{ github.sha }}.${{ github.run_id }}.${{ github.run_attempt }}
+        run: ./gradlew --no-daemon --no-configuration-cache :app:testDebugUnitTest :app:testDiagnosticUnitTest :app:lintDebug :app:lintDiagnostic :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleDiagnostic
+      - name: Check whitespace
+        run: git diff --check HEAD^
+      - name: Verify stable signatures and APK manifests
+        if: steps.signing.outputs.available == 'true'
+        run: python3 .github/scripts/verify-apks.py
       - name: Upload debug APK
+        if: steps.signing.outputs.available == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: hagemashi-debug-apk
+          overwrite: true
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
+      - name: Upload diagnostic APK
+        if: steps.signing.outputs.available == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: hagemashi-diagnostic-apk
+          overwrite: true
+          path: app/build/outputs/apk/diagnostic/app-diagnostic.apk
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload check reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hagemashi-check-reports
+          overwrite: true
+          path: |
+            app/build/reports/tests/testDebugUnitTest/
+            app/build/test-results/testDebugUnitTest/
+            app/build/reports/lint-results-debug.html
+            app/build/reports/tests/testDiagnosticUnitTest/
+            app/build/test-results/testDiagnosticUnitTest/
+            app/build/reports/lint-results-diagnostic.html
+          retention-days: 14
+      - name: Remove temporary signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/hagemashi-signing.p12"
