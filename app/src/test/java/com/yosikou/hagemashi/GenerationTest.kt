@@ -90,14 +90,53 @@ class GenerationTest {
             val op = Operation()
             assertEquals(secret, generate(connection(sse(completed()), type), op))
         }
-        for ((type, expected) in listOf(null to StreamMedia.MISSING, "application/json" to StreamMedia.JSON,
+        for ((type, expected) in listOf("application/json" to StreamMedia.JSON,
             "text/html" to StreamMedia.HTML, "text/event-streaming" to StreamMedia.OTHER, secret to StreamMedia.OTHER)) {
-            val d = rejected(connection(secret, type))
+            val d = rejected(connection(sse(completed()), type))
             assertEquals(expected, d.media)
             assertEquals(BodyPresence.PRESENT, d.body)
             assertEquals(GenerationReason.CONTENT_TYPE_REJECTED, d.reason)
             assertEquals(StreamEnd.MEDIA_REJECTED, d.end)
         }
+    }
+
+    @Test fun missingContentTypeUsesTheExplicitStreamRequestButStillRequiresValidCompletion() {
+        for (media in listOf(null, "", "   ")) {
+            val op = Operation()
+            assertEquals(secret, generate(connection(sse(event("response.created"), completed()), media), op))
+            val d = op.generationDiagnostic!!
+            assertEquals(StreamMedia.MISSING, d.media)
+            assertEquals(200, d.httpStatus)
+            assertEquals(KnownStreamEvent.COMPLETED, d.lastKnown)
+            assertEquals(StreamTerminal.COMPLETED, d.terminal)
+            assertEquals(StreamEnd.COMPLETED, d.end)
+            assertTrue(d.completionValidated)
+            assertTrue(d.answerPresent)
+            assertFalse(d.answerInUi)
+        }
+    }
+
+    @Test fun missingContentTypeDoesNotMakeJsonHtmlOrPartialTextSuccessful() {
+        val partial = sse(event("response.output_text.delta").put("delta", secret)) + "data: [DONE]\n\n"
+        for (payload in listOf(completed().toString(), "<html>$secret</html>", partial, "")) {
+            val d = rejected(connection(payload, null))
+            assertEquals(StreamMedia.MISSING, d.media)
+            assertEquals(200, d.httpStatus)
+            assertEquals(StreamTerminal.NONE, d.terminal)
+            assertEquals(StreamEnd.EOF_WITHOUT_COMPLETION, d.end)
+            assertFalse(d.completionValidated)
+        }
+    }
+
+    @Test fun headerlessStreamedFailureRemainsAFailureAfterHttp200() {
+        val op = Operation()
+        val failure = event("response.failed").put("response", JSONObject().put("error", JSONObject()
+            .put("code", "subscription_sharing_usage_limit_exceeded").put("message", secret)))
+        val error = assertThrows(Problem::class.java) { generate(connection(sse(failure), null), op) }
+        assertEquals(Failure.LIMIT, error.kind)
+        assertEquals(StreamMedia.MISSING, op.generationDiagnostic?.media)
+        assertEquals(StreamTerminal.FAILED, op.generationDiagnostic?.terminal)
+        assertFalse(op.generationDiagnostic!!.completionValidated)
     }
 
     @Test fun rejectedContentTypeChecksBodyPresenceWithoutReadingTheBody() {

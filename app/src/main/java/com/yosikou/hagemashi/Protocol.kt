@@ -367,7 +367,9 @@ internal class Http(private val open: (java.net.URL) -> HttpsURLConnection = { i
             }
             return connection.inputStream.use { stream ->
                 val observed = if (trace != null) observeBody(stream, trace) else stream
-                if (trace != null && trace.value.media != StreamMedia.EVENT_STREAM) trace.reject(GenerationReason.CONTENT_TYPE_REJECTED, StreamEnd.MEDIA_REJECTED)
+                // Like the official SDK's explicit stream path, a missing header does not override stream:true.
+                // Keep MISSING in diagnostics and require the same fully validated SSE completion; never parse JSON/HTML as a fallback.
+                if (trace != null && trace.value.media !in setOf(StreamMedia.EVENT_STREAM, StreamMedia.MISSING)) trace.reject(GenerationReason.CONTENT_TYPE_REJECTED, StreamEnd.MEDIA_REJECTED)
                 read(observed)
             }
         } catch (e: CancellationException) {

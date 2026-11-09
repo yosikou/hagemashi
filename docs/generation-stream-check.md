@@ -25,9 +25,19 @@
 - CR単独改行の複数イベントを正しく分割できない。
 - イベントを閉じる空行がないままEOFになると、未完成の完了イベントをdispatchして成功扱いにする。
 
-SSE専用の有界行読み取りでLF／CRLF／CRと先頭BOMを扱い、EOF時の未完成イベントは破棄して失敗にする。loopback HTTPリクエスト行の読み取りは変更しない。Content-Typeもprefix一致をやめ、パラメータを除くmedia typeの完全一致（大文字小文字を区別しない）で判定する。text/event-streaming等は受け入れない。
+SSE専用の有界行読み取りでLF／CRLF／CRと先頭BOMを扱い、EOF時の未完成イベントは破棄して失敗にする。loopback HTTPリクエスト行の読み取りは変更しない。Content-Typeがある場合はprefix一致をやめ、パラメータを除くmedia typeの完全一致（大文字小文字を区別しない）で判定する。text/event-streaming等は受け入れない。取得できない場合の扱いは下記の実機結果を受けて修正した。
 
 これらは再現できた不一致であり、ユーザー実機のHTTP200後の失敗原因と確定したものではない。実際のContent-Typeや最終イベントの情報が旧版にはないため、一度の診断版で以下を区別する。
+
+## 実機で特定した拒否条件と修正
+
+ビルド42551522059.1の実機診断は、HTTP200／content_type=MISSING／body=PRESENT／step=CONTENT_TYPE／end=MEDIA_REJECTEDだった。本文は受信していたが、Content-Typeを取得できず、SSE解析に入る前にアプリが拒否していた。サーバーが本当にヘッダーを送らなかったのか、途中経路・Androidの取得処理の影響かまでは、この情報だけでは断定しない。本文が有効なSSEだったかも未確認。
+
+公式Python SDKの確認したrevisionは3774b7ed775b4bff99b45ef961c5d1f6c82b8e99。[BaseAPIResponse._parse](https://github.com/openai/openai-python/blob/3774b7ed775b4bff99b45ef961c5d1f6c82b8e99/src/openai/_response.py)は明示的なstream指定をContent-Type検査より先に処理し、[Stream](https://github.com/openai/openai-python/blob/3774b7ed775b4bff99b45ef961c5d1f6c82b8e99/src/openai/_streaming.py)へ渡してSSEを解析する。アプリへSDKを導入したり、APIキー方式へ変更するものではなく、明示したSSEの受信方針を照合した。
+
+このアプリも、HTTP200かつContent-Typeが取得できない／空の場合は、明示的に要求したSSEとして同じ有界パーサーへ渡す。診断のMISSINGをEVENT_STREAMへ偽装しない。既知のJSON／HTML／OTHERは従来どおり拒否する。別のエンドポイント・形式へ再送したり、JSON本文を回答として読み替えたりしない。
+
+ヘッダーがなくても、完全なresponse.completed・completed状態・非空回答を検証できた場合だけ回答をUIへ渡す。ヘッダー欠落＋有効SSE、ヘッダー欠落＋JSON／HTML／部分回答／空本文、ヘッダー欠落＋failedを合成テストで確認する。修正前のGenerationTestは21件中3件失敗を再現。今回の拒否条件を直しても、実機で回答表示まで成功したとはユーザー試験前に断定しない。
 
 ## 安全な生成診断
 
