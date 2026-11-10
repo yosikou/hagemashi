@@ -62,7 +62,7 @@ internal class ConnectionRepository(context: Context) {
     }
 
     fun finishLogin(attempt: LoginAttempt, operation: Operation, browserReply: String, browserRejected: String,
-        returnLabel: String, applicationId: String, beforeNetwork: () -> Unit, afterCallback: () -> Unit = {}) {
+        beforeNetwork: () -> Unit, afterCallback: () -> Unit = {}) {
         try {
             val result = operation.step(Stage.WAIT_CALLBACK) {
                 var callback: Callback? = null
@@ -82,7 +82,7 @@ internal class ConnectionRepository(context: Context) {
                                 if (error is Problem && error.kind == Failure.DENIED) throw error
                                 callback = candidate.getOrNull()
                             }
-                            val reply = loginReplyPage(if (callback != null) browserReply else browserRejected, returnLabel, applicationId).toByteArray(Charsets.UTF_8)
+                            val reply = loginReplyPage(if (callback != null) browserReply else browserRejected).toByteArray(Charsets.UTF_8)
                             runCatching { socket.getOutputStream().write(("HTTP/1.1 ${if (callback != null) "200 OK" else "400 Bad Request"}\r\n" +
                                 "Content-Type: text/html; charset=utf-8\r\nContent-Length: ${reply.size}\r\n" +
                                 "Content-Security-Policy: default-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'\r\n" +

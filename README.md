@@ -13,7 +13,7 @@ Android 8.0（API 26）以上に対応し、Android Studioは不要です。
 
 [生成JSON・ストリーム仕様の照合、修正、安全な生成診断と合格条件](docs/generation-stream-check.md)。HTTP200だけを成功とせず、完了イベントとアプリ画面の回答本文まで確認しました。
 
-[通常のブラウザ認証後にアプリへ戻って接続を完了する手順](docs/login-return-fix.md)を標準として採用しています。ユーザー実機でサインイン、モデル一覧取得、接続解除が成功しました。
+[ブラウザ認証後にタブを閉じてアプリへ戻り、接続を完了する手順](docs/login-return-fix.md)を標準として採用しています。ユーザー実機でサインイン、モデル一覧取得、接続解除が成功しました。
 
 [認証不要の通信診断・継続署名・別IDでの併存試験](docs/network-probe-test.md)を追加しています。診断APKは `hagemashi-diagnostic-apk`、アプリ名は「hagemashi 診断」です。Secret未設定時はAPKを配布しません。
 

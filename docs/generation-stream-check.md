@@ -66,7 +66,7 @@ HTTP200の途中でfailed／incompleteが来ても成功にしない。usage-lim
 ## Androidだけで行う一括試験と合格条件
 
 1. 最新のhagemashi-diagnostic-apkを展開し、現在の「hagemashi 診断」へ上書きする。既存版をアンインストールせず、署名鍵を再生成しない。
-2. 既に接続済みならそのまま利用。必要なら標準のContinue with ChatGPT→ブラウザ→「アプリへ戻って接続を完了」で接続する。分割画面は使わない。
+2. 既に接続済みならそのまま利用。必要なら標準のContinue with ChatGPT→ブラウザで認証→受付表示後にブラウザのタブを閉じてアプリへ戻るで接続する。分割画面は使わない。
 3. モデル一覧を取得し、前回と同じGPT-6.1-Solを選択。アプリを表示した状態で「ダミーデータで生成」を一度押し、終了を待つ。
 4. **固定プロンプト送信→完全なresponse.completed受信→非空の回答本文がアプリ画面に表示**された場合だけ合格。HTTP200だけ、部分回答だけ、terminal=COMPLETEDだけでは合格にしない。
 5. 「生成の安全な診断をコピー」で結果を報告する。成功時はlast_known_event=response.completed、end=COMPLETED、reason=NONE、completion_validated=true、answer_in_ui=trueが目安だが、回答欄を実際に確認する。回答本文やアカウント情報の撮影・貼り付けは不要。
