@@ -305,4 +305,6 @@
     <string name="manual_while_waiting">再設定前に手動で励ましを生成</string>
     <string name="slot_time_invalid">両方を有効にする場合、朝の時刻を夜より前にしてください。</string>
     <string name="table_steps">歩数</string>
+    <string name="table_grouping_note">同じ値の記録を表示上まとめています</string>
+    <string name="table_unknown_time">日時不明</string>
 </resources>
