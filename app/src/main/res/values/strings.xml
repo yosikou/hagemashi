@@ -334,4 +334,6 @@
     <string name="goal_guide_title">目標の再設定をご確認ください</string>
     <string name="goal_guide_body">目標期限を見直して、これからの目標を設定しましょう。アプリの設定からいつでも変更できます。</string>
     <string name="reservation_state_error">設定は保存されていますが予約状態を確認できません。予約は停止して確認してください。手動生成と履歴は利用できます。</string>
+    <string name="table_grouping_note">同じ値の記録を表示上まとめています</string>
+    <string name="table_unknown_time">日時不明</string>
 </resources>

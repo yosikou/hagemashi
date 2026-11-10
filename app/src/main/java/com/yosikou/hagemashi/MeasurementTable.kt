@@ -6,9 +6,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
-@Composable internal fun MeasurementTable(rows: List<MeasurementRow>) {
+@Composable internal fun MeasurementTable(rows: List<MeasurementRow>, showGroupingNote: Boolean = false) {
+    val zone = java.time.ZoneId.systemDefault()
+    val display = measurementDisplay(rows, zone)
+    if (showGroupingNote && display.combined) Text(stringResource(R.string.table_grouping_note))
     MeasureItem.entries.forEach { item ->
-        val selected = rows.filter { it.item == item }
+        val selected = display.rows.filter { it.item == item }
         if (selected.isNotEmpty()) {
             val label = stringResource(when(item) {
                 MeasureItem.WEIGHT -> R.string.health_weight; MeasureItem.BODY_FAT -> R.string.health_body_fat
@@ -30,7 +33,7 @@ import androidx.compose.ui.unit.dp
                         MeasureState.UNPERMITTED -> R.string.table_unpermitted; MeasureState.NO_RECORDS -> R.string.table_no_records
                         else -> R.string.health_read_error
                     }) else row.value?.let { "$it ${row.unit}" } ?: stringResource(R.string.table_not_applicable),Modifier.weight(.25f))
-                    Text(row.at.ifBlank { stringResource(R.string.table_setting_at_generation) }.replace("T"," ").replace(" 〜 ","\n〜\n"),Modifier.weight(.5f))
+                    Text(if (row.at.isBlank()) stringResource(R.string.table_setting_at_generation) else measurementDisplayTime(row.at, zone) ?: stringResource(R.string.table_unknown_time),Modifier.weight(.5f))
                 }
                 if(row.origin.isNotBlank()) Text(row.origin,style=MaterialTheme.typography.labelSmall)
                 HorizontalDivider()
