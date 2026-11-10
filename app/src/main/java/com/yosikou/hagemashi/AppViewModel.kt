@@ -21,6 +21,7 @@ internal class AppViewModel(application: Application) : AndroidViewModel(applica
     var settings by mutableStateOf<AppSettings?>(null); private set
     var latest by mutableStateOf<SavedEncouragement?>(null); private set
     var weight by mutableStateOf<HealthSample?>(null); private set
+    var slotStatuses by mutableStateOf<Map<NoticeSlot,Int>>(emptyMap()); private set
     var reservationStatus by mutableStateOf(R.string.reservation_unavailable); private set
     var failure by mutableStateOf(false); private set
     var saving by mutableStateOf(false); private set
@@ -30,9 +31,12 @@ internal class AppViewModel(application: Application) : AndroidViewModel(applica
     fun refresh() { viewModelScope.launch {
         mutex.withLock {
             try {
-                val loaded = withContext(Dispatchers.IO) { synchronized(ReservationSupport.lock) { store.read().also { ReservationSupport.changed(getApplication<Application>(), it, it) } } }
+                var schedulingFailed=false
+                val loaded = withContext(Dispatchers.IO) { synchronized(ReservationSupport.lock) {
+                    store.read().also { cfg -> schedulingFailed=runCatching{ReservationSupport.changed(getApplication<Application>(),cfg,cfg)}.isFailure }
+                } }
                 settings = loaded; failure = false
-                reservationStatus = withContext(Dispatchers.IO) { ReservationSupport.status(getApplication<Application>(), loaded) }
+                refreshDeliveryStatus(loaded,schedulingFailed)
                 latest = withContext(Dispatchers.IO) { AnswerStore(getApplication<Application>()).latest() }
             } catch (e: CancellationException) { throw e }
             catch (_: Exception) { failure = true }
@@ -58,19 +62,31 @@ internal class AppViewModel(application: Application) : AndroidViewModel(applica
         saving = true
         viewModelScope.launch {
             try {
+                var schedulingFailed=false
                 val value = mutex.withLock {
                     withContext(Dispatchers.IO) { synchronized(ReservationSupport.lock) {
                         val old = store.read(); val next = nextSettings(old, transform(old))
                         store.write(next)
-                        ReservationSupport.changed(getApplication<Application>(), old, next)
+                        schedulingFailed=runCatching{ReservationSupport.changed(getApplication<Application>(), old, next)}.isFailure
                         next
                     } }
                 }
                 settings = value; failure = false
-                reservationStatus = withContext(Dispatchers.IO) { ReservationSupport.status(getApplication<Application>(), value) }
+                refreshDeliveryStatus(value,schedulingFailed)
             } catch (e: CancellationException) { throw e }
             catch (_: Exception) { failure = true }
             finally { saving = false }
         }
     }
+    private suspend fun refreshDeliveryStatus(cfg:AppSettings,failed:Boolean) {
+        val result=withContext(Dispatchers.IO) {
+            try {
+                if(failed) throw Problem(Failure.STORAGE)
+                ReservationSupport.status(getApplication<Application>(),cfg) to ReservationSupport.slotStatuses(getApplication<Application>(),cfg)
+            } catch(e:CancellationException){throw e}
+            catch(_:Exception){R.string.reservation_state_error to NoticeSlot.entries.associateWith{R.string.reservation_state_error}}
+        }
+        reservationStatus=result.first;slotStatuses=result.second
+    }
+
 }

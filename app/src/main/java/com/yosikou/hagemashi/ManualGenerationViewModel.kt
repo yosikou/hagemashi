@@ -79,12 +79,13 @@ internal class ManualGenerationViewModel(application: Application) : AndroidView
                         HealthReadStatus.HAS_RECORDS to string(R.string.health_has_records)))
                 val persona = settings.persona()
                 val instructions = listOf(persona.prompt, settings.supplement,
-                    if (settings.maintaining) string(R.string.maintain_prompt) else "", string(R.string.manual_generation_rules))
+                    if (settings.maintaining) string(R.string.maintain_prompt) else "", string(R.string.manual_generation_rules), string(R.string.manual_reflection_rules))
                     .filter { it.isNotBlank() }.joinToString("\n")
                 val input = healthGenerationInput(target, snapshot, zone, labels) +
                     (settings.goalDate?.let { "\n" + app.getString(R.string.goal_date_format, it.toString()) } ?: "")
                 val frozen = ReviewedGeneration(model.slug, model.name, instructions, input,
-                    snapshot.results.any { it.samples.isNotEmpty() || it.steps != null || it.days.any { day -> day.value != null } }, persona.name)
+                    snapshot.results.any { it.samples.isNotEmpty() || it.steps != null || it.days.any { day -> day.value != null } }, persona.name,
+                    measurementRows(snapshot, target, settings.goalDate?.toString(), zone), GenerationKind.MANUAL)
                 if (generation == epoch) { review = frozen; readUnavailable = unavailable }
             } catch (e: CancellationException) { throw e }
             catch (_: Exception) { if (generation == epoch) prepareFailed = true }

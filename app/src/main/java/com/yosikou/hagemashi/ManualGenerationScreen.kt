@@ -65,7 +65,7 @@ internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection
             Text(stringResource(R.string.manual_instructions))
             Text(review.instructions)
             Text(stringResource(R.string.manual_input))
-            Text(review.input)
+            MeasurementTable(review.rows)
             Button(onClick = { connection.generateReviewed(review) }, enabled = !busy && ui.permitted) {
                 Text(stringResource(if (isHealth && ui.failure != null) R.string.manual_retry else R.string.manual_send))
             }
