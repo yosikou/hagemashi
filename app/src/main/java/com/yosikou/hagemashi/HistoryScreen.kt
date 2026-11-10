@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter
             Text(generationKindLabel(answer.kind))
             Text(answer.personaName?.let { stringResource(R.string.generated_persona,it) } ?: stringResource(R.string.persona_not_recorded))
             Text(answer.short)
-            TextButton(onClick={open(answer.id)}) { Text(stringResource(R.string.read_full)) }
+            TextButton(onClick={open(answer.id)},enabled=!model.busy) { Text(stringResource(R.string.read_full)) }
             OutlinedButton(onClick={model.remove(answer.id)},enabled=!model.busy) { Text(stringResource(R.string.history_delete)) }
             HorizontalDivider()
         }
