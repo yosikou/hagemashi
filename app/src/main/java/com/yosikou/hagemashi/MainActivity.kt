@@ -39,6 +39,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : ComponentActivity() {
+    private lateinit var history: HistoryViewModel
+    private lateinit var modePreview: ModePreviewViewModel
     private lateinit var app: AppViewModel
     private lateinit var model: ConnectionViewModel
     private lateinit var probes: NetworkProbeViewModel
@@ -49,6 +51,8 @@ class MainActivity : ComponentActivity() {
     private var healthPrivacy by mutableStateOf(false)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        history = ViewModelProvider(this)[HistoryViewModel::class.java]
+        modePreview = ViewModelProvider(this)[ModePreviewViewModel::class.java]
         app = ViewModelProvider(this)[AppViewModel::class.java]
         model = ViewModelProvider(this)[ConnectionViewModel::class.java]
         probes = ViewModelProvider(this)[NetworkProbeViewModel::class.java]
@@ -80,7 +84,9 @@ class MainActivity : ComponentActivity() {
                         "connection" -> ConnectionScreen(model, { route = "settings" }) {
                             runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://chatgpt.com/settings/usage"))) }
                         }
-                        "health" -> HealthConnectScreen(health, lifecycle, privacy = { healthPrivacy = true }) { route = "settings" }
+                        "health" -> HealthConnectScreen(health, lifecycle, privacy = { healthPrivacy = true }, preview={route=if(it==GenerationKind.MORNING) "morning-preview" else "evening-preview"}) { route = "settings" }
+                        "history" -> HistoryScreen(history,{detailId=it}){route="home";app.refresh()}
+                        "morning-preview", "evening-preview" -> ModePreviewScreen(if(route=="morning-preview") GenerationKind.MORNING else GenerationKind.EVENING, modePreview, app.settings){route="health"}
                         "probes" -> ProbeScreen(probes) { route = "settings" }
                         "manual" -> ManualGenerationScreen(manual, model, app.settings, lifecycle, openDetail = { detailId = it }) { route = "home"; app.refresh() }
                         else -> app.settings?.let { cfg -> when (route) {

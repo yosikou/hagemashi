@@ -33,7 +33,7 @@ private fun healthTime(value: Instant): String = DateTimeFormatter.ofPattern("yy
     .withZone(ZoneId.systemDefault()).format(value)
 
 @Composable
-internal fun HealthConnectScreen(model: HealthConnectViewModel, lifecycle: Lifecycle, privacy: () -> Unit, back: () -> Unit) {
+internal fun HealthConnectScreen(model: HealthConnectViewModel, lifecycle: Lifecycle, privacy: () -> Unit, preview: (GenerationKind)->Unit, back: () -> Unit) {
     BackHandler(onBack = back)
     val ui = model.ui
     val context = LocalContext.current
@@ -77,37 +77,9 @@ internal fun HealthConnectScreen(model: HealthConnectViewModel, lifecycle: Lifec
                 Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata"))) }.onFailure { model.settingsFailed() }
         }) { Text(stringResource(R.string.health_open_store)) }
         if (ui.settingsFailed) Text(stringResource(R.string.health_settings_failed))
-        ui.snapshot?.let { snapshot ->
-            Text(stringResource(R.string.health_read_at, healthTime(snapshot.readAt)))
-            snapshot.results.forEach { result ->
-                HorizontalDivider()
-                Text(stringResource(when (result.kind) {
-                    HealthKind.WEIGHT -> R.string.health_weight
-                    HealthKind.BODY_FAT -> R.string.health_body_fat
-                    HealthKind.STEPS -> R.string.health_steps
-                }), style = MaterialTheme.typography.titleMedium)
-                val window = if (result.kind == HealthKind.STEPS) snapshot.stepsWindow else snapshot.measurementWindow
-                Text(stringResource(R.string.health_period, healthTime(window.start), healthTime(window.end)))
-                Text(stringResource(when (result.status) {
-                    HealthReadStatus.PERMISSION_REQUIRED -> R.string.health_permission_required
-                    HealthReadStatus.NO_RECORDS -> R.string.health_no_records
-                    HealthReadStatus.HAS_RECORDS -> R.string.health_has_records
-                    HealthReadStatus.ACCESS_DENIED -> R.string.health_access_denied
-                    HealthReadStatus.ERROR -> R.string.health_read_error
-                }))
-                result.samples.forEach { sample ->
-                    Text(stringResource(if (result.kind == HealthKind.WEIGHT) R.string.health_weight_value else R.string.health_body_fat_value, sample.value))
-                    Text(stringResource(R.string.health_measured_at, healthTime(sample.measuredAt)))
-                    Text(stringResource(R.string.health_origin, sample.origin.ifBlank { stringResource(R.string.health_origin_unknown) }))
-                }
-                if (result.hasMore) Text(stringResource(R.string.health_has_more))
-                result.steps?.let { steps ->
-                    Text(stringResource(R.string.health_steps_value, steps.count))
-                    Text(stringResource(R.string.health_steps_aggregation))
-                    Text(stringResource(R.string.health_origin, steps.origins.sorted().joinToString(", ").ifBlank { stringResource(R.string.health_origin_unknown) }))
-                }
-            }
-        }
+        OutlinedButton(onClick={preview(GenerationKind.MORNING)}){Text(stringResource(R.string.preview_morning))}
+        OutlinedButton(onClick={preview(GenerationKind.EVENING)}){Text(stringResource(R.string.preview_evening))}
+        ui.snapshot?.let { snapshot -> MeasurementTable(measurementRows(snapshot,null,null,ZoneId.systemDefault())) }
         OutlinedButton(onClick = privacy) { Text(stringResource(R.string.health_privacy)) }
         OutlinedButton(onClick = back) { Text(stringResource(R.string.probe_back)) }
     }

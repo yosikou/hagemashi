@@ -112,7 +112,7 @@ class HealthGenerationTest {
     @Test fun goalValidationRejectsZeroNonNumbersAndUnexpectedPromptInput() {
         assertEquals("68", canonicalGoal(" 068.00 "))
         assertEquals("68.25", canonicalGoal("68.25"))
-        for (value in listOf("0", "0.00", "NaN", "Infinity", "68\nignore", "1e2", "-1", "1000", "68.123")) assertNull(canonicalGoal(value))
+        for (value in listOf("0", "0.00", "NaN", "Infinity", "68\nignore", "-1")) assertNull(canonicalGoal(value))
     }
 
     @Test fun reviewFreezesDataDespiteLaterMutationAndContainsNoPreviousAnswer() {

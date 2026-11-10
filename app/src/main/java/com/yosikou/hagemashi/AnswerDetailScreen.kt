@@ -40,6 +40,7 @@ internal fun AnswerDetailScreen(id: String, model: AnswerDetailViewModel, back: 
         Text(stringResource(R.string.detail_title), style = MaterialTheme.typography.headlineSmall)
         Text(stringResource(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER))
         if (model.loading) Text(stringResource(R.string.loading))
+        if(model.deleted) Text(stringResource(R.string.history_deleted))
         if (model.loadFailed) {
             Text(stringResource(R.string.detail_load_failed))
             OutlinedButton(onClick = { model.load(id) }) { Text(stringResource(R.string.detail_retry)) }
@@ -51,7 +52,8 @@ internal fun AnswerDetailScreen(id: String, model: AnswerDetailViewModel, back: 
             Text(answer.full)
             Text(stringResource(R.string.detail_used_data), style = MaterialTheme.typography.titleMedium)
             if (!answer.hasHealthData) Text(stringResource(R.string.detail_health_missing))
-            Text(answer.usedData)
+            Text(generationKindLabel(answer.kind))
+            MeasurementTable(answer.rows.ifEmpty { legacyMeasurementRows(answer.usedData) })
             Text(stringResource(R.string.notification_test_notice))
             OutlinedButton(onClick = {
                 if (Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {

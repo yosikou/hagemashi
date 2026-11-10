@@ -35,7 +35,10 @@ internal fun HomeScreen(app: AppViewModel, connection: ConnectionViewModel, sett
         verticalArrangement = Arrangement.spacedBy(20.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(stringResource(R.string.home_name), style = MaterialTheme.typography.headlineLarge)
-            IconButton(onClick = { settings("settings") }) { Icon(painterResource(R.drawable.ic_settings), stringResource(R.string.settings_title)) }
+            Row {
+                TextButton(onClick={settings("history")}){Text(stringResource(R.string.history_title))}
+                IconButton(onClick = { settings("settings") }) { Icon(painterResource(R.drawable.ic_settings), stringResource(R.string.settings_title)) }
+            }
         }
         app.latest?.let { answer ->
             Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -68,6 +71,10 @@ internal fun HomeScreen(app: AppViewModel, connection: ConnectionViewModel, sett
                 OutlinedButton(onClick = { settings("goal") }) { Text(stringResource(R.string.goal_review)) }
             }
             if (cfg.maintaining) Text(stringResource(R.string.goal_maintaining))
+            if(goalNeedsReset(cfg,LocalDate.now()) && connection.ui.permitted && cfg.modelId!=null) {
+                Text(stringResource(R.string.goal_wait_manual_notice))
+                OutlinedButton(onClick=generate,enabled=!app.saving && !connection.ui.busy){Text(stringResource(R.string.manual_while_waiting))}
+            }
             val action = homeAction(cfg, connection.ui.permitted,
                 (cfg.modelId != null && connection.ui.unavailableModel == cfg.modelId) || (connection.ui.modelsLoaded && connection.ui.models.none { it.slug == cfg.modelId }), LocalDate.now())
             Button(onClick = { when (action) {
@@ -100,17 +107,25 @@ internal fun SettingsMenu(open: (String) -> Unit, back: () -> Unit) {
 @Composable
 internal fun GoalSettings(app: AppViewModel, cfg: AppSettings, back: () -> Unit) {
     var goal by remember(cfg.goal) { mutableStateOf(cfg.goal.orEmpty()) }
-    var date by remember(cfg.goalDate) { mutableStateOf(cfg.goalDate?.toString().orEmpty()) }
+    var date by remember(cfg.goalDate) { mutableStateOf(cfg.goalDate) }
     var invalid by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     Page(R.string.goal_settings, back) {
-        OutlinedTextField(goal, { goal = it }, label = { Text(stringResource(R.string.goal_input)) })
-        OutlinedTextField(date, { date = it }, label = { Text(stringResource(R.string.goal_date_input)) })
+        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(goal, { goal = it }, label = { Text(stringResource(R.string.goal_input)) }, modifier=Modifier.weight(1f),
+                singleLine=true, isError=invalid, keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=androidx.compose.ui.text.input.KeyboardType.Decimal))
+            Text(stringResource(R.string.manual_kg))
+        }
+        Text(date?.toString() ?: stringResource(R.string.goal_no_deadline))
+        OutlinedButton(onClick = {
+            val selected=date ?: LocalDate.now()
+            android.app.DatePickerDialog(context, { _, y, m, d -> date=LocalDate.of(y,m+1,d) }, selected.year,selected.monthValue-1,selected.dayOfMonth).show()
+        }) { Text(stringResource(R.string.goal_choose_deadline)) }
+        if(date!=null) TextButton(onClick={date=null}){Text(stringResource(R.string.goal_clear_deadline))}
         if (invalid) Text(stringResource(R.string.goal_invalid))
         Button(onClick = {
-            val value = canonicalGoal(goal)
-            val day = if (date.isBlank()) null else runCatching { LocalDate.parse(date.trim()) }.getOrNull()
-            invalid = value == null || (date.isNotBlank() && day == null)
-            if (!invalid) app.change { it.copy(goal = value, goalDate = day, maintaining = false) }
+            val value=canonicalGoal(goal); invalid=value==null
+            if(value!=null) app.change { it.copy(goal=value, goalDate=date, maintaining=false) }
         }, enabled = !app.saving) { Text(stringResource(R.string.save_settings)) }
         SettingsStatus(app)
     }
@@ -175,14 +190,23 @@ internal fun PersonaSettings(app: AppViewModel, cfg: AppSettings, back: () -> Un
 internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () -> Unit) {
     val context = LocalContext.current
     Page(R.string.notification_settings_title, back) {
-        Row {
-            Switch(cfg.notificationEnabled, onCheckedChange = { enabled -> app.change { it.copy(notificationEnabled = enabled) } }, enabled = !app.saving)
-            Text(stringResource(R.string.notification_enabled_setting))
+        var invalid by remember { mutableStateOf(false) }
+        NoticeSlot.entries.forEach { slot ->
+            val value=cfg.slot(slot)
+            Text(stringResource(if(slot==NoticeSlot.MORNING) R.string.kind_morning else R.string.kind_evening),style=MaterialTheme.typography.titleMedium)
+            fun update(changed:SlotSetting) {
+                val candidate=cfg.withSlot(slot,changed); invalid=!candidate.validTimes()
+                if(!invalid) app.change { it.withSlot(slot,changed) }
+            }
+            Row {
+                Switch(value.enabled,onCheckedChange={update(value.copy(enabled=it))},enabled=!app.saving)
+                Text(stringResource(R.string.notification_enabled_setting))
+            }
+            OutlinedButton(onClick={TimePickerDialog(context,{_,h,m->update(value.copy(time=LocalTime.of(h,m)))},value.time.hour,value.time.minute,true).show()},enabled=!app.saving){
+                Text(stringResource(R.string.notification_time_setting,value.time.toString()))
+            }
         }
-        OutlinedButton(onClick = { TimePickerDialog(context, { _, h, m -> app.change { it.copy(notificationTime = LocalTime.of(h, m)) } },
-            cfg.notificationTime.hour, cfg.notificationTime.minute, true).show() }, enabled = !app.saving) {
-            Text(stringResource(R.string.notification_time_setting, cfg.notificationTime.toString()))
-        }
+        if(invalid) Text(stringResource(R.string.slot_time_invalid))
         Text(stringResource(app.reservationStatus))
         ReservationSettings(app, cfg)
         Text(stringResource(R.string.no_automatic_ai))

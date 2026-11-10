@@ -18,6 +18,8 @@ internal class AnswerDetailViewModel(application: Application) : AndroidViewMode
         private set
     var loading by mutableStateOf(false)
         private set
+    var deleted by mutableStateOf(false)
+        private set
     var loadFailed by mutableStateOf(false)
         private set
     var notice by mutableStateOf(NoticeState.IDLE)
@@ -33,17 +35,18 @@ internal class AnswerDetailViewModel(application: Application) : AndroidViewMode
     fun load(id: String) {
         loadJob?.cancel()
         val generation = ++epoch
-        answer = null; loading = true; loadFailed = false
+        answer = null; loading = true; loadFailed = false; deleted=false
         loadJob = viewModelScope.launch {
             try {
                 val saved = withContext(Dispatchers.IO) { store.load(id) }
                 if (generation == epoch) answer = saved
             } catch (e: CancellationException) { throw e }
+            catch (_: AnswerDeleted) { if(generation==epoch) deleted=true }
             catch (_: Exception) { if (generation == epoch) loadFailed = true }
             finally { if (generation == epoch) loading = false }
         }
     }
-    fun close() { ++epoch; loadJob?.cancel(); answer = null; loading = false; loadFailed = false }
+    fun close() { ++epoch; loadJob?.cancel(); answer = null; loading = false; loadFailed = false; deleted=false }
     fun awaitPermission(id: String) { permissionId = id; noticeId = id; notice = NoticeState.IDLE }
     fun permissionResult(granted: Boolean) {
         val id = permissionId ?: return
