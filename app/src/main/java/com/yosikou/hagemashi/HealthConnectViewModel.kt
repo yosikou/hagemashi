@@ -32,7 +32,7 @@ internal enum class HealthProvider { CHECKING, AVAILABLE, UPDATE_REQUIRED, UNAVA
 internal data class HealthUi(val provider: HealthProvider = HealthProvider.CHECKING, val busy: Boolean = false,
     val snapshot: HealthSnapshot? = null, val settingsFailed: Boolean = false)
 
-private class HealthConnectSource(private val client: HealthConnectClient) : HealthDataSource {
+internal class HealthConnectSource(private val client: HealthConnectClient) : HealthDataSource {
     override suspend fun permissions(): Set<HealthKind> {
         val granted = client.permissionController.getGrantedPermissions()
         return healthReadPermissions.filterValues { it in granted }.keys
@@ -41,12 +41,24 @@ private class HealthConnectSource(private val client: HealthConnectClient) : Hea
         val range = TimeRangeFilter.between(window.start, window.end)
         return when (kind) {
             HealthKind.WEIGHT -> {
-                val page = client.readRecords(ReadRecordsRequest(WeightRecord::class, range, ascendingOrder = false, pageSize = 20))
-                HealthPage(page.records.map { HealthSample(it.weight.inKilograms, it.time, it.metadata.dataOrigin.packageName) }, page.pageToken != null)
+                val samples = mutableListOf<HealthSample>()
+                var token: String? = null
+                do {
+                    val page = client.readRecords(ReadRecordsRequest(WeightRecord::class, range, ascendingOrder = false, pageSize = 1000, pageToken = token))
+                    samples += page.records.map { HealthSample(it.weight.inKilograms, it.time, it.metadata.dataOrigin.packageName) }
+                    token = page.pageToken
+                } while (token != null)
+                HealthPage(samples)
             }
             HealthKind.BODY_FAT -> {
-                val page = client.readRecords(ReadRecordsRequest(BodyFatRecord::class, range, ascendingOrder = false, pageSize = 20))
-                HealthPage(page.records.map { HealthSample(it.percentage.value, it.time, it.metadata.dataOrigin.packageName) }, page.pageToken != null)
+                val samples = mutableListOf<HealthSample>()
+                var token: String? = null
+                do {
+                    val page = client.readRecords(ReadRecordsRequest(BodyFatRecord::class, range, ascendingOrder = false, pageSize = 1000, pageToken = token))
+                    samples += page.records.map { HealthSample(it.percentage.value, it.time, it.metadata.dataOrigin.packageName) }
+                    token = page.pageToken
+                } while (token != null)
+                HealthPage(samples)
             }
             HealthKind.STEPS -> throw IllegalArgumentException()
         }

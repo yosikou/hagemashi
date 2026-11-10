@@ -11,8 +11,11 @@ internal data class HealthWindow(val start: Instant, val end: Instant)
 internal data class HealthSample(val value: Double, val measuredAt: Instant, val origin: String)
 internal data class HealthPage(val samples: List<HealthSample>, val hasMore: Boolean = false)
 internal data class HealthSteps(val count: Long, val origins: Set<String>)
+internal data class HealthStepDay(val window: HealthWindow, val status: HealthReadStatus, val value: HealthSteps?)
+internal enum class HealthReadPlan { INSPECTION, GENERATION }
 internal data class HealthResult(val kind: HealthKind, val status: HealthReadStatus,
-    val samples: List<HealthSample> = emptyList(), val hasMore: Boolean = false, val steps: HealthSteps? = null)
+    val samples: List<HealthSample> = emptyList(), val hasMore: Boolean = false, val steps: HealthSteps? = null,
+    val days: List<HealthStepDay> = emptyList())
 internal data class HealthSnapshot(val readAt: Instant, val measurementWindow: HealthWindow, val stepsWindow: HealthWindow,
     val results: List<HealthResult>)
 
@@ -24,20 +27,44 @@ internal interface HealthDataSource {
 
 // Read-only domain boundary: no AI client, prompt builder, storage, logger, scheduler, or notification dependency.
 internal class HealthReader(private val source: HealthDataSource) {
-    suspend fun read(now: Instant, zone: ZoneId): HealthSnapshot {
-        val measurements = HealthWindow(now.minus(Duration.ofDays(7)), now)
-        val today = HealthWindow(now.atZone(zone).toLocalDate().atStartOfDay(zone).toInstant(), now)
+    suspend fun read(now: Instant, zone: ZoneId, plan: HealthReadPlan = HealthReadPlan.INSPECTION): HealthSnapshot {
+        val generation = plan == HealthReadPlan.GENERATION
+        val measurements = HealthWindow(now.minus(Duration.ofDays(if (generation) 30 else 7)), now)
+        val date = now.atZone(zone).toLocalDate()
+        val today = HealthWindow(date.minusDays(if (generation) 6 else 0).atStartOfDay(zone).toInstant(), now)
         val granted = source.permissions()
         val results = HealthKind.entries.map { kind ->
             if (kind !in granted) HealthResult(kind, HealthReadStatus.PERMISSION_REQUIRED)
             else try {
                 if (kind == HealthKind.STEPS) {
-                    val value = source.steps(today)
-                    HealthResult(kind, if (value == null) HealthReadStatus.NO_RECORDS else HealthReadStatus.HAS_RECORDS, steps = value)
+                    if (generation) {
+                        val days = (6L downTo 0L).map { offset ->
+                            val start = date.minusDays(offset).atStartOfDay(zone).toInstant()
+                            val end = if (offset == 0L) now else date.minusDays(offset - 1).atStartOfDay(zone).toInstant()
+                            val window = HealthWindow(start, end)
+                            try {
+                                val value = if (start < end) source.steps(window) else null
+                                HealthStepDay(window, if (value == null) HealthReadStatus.NO_RECORDS else HealthReadStatus.HAS_RECORDS, value)
+                            } catch (e: CancellationException) { throw e }
+                            catch (_: SecurityException) { HealthStepDay(window, HealthReadStatus.ACCESS_DENIED, null) }
+                            catch (_: Exception) { HealthStepDay(window, HealthReadStatus.ERROR, null) }
+                        }
+                        val status = when {
+                            days.any { it.value != null } -> HealthReadStatus.HAS_RECORDS
+                            days.any { it.status == HealthReadStatus.ACCESS_DENIED } -> HealthReadStatus.ACCESS_DENIED
+                            days.any { it.status == HealthReadStatus.ERROR } -> HealthReadStatus.ERROR
+                            else -> HealthReadStatus.NO_RECORDS
+                        }
+                        HealthResult(kind, status, days = days)
+                    } else {
+                        val value = source.steps(today)
+                        HealthResult(kind, if (value == null) HealthReadStatus.NO_RECORDS else HealthReadStatus.HAS_RECORDS, steps = value)
+                    }
                 } else {
                     val page = source.samples(kind, measurements)
                     HealthResult(kind, if (page.samples.isEmpty()) HealthReadStatus.NO_RECORDS else HealthReadStatus.HAS_RECORDS,
-                        samples = page.samples.sortedByDescending { it.measuredAt }.take(20), hasMore = page.hasMore || page.samples.size > 20)
+                        samples = page.samples.sortedByDescending { it.measuredAt }.let { if (generation) it else it.take(20) },
+                        hasMore = page.hasMore || (!generation && page.samples.size > 20))
                 }
             } catch (e: CancellationException) { throw e }
             catch (_: SecurityException) { HealthResult(kind, HealthReadStatus.ACCESS_DENIED) }

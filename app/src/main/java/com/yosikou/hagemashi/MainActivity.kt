@@ -41,6 +41,7 @@ import androidx.lifecycle.ViewModelProvider
 class MainActivity : ComponentActivity() {
     private lateinit var model: ConnectionViewModel
     private lateinit var probes: NetworkProbeViewModel
+    private lateinit var manual: ManualGenerationViewModel
     private lateinit var health: HealthConnectViewModel
     private var healthPrivacy by mutableStateOf(false)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,9 +49,11 @@ class MainActivity : ComponentActivity() {
         model = ViewModelProvider(this)[ConnectionViewModel::class.java]
         probes = ViewModelProvider(this)[NetworkProbeViewModel::class.java]
         health = ViewModelProvider(this)[HealthConnectViewModel::class.java]
+        manual = ViewModelProvider(this)[ManualGenerationViewModel::class.java]
         healthPrivacy = isHealthPrivacyIntent(intent)
         setContent {
             var showProbes by rememberSaveable { mutableStateOf(false) }
+            var showManual by rememberSaveable { mutableStateOf(false) }
             var showHealth by rememberSaveable { mutableStateOf(false) }
             val url = model.ui.browserUrl
             LaunchedEffect(url) {
@@ -64,9 +67,10 @@ class MainActivity : ComponentActivity() {
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     if (healthPrivacy) HealthPrivacyScreen { healthPrivacy = false }
+                    else if (showManual) ManualGenerationScreen(manual, model, lifecycle) { showManual = false }
                     else if (showHealth) HealthConnectScreen(health, lifecycle, privacy = { healthPrivacy = true }) { showHealth = false }
                     else if (showProbes) ProbeScreen(probes) { showProbes = false }
-                    else ConnectionScreen(model, openProbes = { showProbes = true }, openHealth = { showHealth = true }) {
+                    else ConnectionScreen(model, openProbes = { showProbes = true }, openHealth = { showHealth = true }, openManual = { showManual = true }) {
                         runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://chatgpt.com/settings/usage"))) }
                     }
                 }
@@ -88,7 +92,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun ConnectionScreen(model: ConnectionViewModel, openProbes: () -> Unit, openHealth: () -> Unit, openUsage: () -> Unit) {
+private fun ConnectionScreen(model: ConnectionViewModel, openProbes: () -> Unit, openHealth: () -> Unit, openManual: () -> Unit, openUsage: () -> Unit) {
     val ui = model.ui
     val context = LocalContext.current
     var confirmErase by remember { mutableStateOf(false) }
@@ -98,6 +102,7 @@ private fun ConnectionScreen(model: ConnectionViewModel, openProbes: () -> Unit,
         Text(stringResource(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER))
         OutlinedButton(onClick = openProbes, enabled = !ui.busy) { Text(stringResource(R.string.open_probes)) }
         OutlinedButton(onClick = openHealth, enabled = !ui.busy) { Text(stringResource(R.string.health_open)) }
+        OutlinedButton(onClick = openManual, enabled = !ui.busy) { Text(stringResource(R.string.manual_open)) }
         Text(stringResource(R.string.preview_notice))
         Text(stringResource(if (ui.savedConnection == SavedConnection.UNKNOWN) R.string.connection_unknown
             else if (ui.connected) R.string.connected else R.string.disconnected), style = MaterialTheme.typography.titleMedium)
@@ -162,7 +167,7 @@ private fun ConnectionScreen(model: ConnectionViewModel, openProbes: () -> Unit,
             }
         }
         Button(onClick = model::generate, enabled = !ui.busy && ui.permitted && ui.model != null) { Text(stringResource(R.string.generate)) }
-        if (ui.answer.isNotEmpty()) {
+        if (ui.answer.isNotEmpty() && ui.answerContext == AnswerContext.DUMMY) {
             Text(stringResource(R.string.answer_title), style = MaterialTheme.typography.titleMedium)
             SelectionContainer { Text(ui.answer) }
         }
@@ -225,7 +230,7 @@ private fun visibilityText(visibility: AppVisibility): Int = when (visibility) {
     AppVisibility.CHANGED -> R.string.app_visibility_changed
 }
 
-private fun failureText(failure: Failure): Int = when (failure) {
+internal fun failureText(failure: Failure): Int = when (failure) {
     Failure.NETWORK -> R.string.error_network
     Failure.PROTOCOL -> R.string.error_protocol
     Failure.IDENTITY -> R.string.error_identity
