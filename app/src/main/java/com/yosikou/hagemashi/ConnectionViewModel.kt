@@ -20,13 +20,15 @@ internal data class ConnectionUi(
     val progress: Progress = Progress(), val savedConnection: SavedConnection = SavedConnection.UNKNOWN,
     val lastWhileAway: Stage = Stage.NONE, val networkFacts: NetworkFacts? = null,
     val dnsObservations: List<DnsObservation> = emptyList(),
-    val generationDiagnostic: GenerationDiagnostic? = null, val answerContext: AnswerContext? = null
+    val generationDiagnostic: GenerationDiagnostic? = null, val answerContext: AnswerContext? = null,
+    val savedAnswerId: String? = null, val answerShort: String = "", val answerSaveFailed: Boolean = false
 )
 
 internal class ConnectionViewModel(application: Application) : AndroidViewModel(application) {
     var ui by mutableStateOf(ConnectionUi(networkFacts = readNetworkFacts(application)))
         private set
     private val repository = ConnectionRepository(application)
+    private val answers = AnswerStore(application)
     private val loginReturn = LoginReturn()
     private val executor = Executors.newSingleThreadExecutor()
     private val main = Handler(Looper.getMainLooper())
@@ -39,7 +41,8 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
     private var comparisonAway = false
     private var returnSampleQueued = false
     @Volatile private var foreground = false
-    private data class Result(val status: Int = 0, val answer: String? = null, val models: List<Model>? = null)
+    private data class Result(val status: Int = 0, val answer: String? = null, val models: List<Model>? = null,
+        val savedAnswer: SavedEncouragement? = null, val saveFailed: Boolean = false, val short: String = "")
 
     init { run(R.string.loading) { Result() } }
     fun setResumed(value: Boolean) { loginReturn.setResumed(value) }
@@ -118,25 +121,34 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
 
     fun generateReviewed(review: ReviewedGeneration) {
         if (ui.busy || !ui.permitted || ui.models.none { it.slug == review.model }) return
-        generatePrompt(review.model, review.instructions, review.input, AnswerContext.HEALTH)
+        generatePrompt(review.model, review.instructions, review.input, AnswerContext.HEALTH, review)
     }
 
-    private fun generatePrompt(model: String, instructions: String, input: String, context: AnswerContext) {
-        ui = ui.copy(answer = "", generationDiagnostic = null, answerContext = context)
+    private fun generatePrompt(model: String, instructions: String, input: String, context: AnswerContext, review: ReviewedGeneration? = null) {
+        ui = ui.copy(answer = "", generationDiagnostic = null, answerContext = context, savedAnswerId = null, answerShort = "", answerSaveFailed = false)
         run(R.string.generating) { op ->
-            Result(R.string.generation_success, answer = repository.generate(model, instructions, input, op))
+            val raw = repository.generate(model, instructions, input, op)
+            if (review == null) Result(R.string.generation_success, answer = raw)
+            else {
+                val text = encouragementText(raw, getApplication<Application>().getString(R.string.notification_fallback))
+                val saved = newSavedEncouragement(text, review, java.time.Instant.now())
+                val persisted = try { op.commit { answers.save(saved) }; true }
+                    catch (e: Problem) { if (e.kind != Failure.STORAGE) throw e; false }
+                Result(R.string.generation_success, answer = text.full, savedAnswer = if (persisted) saved else null,
+                    saveFailed = !persisted, short = text.short)
+            }
         }
     }
 
     fun clearHealthResult() {
         if (ui.answerContext != AnswerContext.HEALTH) return
         val wasBusy = ui.busy
-        ui = ui.copy(answer = "", answerContext = null, generationDiagnostic = null)
+        ui = ui.copy(answer = "", answerContext = null, generationDiagnostic = null, savedAnswerId = null, answerShort = "", answerSaveFailed = false)
         if (wasBusy) cancel()
     }
 
     fun disconnect() {
-        ui = ui.copy(answer = "", models = emptyList(), model = null, generationDiagnostic = null, answerContext = null)
+        ui = ui.copy(answer = "", models = emptyList(), model = null, generationDiagnostic = null, answerContext = null, savedAnswerId = null, answerShort = "", answerSaveFailed = false)
         run(R.string.disconnecting, 60000) { op ->
             Result(if (repository.disconnect(op)) R.string.disconnected_confirmed else R.string.disconnected_unconfirmed)
         }
@@ -185,6 +197,9 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
                         ui = ui.copy(busy = false, connected = snapshot.connected, permitted = snapshot.permitted,
                             name = snapshot.name, email = snapshot.email, accounts = snapshot.accounts,
                             models = models, model = ui.model?.takeIf { selected -> models.any { it.slug == selected } } ?: models.firstOrNull()?.slug,
+                            savedAnswerId = result.savedAnswer?.id ?: ui.savedAnswerId,
+                            answerShort = if (result.answer != null) result.short else ui.answerShort,
+                            answerSaveFailed = if (result.answer != null) result.saveFailed else ui.answerSaveFailed,
                             answer = result.answer ?: ui.answer, status = result.status.takeIf { it != 0 } ?: if (snapshot.connected) R.string.connected else R.string.disconnected,
                             welcome = snapshot.welcome, browserUrl = null, savedConnection = savedConnection(snapshot.connected),
                             progress = op.progress, diagnostic = op.lastDiagnostic, failure = op.lastDiagnostic?.failure,

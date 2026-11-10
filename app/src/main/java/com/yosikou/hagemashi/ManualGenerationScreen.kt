@@ -27,7 +27,7 @@ import androidx.lifecycle.LifecycleEventObserver
 
 @Composable
 internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection: ConnectionViewModel,
-    lifecycle: Lifecycle, back: () -> Unit) {
+    lifecycle: Lifecycle, openDetail: (String) -> Unit, back: () -> Unit) {
     BackHandler(onBack = back)
     DisposableEffect(lifecycle) {
         fun discard() { model.reset(); connection.clearHealthResult() }
@@ -87,7 +87,11 @@ internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection
             if (ui.failure != null) Text(stringResource(failureText(ui.failure)))
             if (ui.answer.isNotBlank()) {
                 Text(stringResource(R.string.answer_title), style = MaterialTheme.typography.titleMedium)
-                Text(ui.answer)
+                Text(if (ui.savedAnswerId != null) ui.answerShort else ui.answer)
+                ui.savedAnswerId?.let { id ->
+                    OutlinedButton(onClick = { openDetail(id) }) { Text(stringResource(R.string.detail_open)) }
+                }
+                if (ui.answerSaveFailed) Text(stringResource(R.string.detail_save_failed))
             }
             if (ui.busy) OutlinedButton(onClick = connection::cancel) { Text(stringResource(R.string.cancel)) }
         } else if (ui.failure != null) Text(stringResource(failureText(ui.failure)))

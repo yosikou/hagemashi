@@ -41,6 +41,8 @@ import androidx.lifecycle.ViewModelProvider
 class MainActivity : ComponentActivity() {
     private lateinit var model: ConnectionViewModel
     private lateinit var probes: NetworkProbeViewModel
+    private lateinit var details: AnswerDetailViewModel
+    private var detailId by mutableStateOf<String?>(null)
     private lateinit var manual: ManualGenerationViewModel
     private lateinit var health: HealthConnectViewModel
     private var healthPrivacy by mutableStateOf(false)
@@ -50,7 +52,10 @@ class MainActivity : ComponentActivity() {
         probes = ViewModelProvider(this)[NetworkProbeViewModel::class.java]
         health = ViewModelProvider(this)[HealthConnectViewModel::class.java]
         manual = ViewModelProvider(this)[ManualGenerationViewModel::class.java]
+        details = ViewModelProvider(this)[AnswerDetailViewModel::class.java]
+        detailId = answerId(intent) ?: savedInstanceState?.getString("detailId")?.takeIf(::isAnswerId)
         healthPrivacy = isHealthPrivacyIntent(intent)
+        if (healthPrivacy) detailId = null
         setContent {
             var showProbes by rememberSaveable { mutableStateOf(false) }
             var showManual by rememberSaveable { mutableStateOf(false) }
@@ -66,8 +71,10 @@ class MainActivity : ComponentActivity() {
             }
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    if (healthPrivacy) HealthPrivacyScreen { healthPrivacy = false }
-                    else if (showManual) ManualGenerationScreen(manual, model, lifecycle) { showManual = false }
+                    val selectedDetail = detailId
+                    if (selectedDetail != null) AnswerDetailScreen(selectedDetail, details) { closeDetail() }
+                    else if (healthPrivacy) HealthPrivacyScreen { healthPrivacy = false }
+                    else if (showManual) ManualGenerationScreen(manual, model, lifecycle, openDetail = { detailId = it }) { showManual = false }
                     else if (showHealth) HealthConnectScreen(health, lifecycle, privacy = { healthPrivacy = true }) { showHealth = false }
                     else if (showProbes) ProbeScreen(probes) { showProbes = false }
                     else ConnectionScreen(model, openProbes = { showProbes = true }, openHealth = { showHealth = true }, openManual = { showManual = true }) {
@@ -84,8 +91,17 @@ class MainActivity : ComponentActivity() {
     override fun onPause() { model.setResumed(false); super.onPause() }
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (isHealthPrivacyIntent(intent)) healthPrivacy = true
+        setIntent(intent)
+        answerId(intent)?.let { detailId = it }
+        if (isHealthPrivacyIntent(intent)) { detailId = null; healthPrivacy = true }
     }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        detailId?.let { outState.putString("detailId", it) }
+        super.onSaveInstanceState(outState)
+    }
+    private fun closeDetail() { detailId = null; setIntent(Intent(this, MainActivity::class.java)) }
+    private fun answerId(intent: Intent?): String? = answerIdFromNavigation(intent?.action, intent?.dataString, packageName)
 
     private fun isHealthPrivacyIntent(intent: Intent?): Boolean = intent?.action in setOf(
         "androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE", "android.intent.action.VIEW_PERMISSION_USAGE")
