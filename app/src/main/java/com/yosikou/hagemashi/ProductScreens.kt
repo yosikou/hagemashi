@@ -69,7 +69,7 @@ internal fun HomeScreen(app: AppViewModel, connection: ConnectionViewModel, sett
             }
             if (cfg.maintaining) Text(stringResource(R.string.goal_maintaining))
             val action = homeAction(cfg, connection.ui.permitted,
-                connection.ui.modelsLoaded && connection.ui.models.none { it.slug == cfg.modelId }, LocalDate.now())
+                (cfg.modelId != null && connection.ui.unavailableModel == cfg.modelId) || (connection.ui.modelsLoaded && connection.ui.models.none { it.slug == cfg.modelId }), LocalDate.now())
             Button(onClick = { when (action) {
                 HomeAction.SET_GOAL, HomeAction.RESET_GOAL -> settings("goal")
                 HomeAction.CONNECT -> settings("connection")
@@ -121,7 +121,7 @@ internal fun AgentSettings(app: AppViewModel, cfg: AppSettings, connection: Conn
         Text(stringResource(R.string.saved_agent, cfg.modelId ?: stringResource(R.string.not_selected)))
         OutlinedButton(onClick = connection::loadModels, enabled = connection.ui.permitted && !connection.ui.busy) { Text(stringResource(R.string.fetch_models)) }
         if (!connection.ui.permitted) Text(stringResource(R.string.manual_need_connection))
-        if (cfg.modelId != null && connection.ui.modelsLoaded && connection.ui.models.none { it.slug == cfg.modelId }) Text(stringResource(R.string.agent_unavailable))
+        if (cfg.modelId != null && (connection.ui.unavailableModel == cfg.modelId || (connection.ui.modelsLoaded && connection.ui.models.none { it.slug == cfg.modelId }))) Text(stringResource(R.string.agent_unavailable))
         if (connection.ui.failure != null) Text(stringResource(failureText(connection.ui.failure!!)))
         connection.ui.models.forEach { model ->
             Row {

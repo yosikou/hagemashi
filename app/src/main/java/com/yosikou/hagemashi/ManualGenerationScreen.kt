@@ -49,7 +49,7 @@ internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection
         if (settings == null) Text(stringResource(R.string.settings_error))
         else Text(stringResource(R.string.manual_goal_format, settings.goal.orEmpty()))
         if (review == null) {
-            if (settings?.modelId != null && ui.modelsLoaded && ui.models.none { it.slug == settings.modelId }) Text(stringResource(R.string.agent_unavailable))
+            if (settings?.modelId != null && (ui.unavailableModel == settings.modelId || (ui.modelsLoaded && ui.models.none { it.slug == settings.modelId }))) Text(stringResource(R.string.agent_unavailable))
             OutlinedButton(onClick = {
                 val selected = connection.ui.models.find { it.slug == settings?.modelId }
                 if (selected != null && settings != null) { connection.clearHealthResult(); model.prepare(selected, settings) }

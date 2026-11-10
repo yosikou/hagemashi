@@ -66,7 +66,9 @@ internal object ReservationSupport {
     }
     fun reschedule(context: Context) = synchronized(lock) { val cfg = SettingsStore(context).read(); ensure(context, cfg, true) }
     fun deliver(context: Context, version: Long, day: LocalDate) = synchronized(lock) {
-        val cfg = SettingsStore(context).read(); val raw = state(context).read()
+        val cfg = SettingsStore(context).read()
+        if (!cfg.notificationEnabled || cfg.reservationVersion != version) return@synchronized
+        val raw = state(context).read()
         val eligible = reservationDue(version, day, cfg, Instant.now(), ZoneId.systemDefault(), claimedDays(raw))
         if (eligible && AnswerNotifications(context).allowed()) {
             val answer = AnswerStore(context).load(requireNotNull(cfg.testAnswerId))
@@ -75,7 +77,7 @@ internal object ReservationSupport {
             val result = runCatching { AnswerNotifications(context).post(answer, "reservation:$day") }.getOrDefault(NoticeState.FAILED)
             val after = state(context).read(); state(context).write(after.put("lastResult", result.name))
         }
-        ensure(context, cfg, true)
+        ensure(context, cfg, eligible)
     }
     fun status(context: Context, cfg: AppSettings): Int = synchronized(lock) {
         when {
