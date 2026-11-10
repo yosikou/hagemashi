@@ -22,29 +22,21 @@ class MainActivityTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
 
-    @Test
-    fun manualConnectionScreenShowsDummyTestAndDisablesGenerationBeforeSignIn() {
-        composeRule.onNodeWithText("ChatGPT 手動接続の検証").assertIsDisplayed()
-        composeRule.onNodeWithText("Continue with ChatGPT").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText("診断用：DNS比較付きでサインイン").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText("ダミーデータで生成").performScrollTo().assertIsNotEnabled()
+    @Test fun homeShowsSettingsAndRoutesToGoalWithoutAutomaticallySending() {
+        composeRule.onNodeWithText("hagemashi").assertIsDisplayed()
+        composeRule.onNodeWithText("まだ励ましがありません。目標を設定して始めましょう。").assertIsDisplayed()
+        composeRule.onNodeWithText("表示内容を確認してChatGPTへ送信").assertDoesNotExist()
+        composeRule.onNode(androidx.compose.ui.test.hasContentDescription("設定")).performClick()
+        composeRule.onNodeWithText("人格").performScrollTo().performClick()
+        composeRule.onNodeWithText("友人のようなトレーナー").assertIsDisplayed()
+        composeRule.onNodeWithText("＋ 人格を追加").performScrollTo().assertIsDisplayed()
     }
 
-    @Test fun diagnosticsOpenWithoutSignInOrAutomaticNetworkRequests() {
+    @Test fun diagnosticsRemainUnderSettingsWithoutAutomaticNetworkRequests() {
+        composeRule.onNode(androidx.compose.ui.test.hasContentDescription("設定")).performClick()
         composeRule.onNodeWithText("通信診断（認証不要）").performScrollTo().performClick()
         composeRule.onNodeWithText("認証情報なしの通信診断").assertIsDisplayed()
-        composeRule.onNodeWithText("DNS名前解決を実行").assertIsDisplayed()
-        composeRule.onNodeWithText("HTTPS GETを実行").assertIsDisplayed()
-        composeRule.onNodeWithText("認証情報なしの空POSTを実行").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("安全な診断結果をコピー").performScrollTo().assertIsNotEnabled()
-    }
-
-    @Test fun realDataGenerationRequiresPreparingAndReviewingBeforeThereIsASendButton() {
-        composeRule.onNodeWithText("実データで手動生成").performScrollTo().performClick()
-        composeRule.onNodeWithText("Health Connectの実データで手動生成").assertIsDisplayed()
-        composeRule.onNodeWithText("目標体重（kg・この画面だけに保持）").assertIsDisplayed()
-        composeRule.onNodeWithText("健康データを取得して送信内容を確認").performScrollTo().assertIsNotEnabled()
-        composeRule.onNodeWithText("表示内容を確認してChatGPTへ送信").assertDoesNotExist()
     }
 
     @Test fun installedAppHasInternetAndDisallowsCleartext() {

@@ -46,6 +46,7 @@ internal fun AnswerDetailScreen(id: String, model: AnswerDetailViewModel, back: 
         }
         model.answer?.takeIf { it.id == id }?.let { answer ->
             Text(stringResource(R.string.detail_generated_at, DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.systemDefault()).format(answer.generatedAt)))
+            Text(answer.personaName?.let { stringResource(R.string.generated_persona, it) } ?: stringResource(R.string.persona_not_recorded))
             Text(stringResource(R.string.answer_title), style = MaterialTheme.typography.titleMedium)
             Text(answer.full)
             Text(stringResource(R.string.detail_used_data), style = MaterialTheme.typography.titleMedium)

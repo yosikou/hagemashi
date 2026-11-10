@@ -21,7 +21,7 @@ internal data class ConnectionUi(
     val lastWhileAway: Stage = Stage.NONE, val networkFacts: NetworkFacts? = null,
     val dnsObservations: List<DnsObservation> = emptyList(),
     val generationDiagnostic: GenerationDiagnostic? = null, val answerContext: AnswerContext? = null,
-    val savedAnswerId: String? = null, val answerShort: String = "", val answerSaveFailed: Boolean = false
+    val modelsLoaded: Boolean = false, val savedAnswerId: String? = null, val answerShort: String = "", val answerSaveFailed: Boolean = false
 )
 
 internal class ConnectionViewModel(application: Application) : AndroidViewModel(application) {
@@ -196,7 +196,7 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
                         val models = if (!snapshot.connected) emptyList() else result.models ?: ui.models
                         ui = ui.copy(busy = false, connected = snapshot.connected, permitted = snapshot.permitted,
                             name = snapshot.name, email = snapshot.email, accounts = snapshot.accounts,
-                            models = models, model = ui.model?.takeIf { selected -> models.any { it.slug == selected } } ?: models.firstOrNull()?.slug,
+                            models = models, model = ui.model, modelsLoaded = snapshot.connected && (result.models != null || ui.modelsLoaded),
                             savedAnswerId = result.savedAnswer?.id ?: ui.savedAnswerId,
                             answerShort = if (result.answer != null) result.short else ui.answerShort,
                             answerSaveFailed = if (result.answer != null) result.saveFailed else ui.answerSaveFailed,

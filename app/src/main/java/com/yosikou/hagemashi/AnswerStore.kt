@@ -14,5 +14,8 @@ internal class AnswerStore(private val context: Context, private val directory: 
         if (java.io.File(context.noBackupFilesDir, "$directory/${value.id}.v1").exists()) throw Problem(Failure.STORAGE)
         target.write(encodeEncouragement(value))
     }
+    fun latest(): SavedEncouragement? = java.io.File(context.noBackupFilesDir, directory).listFiles().orEmpty()
+        .filter { it.name.endsWith(".v1") && isAnswerId(it.name.removeSuffix(".v1")) }
+        .mapNotNull { runCatching { load(it.name.removeSuffix(".v1")) }.getOrNull() }.maxByOrNull { it.generatedAt }
     fun load(id: String): SavedEncouragement = decodeEncouragement(id, vault(id).read())
 }

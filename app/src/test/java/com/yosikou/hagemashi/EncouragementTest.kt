@@ -75,7 +75,7 @@ class EncouragementTest {
         assertEquals("full-A", restored.full)
         assertTrue(restored.hasHealthData)
         assertFalse(json.toString().contains("persona-not-stored"))
-        assertEquals(setOf("schema", "id", "generatedAt", "short", "full", "usedData", "hasHealthData"), json.keys().asSequence().toSet())
+        assertEquals(setOf("schema", "id", "generatedAt", "short", "full", "usedData", "hasHealthData", "personaName"), json.keys().asSequence().toSet())
     }
     @Test fun laterGenerationHasADifferentIdAndCannotChangeTheEarlierSavedValue() {
         val review = ReviewedGeneration("model", "Model", "persona", "data-A", true)
@@ -87,6 +87,15 @@ class EncouragementTest {
         assertEquals("data-A", first.usedData)
         assertFalse(second.hasHealthData)
     }
+    @Test fun oldAnswersKeepMissingPersonaAndNewAnswersKeepTheNameAtGenerationTime() {
+        val old = encodeEncouragement(SavedEncouragement(a, Instant.EPOCH, safe, "old", "data", true)).put("schema", 1)
+        old.remove("personaName")
+        assertNull(decodeEncouragement(a, old).personaName)
+        val review = ReviewedGeneration("m", "M", "prompt", "data", true, "original name")
+        val saved = newSavedEncouragement(EncouragementText(safe, "full"), review, Instant.EPOCH)
+        assertEquals("original name", decodeEncouragement(saved.id, encodeEncouragement(saved)).personaName)
+    }
+
     @Test fun wrongRecordIdentityUnknownSchemaOrCorruptionDoesNotOpenAnotherAnswer() {
         val record = SavedEncouragement(a, Instant.EPOCH, safe, "full-A", "data-A", true)
         assertThrows(Problem::class.java) { decodeEncouragement(b, encodeEncouragement(record)) }

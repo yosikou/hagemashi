@@ -34,9 +34,9 @@ internal class ManualGenerationViewModel(application: Application) : AndroidView
 
     fun editGoal(value: String) { if (!reading && review == null) { goal = value; goalInvalid = false } }
     fun reset() { ++epoch; job?.cancel(); reading = false; review = null; readUnavailable = false; prepareFailed = false }
-    fun prepare(model: Model) {
+    fun prepare(model: Model, settings: AppSettings) {
         if (reading || review != null) return
-        val target = canonicalGoal(goal)
+        val target = settings.goal?.let(::canonicalGoal)
         goalInvalid = target == null
         if (target == null) return
         val generation = ++epoch
@@ -77,9 +77,14 @@ internal class ManualGenerationViewModel(application: Application) : AndroidView
                         HealthReadStatus.ACCESS_DENIED to string(R.string.manual_missing_denied),
                         HealthReadStatus.ERROR to string(R.string.manual_missing_error),
                         HealthReadStatus.HAS_RECORDS to string(R.string.health_has_records)))
-                val instructions = string(R.string.persona_prompt) + "\n" + string(R.string.manual_generation_rules)
-                val frozen = ReviewedGeneration(model.slug, model.name, instructions, healthGenerationInput(target, snapshot, zone, labels),
-                    snapshot.results.any { it.samples.isNotEmpty() || it.steps != null || it.days.any { day -> day.value != null } })
+                val persona = settings.persona()
+                val instructions = listOf(persona.prompt, settings.supplement,
+                    if (settings.maintaining) string(R.string.maintain_prompt) else "", string(R.string.manual_generation_rules))
+                    .filter { it.isNotBlank() }.joinToString("\n")
+                val input = healthGenerationInput(target, snapshot, zone, labels) +
+                    (settings.goalDate?.let { "\n" + app.getString(R.string.goal_date_format, it.toString()) } ?: "")
+                val frozen = ReviewedGeneration(model.slug, model.name, instructions, input,
+                    snapshot.results.any { it.samples.isNotEmpty() || it.steps != null || it.days.any { day -> day.value != null } }, persona.name)
                 if (generation == epoch) { review = frozen; readUnavailable = unavailable }
             } catch (e: CancellationException) { throw e }
             catch (_: Exception) { if (generation == epoch) prepareFailed = true }
