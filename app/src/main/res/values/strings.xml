@@ -270,4 +270,15 @@
     <string name="notification_time_setting">通知時刻：%1$s（端末の現地時刻）</string>
     <string name="reservation_unavailable">通知設定は保存されていますが、このUI版では予約配信は未対応です。配信は有効になりません。</string>
     <string name="no_automatic_ai">無操作のAI生成は未対応です。通常の手動生成では通知しません。</string>
+    <string name="reservation_off">予約通知はオフです。古い予約は実行しません。</string>
+    <string name="reservation_choose_answer">設定は保存済みですが、配信は未登録です。検証用の保存済み回答を指定してください。</string>
+    <string name="reservation_permission">設定は保存済みですが、通知権限またはチャンネルが無効のため配信は停止しています。</string>
+    <string name="reservation_missing_answer">検証対象の保存済み回答を読めません。配信は停止しています。</string>
+    <string name="reservation_claimed">本日の通知処理は済みです。重複防止のため再送せず、次の未処理日を予約します。</string>
+    <string name="reservation_registered">予約登録済みです。端末の現地時刻を目安に保存済み回答だけを通知します。省電力などAndroidの制約で遅れる場合があります。</string>
+    <string name="reservation_not_registered">設定は保存済みですが予約登録を確認できません。アプリを開き直して確認してください。</string>
+    <string name="reservation_target">検証対象の回答ID：%1$s</string>
+    <string name="reservation_use_latest">最新の保存済み回答を検証対象にする</string>
+    <string name="reservation_grant">通知権限を許可する</string>
+    <string name="reservation_test_only">この予約検証は固定した保存済み回答を毎日通知するだけです。新しい回答が増えても対象は自動変更せず、AIへの追加送信はしません。</string>
 </resources>

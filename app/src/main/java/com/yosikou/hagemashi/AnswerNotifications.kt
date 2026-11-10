@@ -30,14 +30,16 @@ internal class AnswerNotifications(private val context: Context) {
             .setContentIntent(pending).setAutoCancel(true).setOnlyAlertOnce(true)
             .setVisibility(Notification.VISIBILITY_PRIVATE).build()
     }
-    fun post(answer: SavedEncouragement): NoticeState {
+    fun allowed(): Boolean = (Build.VERSION.SDK_INT < 33 || context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) &&
+        manager.areNotificationsEnabled() && manager.getNotificationChannel(channelId)?.importance != NotificationManager.IMPORTANCE_NONE
+    fun post(answer: SavedEncouragement, tag: String = answer.id): NoticeState {
         if (Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
             return NoticeState.PERMISSION_DENIED
         manager.createNotificationChannel(NotificationChannel(channelId, context.getString(R.string.notification_channel), NotificationManager.IMPORTANCE_DEFAULT)
             .apply { description = context.getString(R.string.notification_channel_description) })
         if (!manager.areNotificationsEnabled() || manager.getNotificationChannel(channelId)?.importance == NotificationManager.IMPORTANCE_NONE)
             return NoticeState.DISABLED
-        manager.notify(answer.id, 0, build(answer))
+        manager.notify(tag, 0, build(answer))
         return NoticeState.POSTED
     }
 }

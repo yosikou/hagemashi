@@ -189,7 +189,21 @@ internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () 
         SettingsStatus(app)
     }
 }
-@Composable internal fun ReservationSettings(app: AppViewModel, cfg: AppSettings) = Unit
+@Composable internal fun ReservationSettings(app: AppViewModel, cfg: AppSettings) {
+    val context = LocalContext.current
+    val permission = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { app.refresh() }
+    Text(stringResource(R.string.reservation_target, cfg.testAnswerId ?: stringResource(R.string.not_selected)))
+    OutlinedButton(onClick = { app.latest?.let { answer -> app.change { it.copy(testAnswerId = answer.id) } } }, enabled = app.latest != null && !app.saving) {
+        Text(stringResource(R.string.reservation_use_latest))
+    }
+    if (android.os.Build.VERSION.SDK_INT >= 33) OutlinedButton(onClick = { permission.launch(android.Manifest.permission.POST_NOTIFICATIONS) }) {
+        Text(stringResource(R.string.reservation_grant))
+    }
+    OutlinedButton(onClick = { runCatching { context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)) } }) {
+        Text(stringResource(R.string.notification_settings))
+    }
+    Text(stringResource(R.string.reservation_test_only))
+}
 @Composable private fun SettingsStatus(app: AppViewModel) {
     Text(stringResource(if (app.failure) R.string.settings_error else if (app.saving) R.string.saving else R.string.settings_saved))
 }

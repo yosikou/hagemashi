@@ -30,7 +30,7 @@ internal class AppViewModel(application: Application) : AndroidViewModel(applica
     fun refresh() { viewModelScope.launch {
         mutex.withLock {
             try {
-                val loaded = withContext(Dispatchers.IO) { store.read() }
+                val loaded = withContext(Dispatchers.IO) { synchronized(ReservationSupport.lock) { store.read().also { ReservationSupport.changed(getApplication<Application>(), it, it) } } }
                 settings = loaded; failure = false
                 reservationStatus = withContext(Dispatchers.IO) { ReservationSupport.status(getApplication<Application>(), loaded) }
                 latest = withContext(Dispatchers.IO) { AnswerStore(getApplication<Application>()).latest() }
@@ -59,12 +59,12 @@ internal class AppViewModel(application: Application) : AndroidViewModel(applica
         viewModelScope.launch {
             try {
                 val value = mutex.withLock {
-                    withContext(Dispatchers.IO) {
+                    withContext(Dispatchers.IO) { synchronized(ReservationSupport.lock) {
                         val old = store.read(); val next = nextSettings(old, transform(old))
                         store.write(next)
                         ReservationSupport.changed(getApplication<Application>(), old, next)
                         next
-                    }
+                    } }
                 }
                 settings = value; failure = false
                 reservationStatus = withContext(Dispatchers.IO) { ReservationSupport.status(getApplication<Application>(), value) }
