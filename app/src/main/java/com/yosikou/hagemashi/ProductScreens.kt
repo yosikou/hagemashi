@@ -23,30 +23,31 @@ internal fun Page(title: Int, back: () -> Unit, content: @Composable ColumnScope
     BackHandler(onBack = back)
     Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text(stringResource(title), style = MaterialTheme.typography.headlineMedium)
+        Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Text(stringResource(title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
+            TextButton(onClick = back) { Text(stringResource(R.string.app_back)) }
+        }
         content()
-        OutlinedButton(onClick = back) { Text(stringResource(R.string.app_back)) }
     }
 }
 @Composable
 internal fun HomeScreen(app: AppViewModel, connection: ConnectionViewModel, settings: (String) -> Unit,
     generate: () -> Unit, detail: (String) -> Unit) {
-    Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(stringResource(R.string.home_name), style = MaterialTheme.typography.headlineLarge)
-            Row {
-                TextButton(onClick={settings("history")}){Text(stringResource(R.string.history_title))}
-                IconButton(onClick = { settings("settings") }) { Icon(painterResource(R.drawable.ic_settings), stringResource(R.string.settings_title)) }
-            }
+    Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Text(stringResource(R.string.home_name), style = MaterialTheme.typography.headlineMedium, modifier = Modifier.weight(1f))
+            TextButton(onClick = { settings("history") }) { Text(stringResource(R.string.history_title)) }
+            IconButton(onClick = { settings("settings") }) { Icon(painterResource(R.drawable.ic_settings), stringResource(R.string.settings_title)) }
         }
-        app.latest?.let { answer ->
-            Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        SectionCard {
+            Text(stringResource(R.string.home_latest), style = MaterialTheme.typography.titleMedium)
+            app.latest?.let { answer ->
                 Text(notificationShort(answer.short, stringResource(R.string.notification_fallback)), style = MaterialTheme.typography.titleLarge)
-                Text(answer.personaName?.let { stringResource(R.string.generated_persona, it) } ?: stringResource(R.string.persona_not_recorded))
+                AnswerMetadata(answer)
                 TextButton(onClick = { detail(answer.id) }) { Text(stringResource(R.string.read_full)) }
-            } }
-        } ?: Text(stringResource(R.string.no_encouragement))
+            } ?: Text(stringResource(R.string.no_encouragement))
+        }
         val cfg = app.settings
         if (cfg == null) Text(stringResource(R.string.loading))
         if (app.failure) {
@@ -54,27 +55,6 @@ internal fun HomeScreen(app: AppViewModel, connection: ConnectionViewModel, sett
             OutlinedButton(onClick = app::refresh) { Text(stringResource(R.string.detail_retry)) }
         }
         if (cfg != null) {
-            Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(stringResource(R.string.home_weight), style = MaterialTheme.typography.titleMedium)
-                val weight = app.weight
-                if (weight == null) Text(stringResource(R.string.home_weight_missing)) else {
-                    Text(stringResource(R.string.health_weight_value, weight.value), style = MaterialTheme.typography.headlineMedium)
-                    Text(stringResource(R.string.health_measured_at, DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(ZoneId.systemDefault()).format(weight.measuredAt)))
-                    cfg.goal?.toDoubleOrNull()?.let { target -> Text(stringResource(R.string.goal_difference, weight.value - target)) }
-                }
-                cfg.goal?.let { Text(stringResource(R.string.manual_goal_format, it)) }
-                TextButton(onClick = { settings("health") }) { Text(stringResource(R.string.health_settings)) }
-            } }
-            if (!cfg.maintaining && cfg.goal != null && app.weight?.let { it.value <= cfg.goal.toDouble() } == true) {
-                Text(stringResource(R.string.goal_reached))
-                OutlinedButton(onClick = { app.change { it.copy(maintaining = true, goalDate = null) } }, enabled = !app.saving) { Text(stringResource(R.string.goal_maintain)) }
-                OutlinedButton(onClick = { settings("goal") }) { Text(stringResource(R.string.goal_review)) }
-            }
-            if (cfg.maintaining) Text(stringResource(R.string.goal_maintaining))
-            if(goalNeedsReset(cfg,LocalDate.now()) && connection.ui.permitted && cfg.modelId!=null) {
-                Text(stringResource(R.string.goal_wait_manual_notice))
-                OutlinedButton(onClick=generate,enabled=!app.saving && !connection.ui.busy){Text(stringResource(R.string.manual_while_waiting))}
-            }
             val action = homeAction(cfg, connection.ui.permitted,
                 (cfg.modelId != null && connection.ui.unavailableModel == cfg.modelId) || (connection.ui.modelsLoaded && connection.ui.models.none { it.slug == cfg.modelId }), LocalDate.now())
             Button(onClick = { when (action) {
@@ -82,7 +62,7 @@ internal fun HomeScreen(app: AppViewModel, connection: ConnectionViewModel, sett
                 HomeAction.CONNECT -> settings("connection")
                 HomeAction.SELECT_AGENT -> settings("agent")
                 HomeAction.GENERATE -> generate()
-            } }, enabled = !app.saving && !connection.ui.busy && !app.failure, modifier = Modifier.fillMaxWidth()) {
+            } }, enabled = !app.saving && !connection.ui.busy && !app.failure, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
                 Text(stringResource(when (action) {
                     HomeAction.SET_GOAL -> R.string.set_goal
                     HomeAction.RESET_GOAL -> R.string.reset_goal
@@ -91,16 +71,47 @@ internal fun HomeScreen(app: AppViewModel, connection: ConnectionViewModel, sett
                     HomeAction.GENERATE -> R.string.generate_encouragement
                 }))
             }
+            SectionCard {
+                Text(stringResource(R.string.home_weight), style = MaterialTheme.typography.titleMedium)
+                val weight = app.weight
+                if (weight == null) Text(stringResource(R.string.home_weight_missing)) else {
+                    Text(stringResource(R.string.health_weight_value, weight.value), style = MaterialTheme.typography.headlineMedium)
+                    Text(stringResource(R.string.health_measured_at, measurementDisplayTime(weight.measuredAt.toString(), ZoneId.systemDefault()).orEmpty()), style = MaterialTheme.typography.bodyMedium)
+                    cfg.goal?.toDoubleOrNull()?.let { target -> Text(stringResource(R.string.goal_difference, weight.value - target)) }
+                }
+                cfg.goal?.let { Text(stringResource(R.string.manual_goal_format, it)) }
+                TextButton(onClick = { settings("health") }) { Text(stringResource(R.string.health_settings)) }
+            }
+            if (!cfg.maintaining && cfg.goal != null && app.weight?.let { it.value <= cfg.goal.toDouble() } == true) {
+                SectionCard {
+                    Text(stringResource(R.string.goal_reached))
+                    OutlinedButton(onClick = { app.change { it.copy(maintaining = true, goalDate = null) } }, enabled = !app.saving) { Text(stringResource(R.string.goal_maintain)) }
+                    OutlinedButton(onClick = { settings("goal") }) { Text(stringResource(R.string.goal_review)) }
+                }
+            }
+            if (cfg.maintaining) Text(stringResource(R.string.goal_maintaining))
+            if(goalNeedsReset(cfg,LocalDate.now()) && connection.ui.permitted && cfg.modelId!=null) {
+                Text(stringResource(R.string.goal_wait_manual_notice))
+                OutlinedButton(onClick=generate,enabled=!app.saving && !connection.ui.busy){Text(stringResource(R.string.manual_while_waiting))}
+            }
         }
     }
 }
 @Composable
 internal fun SettingsMenu(open: (String) -> Unit, back: () -> Unit) {
     Page(R.string.settings_title, back) {
-        listOf("goal" to R.string.goal_settings, "connection" to R.string.chatgpt_settings, "agent" to R.string.agent_settings,
-            "personas" to R.string.persona_settings, "health" to R.string.health_settings, "notice" to R.string.notification_settings_title,
-            "probes" to R.string.open_probes).forEach { (route, label) ->
-            OutlinedButton(onClick = { open(route) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(label)) }
+        listOf(
+            R.string.settings_encouragement_group to listOf("goal" to R.string.goal_settings, "agent" to R.string.agent_settings, "personas" to R.string.persona_settings),
+            R.string.settings_connections_group to listOf("connection" to R.string.chatgpt_settings, "health" to R.string.health_settings),
+            R.string.notification_settings_title to listOf("notice" to R.string.notification_settings_title),
+            R.string.settings_diagnostics_group to listOf("probes" to R.string.open_probes)
+        ).forEach { (heading, entries) ->
+            SectionCard {
+                Text(stringResource(heading), style = MaterialTheme.typography.titleMedium)
+                entries.forEach { (route, label) ->
+                    OutlinedButton(onClick = { open(route) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(label)) }
+                }
+            }
         }
     }
 }
@@ -111,40 +122,44 @@ internal fun GoalSettings(app: AppViewModel, cfg: AppSettings, back: () -> Unit)
     var invalid by remember { mutableStateOf(false) }
     val context = LocalContext.current
     Page(R.string.goal_settings, back) {
-        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(goal, { goal = it }, label = { Text(stringResource(R.string.goal_input)) }, modifier=Modifier.weight(1f),
-                singleLine=true, isError=invalid, keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=androidx.compose.ui.text.input.KeyboardType.Decimal))
-            Text(stringResource(R.string.manual_kg))
+        SectionCard {
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(goal, { goal = it }, label = { Text(stringResource(R.string.goal_input)) }, modifier=Modifier.weight(1f),
+                    singleLine=true, isError=invalid, keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=androidx.compose.ui.text.input.KeyboardType.Decimal))
+                Text(stringResource(R.string.manual_kg))
+            }
+            Text(date?.toString() ?: stringResource(R.string.goal_no_deadline))
+            OutlinedButton(onClick = {
+                val selected=date ?: LocalDate.now()
+                android.app.DatePickerDialog(context, { _, y, m, d -> date=LocalDate.of(y,m+1,d) }, selected.year,selected.monthValue-1,selected.dayOfMonth).show()
+            }) { Text(stringResource(R.string.goal_choose_deadline)) }
+            if(date!=null) TextButton(onClick={date=null}){Text(stringResource(R.string.goal_clear_deadline))}
+            if (invalid) Text(stringResource(R.string.goal_invalid))
+            Button(onClick = {
+                val value=canonicalGoal(goal); invalid=value==null
+                if(value!=null) app.change { it.copy(goal=value, goalDate=date, maintaining=false) }
+            }, enabled = !app.saving) { Text(stringResource(R.string.save_settings)) }
+            SettingsStatus(app)
         }
-        Text(date?.toString() ?: stringResource(R.string.goal_no_deadline))
-        OutlinedButton(onClick = {
-            val selected=date ?: LocalDate.now()
-            android.app.DatePickerDialog(context, { _, y, m, d -> date=LocalDate.of(y,m+1,d) }, selected.year,selected.monthValue-1,selected.dayOfMonth).show()
-        }) { Text(stringResource(R.string.goal_choose_deadline)) }
-        if(date!=null) TextButton(onClick={date=null}){Text(stringResource(R.string.goal_clear_deadline))}
-        if (invalid) Text(stringResource(R.string.goal_invalid))
-        Button(onClick = {
-            val value=canonicalGoal(goal); invalid=value==null
-            if(value!=null) app.change { it.copy(goal=value, goalDate=date, maintaining=false) }
-        }, enabled = !app.saving) { Text(stringResource(R.string.save_settings)) }
-        SettingsStatus(app)
     }
 }
 @Composable
 internal fun AgentSettings(app: AppViewModel, cfg: AppSettings, connection: ConnectionViewModel, back: () -> Unit) {
     Page(R.string.agent_settings, back) {
-        Text(stringResource(R.string.saved_agent, cfg.modelId ?: stringResource(R.string.not_selected)))
-        OutlinedButton(onClick = connection::loadModels, enabled = connection.ui.permitted && !connection.ui.busy) { Text(stringResource(R.string.fetch_models)) }
-        if (!connection.ui.permitted) Text(stringResource(R.string.manual_need_connection))
-        if (cfg.modelId != null && (connection.ui.unavailableModel == cfg.modelId || (connection.ui.modelsLoaded && connection.ui.models.none { it.slug == cfg.modelId }))) Text(stringResource(R.string.agent_unavailable))
-        if (connection.ui.failure != null) Text(stringResource(failureText(connection.ui.failure!!)))
-        connection.ui.models.forEach { model ->
-            Row {
-                RadioButton(selected = cfg.modelId == model.slug, onClick = { app.change { it.copy(modelId = model.slug) } }, enabled = !app.saving)
-                Text(stringResource(R.string.manual_model, model.name, model.slug))
+        SectionCard {
+            Text(stringResource(R.string.saved_agent, cfg.modelId ?: stringResource(R.string.not_selected)))
+            OutlinedButton(onClick = connection::loadModels, enabled = connection.ui.permitted && !connection.ui.busy) { Text(stringResource(R.string.fetch_models)) }
+            if (!connection.ui.permitted) Text(stringResource(R.string.manual_need_connection))
+            if (cfg.modelId != null && (connection.ui.unavailableModel == cfg.modelId || (connection.ui.modelsLoaded && connection.ui.models.none { it.slug == cfg.modelId }))) Text(stringResource(R.string.agent_unavailable))
+            if (connection.ui.failure != null) Text(stringResource(failureText(connection.ui.failure!!)))
+            connection.ui.models.forEach { model ->
+                Row {
+                    RadioButton(selected = cfg.modelId == model.slug, onClick = { app.change { it.copy(modelId = model.slug) } }, enabled = !app.saving)
+                    Text(stringResource(R.string.manual_model, model.name, model.slug))
+                }
             }
+            SettingsStatus(app)
         }
-        SettingsStatus(app)
     }
 }
 @Composable
@@ -156,11 +171,13 @@ internal fun PersonaSettings(app: AppViewModel, cfg: AppSettings, back: () -> Un
     var supplement by remember(cfg.supplement) { mutableStateOf(cfg.supplement) }
     Page(R.string.persona_settings, back) {
         cfg.personas.forEach { persona ->
-            Row {
-                RadioButton(cfg.personaId == persona.id, onClick = { app.change { it.copy(personaId = persona.id) } }, enabled = !app.saving)
-                Column {
-                    Text(persona.name, style = MaterialTheme.typography.titleMedium)
-                    TextButton(onClick = { editing = persona.id }) { Text(stringResource(R.string.edit_persona)) }
+            SectionCard {
+                Row {
+                    RadioButton(cfg.personaId == persona.id, onClick = { app.change { it.copy(personaId = persona.id) } }, enabled = !app.saving)
+                    Column {
+                        Text(persona.name, style = MaterialTheme.typography.titleMedium)
+                        TextButton(onClick = { editing = persona.id }) { Text(stringResource(R.string.edit_persona)) }
+                    }
                 }
             }
         }
@@ -192,19 +209,21 @@ internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () 
     Page(R.string.notification_settings_title, back) {
         var invalid by remember { mutableStateOf(false) }
         NoticeSlot.entries.forEach { slot ->
-            val value=cfg.slot(slot)
-            Text(stringResource(if(slot==NoticeSlot.MORNING) R.string.kind_morning else R.string.kind_evening),style=MaterialTheme.typography.titleMedium)
-            Text(stringResource(app.slotStatuses[slot] ?: app.reservationStatus))
-            fun update(changed:SlotSetting) {
-                val candidate=cfg.withSlot(slot,changed); invalid=!candidate.validTimes()
-                if(!invalid) app.change { it.withSlot(slot,changed) }
-            }
-            Row {
-                Switch(value.enabled,onCheckedChange={update(value.copy(enabled=it))},enabled=!app.saving)
-                Text(stringResource(R.string.notification_enabled_setting))
-            }
-            OutlinedButton(onClick={TimePickerDialog(context,{_,h,m->update(value.copy(time=LocalTime.of(h,m)))},value.time.hour,value.time.minute,true).show()},enabled=!app.saving){
-                Text(stringResource(R.string.notification_time_setting,value.time.toString()))
+            SectionCard {
+                val value=cfg.slot(slot)
+                Text(stringResource(if(slot==NoticeSlot.MORNING) R.string.kind_morning else R.string.kind_evening),style=MaterialTheme.typography.titleMedium)
+                Text(stringResource(app.slotStatuses[slot] ?: app.reservationStatus))
+                fun update(changed:SlotSetting) {
+                    val candidate=cfg.withSlot(slot,changed); invalid=!candidate.validTimes()
+                    if(!invalid) app.change { it.withSlot(slot,changed) }
+                }
+                Row {
+                    Switch(value.enabled,onCheckedChange={update(value.copy(enabled=it))},enabled=!app.saving)
+                    Text(stringResource(R.string.notification_enabled_setting))
+                }
+                OutlinedButton(onClick={TimePickerDialog(context,{_,h,m->update(value.copy(time=LocalTime.of(h,m)))},value.time.hour,value.time.minute,true).show()},enabled=!app.saving){
+                    Text(stringResource(R.string.notification_time_setting,value.time.toString()))
+                }
             }
         }
         if(invalid) Text(stringResource(R.string.slot_time_invalid))

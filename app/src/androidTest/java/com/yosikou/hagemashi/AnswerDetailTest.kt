@@ -3,6 +3,7 @@ package com.yosikou.hagemashi
 import android.app.Notification
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,7 +20,13 @@ import java.util.UUID
 class AnswerDetailTest {
     @get:Rule val composeRule = createAndroidComposeRule<MainActivity>()
     private fun answer(full: String, used: String) = SavedEncouragement(UUID.randomUUID().toString(), Instant.EPOCH,
-        "synthetic-private-69.875 kg", full, used, true)
+        "synthetic-private-69.875 kg", full, used, true, "synthetic-persona", listOf(
+            MeasurementRow(MeasureItem.WEIGHT, "69.875", "kg", "2026-11-09T00:00:00Z"),
+            MeasurementRow(MeasureItem.WEIGHT, "68.125", "kg", "2026-11-10T00:00:00Z"),
+            MeasurementRow(MeasureItem.WEIGHT, "68.125", "kg", "2026-11-10T01:00:00Z"),
+            MeasurementRow(MeasureItem.BODY_FAT, null, "%", "", MeasureState.UNPERMITTED),
+            MeasurementRow(MeasureItem.STEPS, "1234", "歩", "2026-11-09T00:00:00Z 〜 2026-11-10T00:00:00Z")
+        ))
 
     @Test fun encryptedAnswersSurviveANewStoreInstanceAndKeepTheirOwnIdentity() {
         val context = composeRule.activity
@@ -69,7 +76,15 @@ class AnswerDetailTest {
             composeRule.onNodeWithText(a.full).performScrollTo().assertIsDisplayed()
             composeRule.activityRule.scenario.recreate()
             composeRule.waitUntil(5000) { composeRule.onAllNodes(androidx.compose.ui.test.hasText(a.full)).fetchSemanticsNodes().isNotEmpty() }
-            composeRule.onNodeWithText(a.usedData).performScrollTo().assertIsDisplayed()
+            composeRule.onNodeWithText(b.full).assertDoesNotExist()
+            composeRule.onNodeWithText(context.getString(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER)).assertDoesNotExist()
+            composeRule.onNodeWithText("68.125 kg").performScrollTo().assertIsDisplayed()
+            composeRule.onNodeWithText("69.875 kg").assertDoesNotExist()
+            composeRule.onNodeWithText("未許可").performScrollTo().assertIsDisplayed()
+            composeRule.onNodeWithText("使用したデータをすべて見る").performScrollTo().performClick()
+            composeRule.onNodeWithText("69.875 kg").performScrollTo().assertIsDisplayed()
+            composeRule.onNodeWithText("使用したデータを折りたたむ").performScrollTo().performClick()
+            composeRule.onNodeWithText("69.875 kg").assertDoesNotExist()
         } finally {
             for (record in listOf(a, b)) File(context.noBackupFilesDir, "encouragements/${record.id}.v1").delete()
         }

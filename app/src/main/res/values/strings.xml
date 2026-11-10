@@ -15,7 +15,7 @@
     <string name="detail_title">励ましの詳細</string>
     <string name="detail_open">回答の詳細を開く</string>
     <string name="detail_generated_at">生成日時：%1$s</string>
-    <string name="detail_used_data">生成に使用した目標・健康データ</string>
+    <string name="detail_used_data">生成に使ったデータ</string>
     <string name="detail_health_missing">健康データ未取得</string>
     <string name="detail_load_failed">保存した回答を読み込めませんでした。別の回答には切り替えません。</string>
     <string name="detail_retry">保存した回答を再読み込み</string>
@@ -336,4 +336,13 @@
     <string name="reservation_state_error">設定は保存されていますが予約状態を確認できません。予約は停止して確認してください。手動生成と履歴は利用できます。</string>
     <string name="table_grouping_note">同じ値の記録を表示上まとめています</string>
     <string name="table_unknown_time">日時不明</string>
+    <string name="home_latest">最新の励まし</string>
+    <string name="settings_encouragement_group">励ましの設定</string>
+    <string name="settings_connections_group">アカウント・健康データの連携</string>
+    <string name="settings_diagnostics_group">診断</string>
+    <string name="detail_saved_snapshot">この回答を生成した時点の保存済みデータです。</string>
+    <string name="detail_expand_data">使用したデータをすべて見る</string>
+    <string name="detail_collapse_data">使用したデータを折りたたむ</string>
+    <string name="table_status_unknown">取得状況を確認できません</string>
+    <string name="notification_test_title">検証用の通知</string>
 </resources>

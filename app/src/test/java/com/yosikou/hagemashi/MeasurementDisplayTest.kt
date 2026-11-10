@@ -63,4 +63,33 @@ class MeasurementDisplayTest {
         assertEquals("2026/11/10 10:02", measurementDisplayTime(display.rows.single().at, zone))
         assertEquals(2, legacyMeasurementRows(input).size)
     }
+    @Test fun overviewUsesLatestSavedValuesAndKeepsMissingStatusesWithoutZeroes() {
+        val old = row("70", "2026-11-09T00:00:00Z")
+        val latest = row("69", "2026-11-10T00:00:00Z")
+        val missingFat = row(item=MeasureItem.BODY_FAT).copy(value=null, state=MeasureState.UNPERMITTED)
+        val steps = MeasurementRow(MeasureItem.STEPS, "1234", "歩", "2026-11-09T15:00:00Z 〜 2026-11-10T15:00:00Z")
+        val laterMissingSteps = steps.copy(value=null, at="2026-11-10T15:00:00Z 〜 2026-11-11T15:00:00Z", state=MeasureState.NO_RECORDS)
+        val input = listOf(latest, old, missingFat, steps, laterMissingSteps)
+        val encoded = encodeRows(input).toString()
+        assertEquals(listOf(latest, missingFat, steps), latestAnswerMeasurements(input))
+        assertEquals(encoded, encodeRows(input).toString())
+        assertTrue(latestAnswerMeasurements(emptyList()).all { it.value == null && it.state == MeasureState.NO_RECORDS })
+    }
+    @Test fun overviewNeverReplacesARecordedZeroOrUnknownLegacyWithInventedValues() {
+        val zero = MeasurementRow(MeasureItem.STEPS, "0", "歩", "2026-11-09T15:00:00Z 〜 2026-11-10T15:00:00Z")
+        assertEquals("0", latestAnswerMeasurements(listOf(zero)).last().value)
+        val unknown = listOf(MeasurementRow(MeasureItem.LEGACY, null, "", "", MeasureState.ERROR))
+        assertTrue(latestAnswerMeasurements(unknown).all { it.state == MeasureState.ERROR && it.value == null })
+    }
+    @Test fun stepOverviewDisplaysLocalTargetDayAndPreservesMultiDayRange() {
+        assertEquals("2026/11/10", measurementDisplayStepDates("2026-11-09T15:00:00Z 〜 2026-11-10T15:00:00Z", zone))
+        assertEquals("2026/11/09\n〜\n2026/11/10", measurementDisplayStepDates("2026-11-08T15:00:00Z 〜 2026-11-10T15:00:00Z", zone))
+        assertNull(measurementDisplayStepDates("invalid", zone))
+        assertNull(measurementDisplayStepDates("2026-11-10T15:00:00Z 〜 2026-11-09T15:00:00Z", zone))
+    }
+    @Test fun generationTimeHasLocalSecondsWhileMeasurementTimeHasOnlyMinutes() {
+        val instant = java.time.Instant.parse("2026-11-10T00:01:23.999Z")
+        assertEquals("2026/11/10 09:01:23", answerDisplayTime(instant, zone))
+        assertEquals("2026/11/10 09:01", measurementDisplayTime(instant.toString(), zone))
+    }
 }
