@@ -1,6 +1,6 @@
 # 保存済み回答だけを使う予約通知検証
 
-UI整理PR #8の最新ffe9ac2c18728d94c11c607c0442766509c27ed4を基点にfeat/saved-answer-reservationsを作成し、baseをfeat/home-settingsにする。#5→#6→#7→#8→本PRの依存関係で、今回どれもマージしない。UI版だけのAPKと、この予約版APKを取り違えない。後続のため、親を取り込む場合は順にmainへbase変更・固有差分とCI確認が必要。
+UI整理PR #8のffe9ac2c18728d94c11c607c0442766509c27ed4から分岐し、モデル利用不可時の案内を補強した親先端f1ea23cfce3a5495222661e3ac4f5bd021731e83も取り込んだ。feat/saved-answer-reservationsのbaseをfeat/home-settingsにする。#5→#6→#7→#8→本PRの依存関係で、今回どれもマージしない。UI版だけのAPKと、この予約版APKを取り違えない。後続のため、親を取り込む場合は順にmainへbase変更・固有差分とCI確認が必要。
 
 ## 検証範囲
 
