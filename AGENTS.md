@@ -18,7 +18,7 @@
 
 ## 検証
 
-JDK 17とAPI 35 / Build Tools 35.0.0を準備し、リポジトリルートで実行する。
+JDK 17とcompile用API 36（targetはAPI 35）/ Build Tools 35.0.0を準備し、リポジトリルートで実行する。CIはAPI 35も維持する。
 
 ```sh
 ./gradlew --no-daemon :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest

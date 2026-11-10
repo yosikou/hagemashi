@@ -22,7 +22,7 @@ jobs:
           distribution: temurin
           java-version: '17'
       - name: Install Android platform and build tools
-        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"'
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "platforms;android-36" "build-tools;35.0.0"'
       - name: Set up Gradle and validate wrapper
         uses: gradle/actions/setup-gradle@v5
       - name: Restore stable signing key
