@@ -88,7 +88,10 @@ class MainActivity : ComponentActivity() {
                             "agent" -> AgentSettings(app, cfg, model) { route = "settings" }
                             "personas" -> PersonaSettings(app, cfg) { route = "settings" }
                             "notice" -> NotificationSettings(app, cfg) { route = "settings" }
-                        } }
+                        } } ?: Page(R.string.settings_title, { route = "settings" }) {
+                            Text(stringResource(R.string.settings_error))
+                            OutlinedButton(onClick = app::refresh) { Text(stringResource(R.string.detail_retry)) }
+                        }
                     }
                 }
             }
