@@ -73,7 +73,7 @@ class MainActivity : ComponentActivity() {
                     } catch (_: Exception) { model.browserFailed() }
                 }
             }
-            MaterialTheme {
+            HagemashiTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val selectedDetail = detailId
                     if (selectedDetail != null) AnswerDetailScreen(selectedDetail, details) { closeDetail() }

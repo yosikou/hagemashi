@@ -45,3 +45,28 @@ internal fun measurementDisplayTime(value: String, zone: ZoneId): String? {
     val instants = parts.map { measurementInstant(it) ?: return null }
     return instants.joinToString("\n〜\n") { formatter.format(it) }
 }
+
+internal fun answerDisplayTime(value: Instant, zone: ZoneId): String =
+    DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss", Locale.ROOT).withZone(zone).format(value)
+
+// Only the saved answer's rows enter this function. No live Health Connect reads or inferred zeroes.
+internal fun latestAnswerMeasurements(rows: List<MeasurementRow>): List<MeasurementRow> =
+    listOf(MeasureItem.WEIGHT, MeasureItem.BODY_FAT, MeasureItem.STEPS).map { item ->
+        val candidates = rows.filter { it.item == item }
+        val values = candidates.filter { it.state == MeasureState.VALUE && it.value != null }
+        val selected = values.ifEmpty { candidates }
+        selected.maxByOrNull { measurementInstant(it.at.substringBefore(" 〜 ")) ?: Instant.MIN }
+            ?: MeasurementRow(item, null, "", "", if (rows.any { it.item == MeasureItem.LEGACY }) MeasureState.ERROR else MeasureState.NO_RECORDS)
+    }
+
+// Daily Health Connect step windows have an exclusive end. Multi-day legacy windows stay ranges.
+internal fun measurementDisplayStepDates(value: String, zone: ZoneId): String? {
+    val parts = value.split(" 〜 ")
+    if (parts.size != 2) return null
+    val start = measurementInstant(parts[0]) ?: return null
+    val end = measurementInstant(parts[1])?.takeIf { it > start } ?: return null
+    val first = start.atZone(zone).toLocalDate()
+    val last = end.minusNanos(1).atZone(zone).toLocalDate()
+    val format = DateTimeFormatter.ofPattern("yyyy/MM/dd", Locale.ROOT)
+    return if (first == last) first.format(format) else first.format(format) + "\n〜\n" + last.format(format)
+}
