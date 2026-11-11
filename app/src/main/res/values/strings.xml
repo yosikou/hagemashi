@@ -313,7 +313,7 @@
 
     <string name="reservation_missing_answer">検証対象の保存済み回答を読めません。配信は停止しています。</string>
 
-    <string name="reservation_claimed">この枠の本日分は処理済みです。重複防止のため再送しません。</string>
+    <string name="reservation_claimed">この予約は処理済みです。時刻を変更して再予約すると、同じ日でも再試験できます。</string>
 
     <string name="reservation_registered">予約APIへの登録要求が完了し、台帳を保存しました。OS内の予約の存続や通知到着は未確認です。端末の現地時刻を目安に保存済み回答だけを通知します。省電力などAndroidの制約で遅れる場合があります。</string>
 
@@ -358,6 +358,13 @@
     <string name="background_health_missing">背景の健康データ読み取り：未許可</string>
     <string name="background_health_unsupported">背景の健康データ読み取り：端末で利用できません</string>
     <string name="background_health_request">背景の読み取りを許可する</string>
-    <string name="automatic_action_required">本日のこの枠は停止しました。予約診断を確認し、ChatGPTの再接続またはエージェントの再選択を行ってください。自動で別モデルやAPIキー方式へ切り替えません。</string>
+    <string name="automatic_action_required">この予約は生成失敗のため停止しました。予約診断を確認し、ChatGPTの再接続またはエージェントの再選択を行ってください。自動で別モデルやAPIキー方式へ切り替えません。</string>
     <string name="automatic_missing_settings">自動生成には目標体重とエージェントの設定が必要です。</string>
+    <string name="outcome_posted">回答保存済み・通知発行済み</string>
+    <string name="outcome_saved">回答保存済み・通知待ち</string>
+    <string name="outcome_blocked">回答保存済み・通知不可／再試行待ち</string>
+    <string name="outcome_unknown">回答保存済み・通知状態未確認</string>
+    <string name="outcome_skipped">生成をスキップしました。新しい予約で再試験できます。</string>
+    <string name="outcome_unreadable">保存済み回答を読み取れません。削除・保存状態を確認してください。</string>
+    <string name="outcome_generation_retrying">生成・保存に失敗／当日内に再試行待ち</string>
 </resources>

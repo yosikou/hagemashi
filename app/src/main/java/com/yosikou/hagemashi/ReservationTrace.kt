@@ -54,7 +54,7 @@ internal fun reservationDecision(version:Long,day:java.time.LocalDate,slot:Notic
     day!=now.atZone(zone).toLocalDate() -> ReservationReason.WRONG_LOCAL_DAY
     now<reservationAt(day,cfg.slot(slot).time,zone) -> ReservationReason.EARLY
     now>=slotDeadline(day,slot,cfg,zone) -> ReservationReason.WINDOW_ENDED
-    slotKey(day,slot) in claimedSlots(json) -> ReservationReason.ALREADY_CLAIMED
+    runClaimed(json,day,slot,cfg) -> ReservationReason.ALREADY_CLAIMED
     goalNeedsReset(cfg,day) -> if(reminderDays(json,cfg.goalCycle).size>=3 || day.toString() in allReminderDays(json)) ReservationReason.REMINDER_LIMIT else ReservationReason.DUE
     !cfg.automaticGeneration && cfg.testAnswerId==null -> ReservationReason.NO_TARGET
     else -> ReservationReason.DUE

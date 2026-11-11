@@ -63,7 +63,7 @@ internal fun answerIdFromNavigation(action: String?, data: String?, applicationI
         uri.rawQuery == null && uri.rawFragment == null && isAnswerId(id) }
 } catch (_: Exception) { null }
 
-internal fun scheduledAnswerId(day:java.time.LocalDate,slot:NoticeSlot):String =
-    UUID.nameUUIDFromBytes("hagemashi:auto:$day:${slot.name}".toByteArray(Charsets.UTF_8)).toString()
+internal fun scheduledAnswerId(day:java.time.LocalDate,slot:NoticeSlot,version:Long=0):String =
+    UUID.nameUUIDFromBytes("hagemashi:auto:$day:${slot.name}:$version".toByteArray(Charsets.UTF_8)).toString()
 internal fun answerTitle(answer:SavedEncouragement,fallback:String,legacy:String):String =
     if(answer.short.isBlank())legacy else notificationShort(answer.short,fallback)

@@ -18,7 +18,7 @@ class AutomaticGenerationTest {
         assertEquals(day,nextReservation(at.minusSeconds(1),zone,cfg,NoticeSlot.MORNING,empty())!!.day)
         assertFalse(reservationDue(0,day,NoticeSlot.MORNING,cfg,slotDeadline(day,NoticeSlot.MORNING,cfg,zone),zone,empty()))
         assertFalse(reservationDue(0,day,NoticeSlot.MORNING,cfg,at.plusSeconds(86400),zone,empty()))
-        assertFalse(reservationDue(0,day,NoticeSlot.MORNING,cfg,at,zone,claimSlot(empty(),day,NoticeSlot.MORNING)))
+        assertFalse(reservationDue(0,day,NoticeSlot.MORNING,cfg,at,zone,recordRunOutcome(empty(),day,NoticeSlot.MORNING,0,ReservationOutcome.POSTED,scheduledAnswerId(day,NoticeSlot.MORNING))))
         assertEquals(ReservationReason.DUE,reservationDecision(0,day,NoticeSlot.MORNING,cfg,at,zone,empty()))
     }
     @Test fun enablingAutomaticIsExplicitAndInvalidatesBothPreviousSlotJobs() {

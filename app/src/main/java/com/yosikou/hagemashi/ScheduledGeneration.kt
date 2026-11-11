@@ -72,13 +72,13 @@ private fun executeAutomatic(context:Context,slot:NoticeSlot,version:Long,day:Lo
     if(day!=LocalDate.now()){event(ReservationEvent.JOB_SKIPPED,ReservationReason.WRONG_LOCAL_DAY);return false}
     if(!automaticDue(context,slot,version,day)){event(ReservationEvent.JOB_SKIPPED);return false}
     if(!AiExecution.beginAutomatic(operation)){event(ReservationEvent.AUTO_BUSY);return automaticDue(context,slot,version,day)}
+    val answerId=scheduledAnswerId(day,slot,version)
     try {
         operation.check()
         val cfg=SettingsStore(context).read() // Freeze settings once, at this attempt's actual start.
         operation.limitDuration(Duration.between(Instant.now(),slotDeadline(day,slot,cfg,ZoneId.systemDefault())).toMillis())
         operation.check()
         val store=AnswerStore(context)
-        val answerId=scheduledAnswerId(day,slot)
         val existing=store.loadIfPresent(answerId)
         val answer=if(existing!=null){event(ReservationEvent.AUTO_REUSED);existing}else {
             val slug=cfg.modelId ?: run{event(ReservationEvent.JOB_SKIPPED,ReservationReason.MISSING_SETTINGS);return false}
@@ -95,24 +95,40 @@ private fun executeAutomatic(context:Context,slot:NoticeSlot,version:Long,day:Lo
             val text=encouragementText(raw,context.getString(R.string.notification_fallback))
             val saved=SavedEncouragement(answerId,Instant.now(),text.short,text.full,prepared.review.input,prepared.review.hasHealthData,
                 prepared.review.personaName,prepared.review.rows,prepared.review.kind)
-            try{operation.commit{store.save(saved)};event(ReservationEvent.AUTO_SAVED)}catch(e:Exception){event(ReservationEvent.AUTO_SAVE_FAILED);throw e}
+            try{operation.commit{store.save(saved)};synchronized(ReservationSupport.lock){ReservationSupport.saveOutcome(context,day,slot,version,ReservationOutcome.SAVED,answerId)};event(ReservationEvent.AUTO_SAVED)}catch(e:Exception){event(ReservationEvent.AUTO_SAVE_FAILED);throw e}
             saved
         }
         operation.check()
+        // Confirm the saved record and repair its index before any notification is attempted.
+        store.loadIfPresent(answerId) ?: throw Problem(Failure.STORAGE)
         synchronized(ReservationSupport.lock) {
             if(!automaticDue(context,slot,version,day))return false
-            if(!AnswerNotifications(context).allowed()){event(ReservationEvent.JOB_RETRY,ReservationReason.NOTIFICATIONS_BLOCKED);return true}
-            // At-most-once dispatch: retain claim across an ambiguous process death around notify().
-            ReservationSupport.claimAutomatic(context,day,slot)
-            event(ReservationEvent.CLAIM_SAVED)
+            val prior=runOutcome(ReservationSupport.automaticState(context),day,slot,version)
+            val tag="reservation:$day:${slot.name}:$version"
+            if(prior==ReservationOutcome.SENDING) {
+                val active=context.getSystemService(android.app.NotificationManager::class.java).activeNotifications.any{it.tag==tag}
+                ReservationSupport.saveOutcome(context,day,slot,version,if(active)ReservationOutcome.POSTED else ReservationOutcome.UNKNOWN,answerId)
+                return false
+            }
+            ReservationSupport.saveOutcome(context,day,slot,version,ReservationOutcome.SAVED,answerId)
+            if(!AnswerNotifications(context).allowed()){
+                ReservationSupport.saveOutcome(context,day,slot,version,ReservationOutcome.BLOCKED,answerId)
+                event(ReservationEvent.JOB_RETRY,ReservationReason.NOTIFICATIONS_BLOCKED);return true
+            }
+            ReservationSupport.saveOutcome(context,day,slot,version,ReservationOutcome.SENDING,answerId)
             event(ReservationEvent.NOTIFY_STARTED)
-            val result=AnswerNotifications(context).post(answer,"reservation:$day:${slot.name}")
+            val result=try{AnswerNotifications(context).post(answer,tag)}catch(e:Exception){
+                ReservationSupport.saveOutcome(context,day,slot,version,ReservationOutcome.FAILED,answerId)
+                throw e
+            }
+            ReservationSupport.saveOutcome(context,day,slot,version,if(result==NoticeState.POSTED)ReservationOutcome.POSTED else ReservationOutcome.BLOCKED,answerId)
             event(ReservationEvent.NOTIFY_RETURNED,if(result==NoticeState.POSTED)ReservationReason.POSTED else ReservationReason.FAILED)
-            if(result==NoticeState.POSTED)ReservationDiagnostics.notificationActive(context,"reservation:$day:${slot.name}",slot,version)
+            if(result==NoticeState.POSTED)ReservationDiagnostics.notificationActive(context,tag,slot,version)
+            else return true
         }
         return false
     }catch(_:AnswerDeleted){
-        synchronized(ReservationSupport.lock){ReservationSupport.claimAutomatic(context,day,slot)}
+        synchronized(ReservationSupport.lock){ReservationSupport.saveOutcome(context,day,slot,version,ReservationOutcome.SKIPPED)}
         event(ReservationEvent.JOB_SKIPPED);return false
     }catch(e:Exception){
         val kind=(e as? Problem)?.kind
@@ -133,11 +149,15 @@ private fun executeAutomatic(context:Context,slot:NoticeSlot,version:Long,day:Lo
         },reason)
         // Never retry an unavailable model/account silently or switch models/charging methods.
         if(!operation.wasCancelled() && kind in setOf(Failure.EXPIRED,Failure.PERMISSION,Failure.IDENTITY,Failure.DENIED,Failure.POLICY)) {
-            synchronized(ReservationSupport.lock){ReservationSupport.failAutomatic(context,day,slot,reason)}
+            synchronized(ReservationSupport.lock){ReservationSupport.saveOutcome(context,day,slot,version,ReservationOutcome.GENERATION_FAILED)}
             return false
         }
         val retry=runCatching{automaticDue(context,slot,version,day)}.getOrDefault(false)
-        if(retry)event(ReservationEvent.JOB_RETRY,reason)
+        if(retry) {
+            if(runCatching{AnswerStore(context).loadIfPresent(answerId)}.getOrNull()==null)
+                synchronized(ReservationSupport.lock){ReservationSupport.saveOutcome(context,day,slot,version,ReservationOutcome.GENERATION_RETRYING)}
+            event(ReservationEvent.JOB_RETRY,reason)
+        }
         return retry
     }finally{operation.cancel();AiExecution.endAutomatic(operation)}
 }

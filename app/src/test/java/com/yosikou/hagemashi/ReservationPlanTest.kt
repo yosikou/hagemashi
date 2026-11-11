@@ -20,7 +20,7 @@ class ReservationPlanTest {
         assertNotNull(nextReservation(now,zone,cfg.copy(morning=cfg.morning.copy(enabled=false)),NoticeSlot.EVENING,empty()))
     }
     @Test fun retriesAreDeduplicatedPerDayAndSlotWithoutBlockingTheOtherSlot() {
-        val claimed=claimSlot(empty(),day,NoticeSlot.MORNING)
+        val claimed=claimRun(empty(),day,NoticeSlot.MORNING,cfg.morningVersion)
         assertFalse(reservationDue(4,day,NoticeSlot.MORNING,cfg,now,zone,claimed))
         val evening=reservationAt(day,cfg.evening.time,zone)
         assertTrue(reservationDue(5,day,NoticeSlot.EVENING,cfg,evening,zone,claimed))
@@ -69,8 +69,8 @@ class ReservationPlanTest {
     @Test fun dstAndClockRollbackDoNotAssumeTwentyFourHourDaysOrForgetClaims() {
         val ny=ZoneId.of("America/New_York")
         assertEquals(Instant.parse("2026-03-08T07:30:00Z"),reservationAt(LocalDate.of(2026,3,8),LocalTime.of(2,30),ny))
-        var state=empty();repeat(500){state=claimSlot(state,day.plusDays(it.toLong()),NoticeSlot.MORNING)}
-        assertTrue(slotKey(day,NoticeSlot.MORNING) in claimedSlots(reservationLedger(JSONObject(state.toString()))))
+        var state=empty();repeat(500){state=claimRun(state,day.plusDays(it.toLong()),NoticeSlot.MORNING,cfg.morningVersion)}
+        assertTrue(runClaimed(reservationLedger(JSONObject(state.toString())),day,NoticeSlot.MORNING,cfg))
         assertFalse(reservationDue(4,day,NoticeSlot.MORNING,cfg,now,zone,state))
     }
     @Test fun deletedOrUnselectedTestAnswerCannotBeReplacedByLatestAndCorruptionFailsClosed() {
