@@ -77,6 +77,7 @@ class AnswerDetailTest {
             composeRule.activityRule.scenario.recreate()
             composeRule.waitUntil(5000) { composeRule.onAllNodes(androidx.compose.ui.test.hasText(a.full)).fetchSemanticsNodes().isNotEmpty() }
             composeRule.onNodeWithText(b.full).assertDoesNotExist()
+            composeRule.onNodeWithText(noticeA.extras.getString(Notification.EXTRA_TEXT)!!).performScrollTo().assertIsDisplayed()
             composeRule.onNodeWithText(context.getString(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER)).assertDoesNotExist()
             composeRule.onNodeWithText("68.125 kg").performScrollTo().assertIsDisplayed()
             composeRule.onNodeWithText("69.875 kg").assertDoesNotExist()

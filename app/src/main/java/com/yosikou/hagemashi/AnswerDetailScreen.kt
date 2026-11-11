@@ -30,7 +30,9 @@ internal fun AnswerDetailScreen(id: String, model: AnswerDetailViewModel, back: 
     DisposableEffect(Unit) { onDispose { model.close() } }
     val context = LocalContext.current
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission(), model::permissionResult)
-    Page(R.string.detail_title, back) {
+    Page(R.string.detail_title, back, titleText=model.answer?.takeIf{it.id==id}?.let{
+        answerTitle(it,stringResource(R.string.notification_fallback),stringResource(R.string.detail_title))
+    }) {
         if (model.loading) Text(stringResource(R.string.loading))
         if(model.deleted) Text(stringResource(R.string.history_deleted))
         if (model.loadFailed) {

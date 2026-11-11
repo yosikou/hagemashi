@@ -5,6 +5,9 @@ import org.json.JSONObject
 
 // Only allowlisted operational metadata. Never accept messages, intents, IDs or response bodies.
 internal enum class ReservationEvent {
+    JOB_ENQUEUED, JOB_ENQUEUE_FAILED, JOB_STARTED, JOB_FAILED, JOB_STOPPED, JOB_SKIPPED, JOB_RETRY, AUTO_BUSY,
+    HEALTH_STARTED, HEALTH_READ, HEALTH_EMPTY, HEALTH_UNPERMITTED, HEALTH_UNSUPPORTED, HEALTH_FAILED,
+    CHATGPT_STARTED, CHATGPT_COMPLETED, CHATGPT_FAILED, AUTO_SAVED, AUTO_REUSED, AUTO_SAVE_FAILED,
     APP_OPEN, APP_VISIBLE, APP_HIDDEN, TOKEN_PRESENT_BEFORE_REFRESH, TOKEN_ABSENT_BEFORE_REFRESH, TOKEN_CHECK_FAILED,
     REGISTER_STARTED, REGISTER_SKIPPED, REGISTER_RETURNED, REGISTER_FAILED, LEDGER_SAVED, LEDGER_FAILED,
     CANCEL_STARTED, CANCEL_RETURNED, CANCEL_FAILED, RECEIVER_ENTERED, HANDLER_STARTED,
@@ -13,6 +16,7 @@ internal enum class ReservationEvent {
     NOTIFY_STARTED, NOTIFY_FAILED, NOTIFY_RETURNED, NOTIFICATION_ACTIVE, NOTIFICATION_NOT_ACTIVE, NOTIFICATION_CHECK_FAILED
 }
 internal enum class ReservationReason {
+    MISSING_SETTINGS, AUTH_REQUIRED, MODEL_UNAVAILABLE, NETWORK_ERROR, RATE_LIMIT, PROTOCOL_ERROR, CANCELLED,
     NONE, VERSION_CHANGED, LEGACY, REPLAN, DISABLED_OR_UNAVAILABLE, DUE, SLOT_DISABLED,
     TARGET_UNREADABLE, NO_FUTURE_PLAN, VERSION_MISMATCH, WRONG_LOCAL_DAY, EARLY, WINDOW_ENDED, ALREADY_CLAIMED, NO_TARGET,
     REMINDER_LIMIT, NOTIFICATIONS_BLOCKED, POSTED, PERMISSION_DENIED, DISABLED, FAILED,
@@ -52,6 +56,6 @@ internal fun reservationDecision(version:Long,day:java.time.LocalDate,slot:Notic
     now>=slotDeadline(day,slot,cfg,zone) -> ReservationReason.WINDOW_ENDED
     slotKey(day,slot) in claimedSlots(json) -> ReservationReason.ALREADY_CLAIMED
     goalNeedsReset(cfg,day) -> if(reminderDays(json,cfg.goalCycle).size>=3 || day.toString() in allReminderDays(json)) ReservationReason.REMINDER_LIMIT else ReservationReason.DUE
-    cfg.testAnswerId==null -> ReservationReason.NO_TARGET
+    !cfg.automaticGeneration && cfg.testAnswerId==null -> ReservationReason.NO_TARGET
     else -> ReservationReason.DUE
 }

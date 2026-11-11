@@ -53,12 +53,12 @@ class MainActivityTest {
         assertFalse(facts.cleartextPermitted)
     }
 
-    @Test fun healthManifestRequestsOnlyTheThreeReadPermissions() {
+    @Test fun healthManifestRequestsThreeKindsAndExplicitBackgroundRead() {
         val activity = composeRule.activity
         @Suppress("DEPRECATION")
         val info = activity.packageManager.getPackageInfo(activity.packageName, PackageManager.GET_PERMISSIONS)
         val health = info.requestedPermissions.orEmpty().filter { it.startsWith("android.permission.health.") }.toSet()
-        assertEquals(setOf("android.permission.health.READ_WEIGHT", "android.permission.health.READ_BODY_FAT", "android.permission.health.READ_STEPS"), health)
+        assertEquals(setOf("android.permission.health.READ_WEIGHT", "android.permission.health.READ_BODY_FAT", "android.permission.health.READ_STEPS", "android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND"), health)
         val rationale = Intent("android.intent.action.VIEW_PERMISSION_USAGE")
             .addCategory("android.intent.category.HEALTH_PERMISSIONS").setPackage(activity.packageName)
         @Suppress("DEPRECATION")

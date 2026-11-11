@@ -9,6 +9,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import java.util.concurrent.CancellationException
 import java.util.concurrent.Executors
+import kotlin.concurrent.withLock
+import java.io.Closeable
+import java.util.concurrent.ConcurrentHashMap
 
 internal enum class AnswerContext { DUMMY, HEALTH }
 internal data class ConnectionUi(
@@ -30,6 +33,7 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
     private val repository = ConnectionRepository(application)
     private val answers = AnswerStore(application)
     private val loginReturn = LoginReturn()
+    private val manualTickets=ConcurrentHashMap.newKeySet<Closeable>()
     private val executor = Executors.newSingleThreadExecutor()
     private val main = Handler(Looper.getMainLooper())
     private var epoch = 0L
@@ -128,7 +132,7 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
     private fun generatePrompt(model: String, instructions: String, input: String, context: AnswerContext, review: ReviewedGeneration? = null) {
         requestedModel = model
         ui = ui.copy(answer = "", generationDiagnostic = null, answerContext = context, savedAnswerId = null, answerShort = "", answerSaveFailed = false)
-        run(R.string.generating) { op ->
+        run(R.string.generating, preferManual=true) { op ->
             val raw = repository.generate(model, instructions, input, op)
             if (review == null) Result(R.string.generation_success, answer = raw)
             else {
@@ -151,7 +155,7 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
 
     fun disconnect() {
         ui = ui.copy(answer = "", models = emptyList(), model = null, generationDiagnostic = null, answerContext = null, savedAnswerId = null, answerShort = "", answerSaveFailed = false)
-        run(R.string.disconnecting, 60000) { op ->
+        run(R.string.disconnecting, 60000, preferManual=true) { op ->
             Result(if (repository.disconnect(op)) R.string.disconnected_confirmed else R.string.disconnected_unconfirmed)
         }
     }
@@ -173,7 +177,7 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
     }
 
     // Storage, code exchange and rotating refresh tokens share one serialized executor.
-    private fun run(status: Int, timeout: Long = 180000, work: (Operation) -> Result) {
+    private fun run(status: Int, timeout: Long = 180000, preferManual:Boolean=false, work: (Operation) -> Result) {
         operation?.cancel()
         val generation = ++epoch
         val op = Operation(timeout) { progress ->
@@ -187,7 +191,9 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
         operation = op
         ui = ui.copy(busy = true, status = status, failure = null, diagnostic = null, browserUrl = null,
             progress = Progress(), lastWhileAway = Stage.NONE)
+        val ticket=if(preferManual)AiExecution.requestManual().also{manualTickets.add(it)}else null
         executor.execute {
+            try { AiExecution.lock.withLock {
             try {
                 val result = work(op)
                 val snapshot = if (op.progress.stage == Stage.NONE) op.step(Stage.READ_SAVED_STATE) { repository.snapshot() }
@@ -232,6 +238,7 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
                     }
                 }
             }
+            } } finally { ticket?.let{it.close();manualTickets.remove(it)} }
         }
     }
 
@@ -241,5 +248,6 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
         dnsComparison.close()
         comparisonCoordinator.shutdownNow()
         executor.shutdownNow()
+        manualTickets.forEach{it.close()};manualTickets.clear()
     }
 }

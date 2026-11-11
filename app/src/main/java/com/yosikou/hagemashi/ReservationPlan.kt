@@ -47,7 +47,7 @@ internal fun nextReservation(now:Instant,zone:ZoneId,cfg:AppSettings,slot:Notice
     val json=reservationLedger(raw);val claimed=claimedSlots(json)
     val waiting=goalNeedsReset(cfg,now.atZone(zone).toLocalDate())
     val reminders=allReminderDays(json)
-    if(waiting && reminderDays(json,cfg.goalCycle).size>=3 || !waiting && cfg.testAnswerId==null) return null
+    if(waiting && reminderDays(json,cfg.goalCycle).size>=3 || !waiting && !cfg.automaticGeneration && cfg.testAnswerId==null) return null
     val today=now.atZone(zone).toLocalDate()
     for(offset in 0L..(claimed.size+reminders.size+2).toLong()) {
         val day=today.plusDays(offset);val at=reservationAt(day,cfg.slot(slot).time,zone)
@@ -60,7 +60,7 @@ internal fun reservationDue(version:Long,day:LocalDate,slot:NoticeSlot,cfg:AppSe
     val json=reservationLedger(raw)
     if(!cfg.slot(slot).enabled || version!=cfg.version(slot) || day!=now.atZone(zone).toLocalDate() ||
         now<reservationAt(day,cfg.slot(slot).time,zone) || now>=slotDeadline(day,slot,cfg,zone) || slotKey(day,slot) in claimedSlots(json)) return false
-    return if(goalNeedsReset(cfg,day)) reminderDays(json,cfg.goalCycle).let{it.size<3 && day.toString() !in allReminderDays(json)} else cfg.testAnswerId!=null
+    return if(goalNeedsReset(cfg,day)) reminderDays(json,cfg.goalCycle).let{it.size<3 && day.toString() !in allReminderDays(json)} else cfg.automaticGeneration || cfg.testAnswerId!=null
 }
 internal fun isGoalReviewNavigation(action:String?,data:String?,applicationId:String):Boolean = runCatching {
     val uri=URI(data ?: "")

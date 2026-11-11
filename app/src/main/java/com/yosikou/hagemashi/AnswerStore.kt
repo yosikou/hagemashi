@@ -41,6 +41,15 @@ internal class AnswerStore(private val context: Context, private val directory: 
     fun load(id: String): SavedEncouragement = protect {
         index().use { db -> if (index().deleted(db, id)) throw AnswerDeleted(); raw(id) }
     }
+    fun loadIfPresent(id:String):SavedEncouragement? = protect {
+        index().use{db->
+            val idx=index()
+            if(idx.deleted(db,id))throw AnswerDeleted()
+            val file=File(context.noBackupFilesDir,"$directory/$id.v1")
+            if(!file.exists() && !File(file.path+".bak").exists())null
+            else raw(id).also{idx.insert(db,it)}
+        }
+    }
     fun delete(id: String) = protect {
         require(isAnswerId(id))
         index().use { db -> val idx = index(); idx.migrate(db); idx.remove(db, listOf(id)); erase(id) }

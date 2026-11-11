@@ -12,7 +12,7 @@ internal data class SlotSetting(val enabled: Boolean, val time: LocalTime)
 internal data class AppSettings(val goal: String? = null, val goalDate: LocalDate? = null, val maintaining: Boolean = false,
     val modelId: String? = null, val personas: List<Persona>, val personaId: String = "friend", val supplement: String = "",
     val morning: SlotSetting = SlotSetting(false, LocalTime.of(9,0)), val evening: SlotSetting = SlotSetting(false, LocalTime.of(20,0)),
-    val testAnswerId: String? = null, val reservationVersion: Long = 0,
+    val automaticGeneration: Boolean = false, val testAnswerId: String? = null, val reservationVersion: Long = 0,
     val morningVersion: Long = 0, val eveningVersion: Long = 0, val goalCycle: Long = 0) {
     fun persona(): Persona = personas.single { it.id == personaId }
     fun slot(slot: NoticeSlot): SlotSetting = if(slot == NoticeSlot.MORNING) morning else evening
@@ -27,7 +27,7 @@ internal data class AppSettings(val goal: String? = null, val goalDate: LocalDat
 internal fun goalNeedsReset(cfg: AppSettings, today: LocalDate): Boolean = cfg.goal != null && !cfg.maintaining && cfg.goalDate?.isBefore(today) == true
 internal fun nextSettings(old: AppSettings, changed: AppSettings, today: LocalDate = LocalDate.now()): AppSettings {
     require(changed.validTimes())
-    val targetChanged = old.testAnswerId != changed.testAnswerId
+    val targetChanged = old.testAnswerId != changed.testAnswerId || old.automaticGeneration != changed.automaticGeneration
     val resetChanged = goalNeedsReset(old,today) != goalNeedsReset(changed,today)
     val m = old.morning != changed.morning || targetChanged || resetChanged
     val e = old.evening != changed.evening || targetChanged || resetChanged
@@ -43,7 +43,7 @@ internal fun encodeSettings(value: AppSettings): JSONObject = JSONObject().put("
     .put("morningEnabled", value.morning.enabled).put("morningTime", value.morning.time.toString())
     .put("eveningEnabled", value.evening.enabled).put("eveningTime", value.evening.time.toString())
     .put("morningVersion", value.morningVersion).put("eveningVersion", value.eveningVersion).put("goalCycle", value.goalCycle).put("testAnswerId", value.testAnswerId ?: JSONObject.NULL)
-    .put("reservationVersion", value.reservationVersion)
+    .put("automaticGeneration",value.automaticGeneration).put("reservationVersion", value.reservationVersion)
 internal fun decodeSettings(json: JSONObject, defaults: List<Persona>): AppSettings {
     if (!json.has("schema")) { require(json.keys().asSequence().toSet() == setOf("host")); return AppSettings(personas = defaults) }
     require(json.getInt("schema") in 1..2)
@@ -62,7 +62,7 @@ internal fun decodeSettings(json: JSONObject, defaults: List<Persona>): AppSetti
     return AppSettings(goal=goal, goalDate=json.optString("goalDate").takeUnless { json.isNull("goalDate") || it.isEmpty() }?.let(LocalDate::parse),
         maintaining=json.optBoolean("maintaining"), modelId=json.optString("modelId").takeUnless { json.isNull("modelId") || it.isEmpty() },
         personas=personas, personaId=selected, supplement=json.optString("supplement"), morning=morning, evening=evening,
-        testAnswerId=json.optString("testAnswerId").takeUnless { json.isNull("testAnswerId") || it.isEmpty() }?.also { require(isAnswerId(it)) },
+        automaticGeneration=json.optBoolean("automaticGeneration"), testAnswerId=json.optString("testAnswerId").takeUnless { json.isNull("testAnswerId") || it.isEmpty() }?.also { require(isAnswerId(it)) },
         reservationVersion=json.optLong("reservationVersion"), morningVersion=if(legacy) json.optLong("reservationVersion") else json.optLong("morningVersion"),
         eveningVersion=json.optLong("eveningVersion"), goalCycle=json.optLong("goalCycle")).also { require(it.validTimes()) }
 

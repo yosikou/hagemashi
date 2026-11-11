@@ -20,6 +20,7 @@ internal object ReservationSupport {
     }
     private fun cancel(context:Context,slot:NoticeSlot,version:Long,reason:ReservationReason) {
         if(version<0)return
+        ScheduledGeneration.cancel(context,slot,version)
         pending(context,slot,version,noCreate=true)?.let{
             ReservationDiagnostics.record(context,ReservationEvent.CANCEL_STARTED,slot,version,reason=reason)
             try {requireNotNull(context.getSystemService(AlarmManager::class.java)).cancel(it);it.cancel()
@@ -53,6 +54,7 @@ internal object ReservationSupport {
         try { requireNotNull(context.getSystemService(AlarmManager::class.java)).setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,plan.at.toEpochMilli(),requireNotNull(pending(context,plan.slot,plan.version,plan)))
         } catch(e:Exception){ReservationDiagnostics.record(context,ReservationEvent.REGISTER_FAILED,plan.slot,plan.version,reason=ReservationDiagnostics.failure(e));throw e}
         ReservationDiagnostics.record(context,ReservationEvent.REGISTER_RETURNED,plan.slot,plan.version,plan.at.toEpochMilli())
+        if(cfg.automaticGeneration && !goalNeedsReset(cfg,plan.day))ScheduledGeneration.schedule(context,plan)
         json.getJSONObject("registrations").put(plan.slot.name,JSONObject().put("version",plan.version).put("day",plan.day.toString()).put("zone",ZoneId.systemDefault().id).put("trigger",plan.at.toEpochMilli()))
         try {state(context).write(json);ReservationDiagnostics.record(context,ReservationEvent.LEDGER_SAVED,plan.slot,plan.version,plan.at.toEpochMilli())}
         catch(e:Exception){ReservationDiagnostics.record(context,ReservationEvent.LEDGER_FAILED,plan.slot,plan.version,reason=ReservationDiagnostics.failure(e));throw e}
@@ -71,7 +73,7 @@ internal object ReservationSupport {
         if(oldVersion>=0 && oldVersion!=cfg.version(slot))cancel(context,slot,oldVersion,ReservationReason.VERSION_CHANGED)
         val today=LocalDate.now();val waiting=goalNeedsReset(cfg,today)
         val valid=cfg.slot(slot).enabled && AnswerNotifications(context).allowed() &&
-            (if(waiting) reminderDays(json,cfg.goalCycle).size<3 else cfg.testAnswerId?.let{runCatching{AnswerStore(context).load(it)}.isSuccess}==true)
+            (if(waiting) reminderDays(json,cfg.goalCycle).size<3 else if(cfg.automaticGeneration)cfg.goal!=null && cfg.modelId!=null else cfg.testAnswerId?.let{runCatching{AnswerStore(context).load(it)}.isSuccess}==true)
         if(!valid) {
             ReservationDiagnostics.record(context,ReservationEvent.REGISTER_SKIPPED,slot,cfg.version(slot),reason=when {
                 !cfg.slot(slot).enabled->ReservationReason.SLOT_DISABLED
@@ -94,13 +96,19 @@ internal object ReservationSupport {
         val plan=nextReservation(Instant.now(),ZoneId.systemDefault(),cfg,slot,json)
         if(plan==null){ReservationDiagnostics.record(context,ReservationEvent.REGISTER_SKIPPED,slot,cfg.version(slot),reason=ReservationReason.NO_FUTURE_PLAN);registrations.remove(slot.name);state(context).write(json)}else arm(context,cfg,plan,json)
     }
-    fun reschedule(context:Context)=synchronized(lock){val cfg=SettingsStore(context).read();NoticeSlot.entries.forEach{ensure(context,cfg,it,true)}}
+    fun reschedule(context:Context)=synchronized(lock){val cfg=SettingsStore(context).read();NoticeSlot.entries.forEach{ensure(context,cfg,it,!cfg.automaticGeneration)}}
     fun deliver(context:Context,version:Long,day:LocalDate,slot:NoticeSlot)=synchronized(lock) {
         ReservationDiagnostics.record(context,ReservationEvent.DELIVERY_STARTED,slot,version)
         val cfg=SettingsStore(context).read()
         ReservationDiagnostics.record(context,ReservationEvent.SETTINGS_LOADED,slot,version)
         if(!cfg.slot(slot).enabled || version!=cfg.version(slot)) {
             ReservationDiagnostics.record(context,ReservationEvent.DELIVERY_SKIPPED,slot,version,reason=if(!cfg.slot(slot).enabled)ReservationReason.SLOT_DISABLED else ReservationReason.VERSION_MISMATCH)
+            return@synchronized
+        }
+        if(cfg.automaticGeneration && !goalNeedsReset(cfg,LocalDate.now())) {
+            val json=ledger(context);val now=Instant.now();val zone=ZoneId.systemDefault()
+            if(reservationDue(version,day,slot,cfg,now,zone,json))ScheduledGeneration.schedule(context,ReservationPlan(slot,version,day,now))
+            else ReservationDiagnostics.record(context,ReservationEvent.DELIVERY_SKIPPED,slot,version,reason=reservationDecision(version,day,slot,cfg,now,zone,json))
             return@synchronized
         }
         val json=ledger(context)
@@ -132,6 +140,14 @@ internal object ReservationSupport {
         // Unchanged other-slot plans stay intact; a guide claim excludes both slots for this day.
         NoticeSlot.entries.forEach{ensure(context,cfg,it,it==slot && due)}
     }
+    fun automaticState(context:Context):JSONObject=ledger(context)
+    fun claimAutomatic(context:Context,day:LocalDate,slot:NoticeSlot) { state(context).write(claimSlot(ledger(context),day,slot)) }
+    fun failAutomatic(context:Context,day:LocalDate,slot:NoticeSlot,reason:ReservationReason) {
+        val json=claimSlot(ledger(context),day,slot)
+        val statuses=json.optJSONObject("automaticStatus") ?: JSONObject()
+        statuses.put(slot.name,JSONObject().put("day",day.toString()).put("reason",reason.name))
+        state(context).write(json.put("automaticStatus",statuses))
+    }
     fun slotStatus(context:Context,cfg:AppSettings,slot:NoticeSlot):Int=synchronized(lock) {
         when {
             !cfg.slot(slot).enabled -> R.string.reservation_slot_off
@@ -141,7 +157,13 @@ internal object ReservationSupport {
                 if(goalNeedsReset(cfg,today)) {
                     val days=reminderDays(json,cfg.goalCycle)
                     if(days.size>=3)R.string.goal_guide_limit else if(today.toString() in allReminderDays(json))R.string.goal_guide_done else R.string.goal_guide_only
-                }else if(cfg.testAnswerId==null)R.string.reservation_choose_answer
+                }else if(cfg.automaticGeneration) {
+                    val failure=json.optJSONObject("automaticStatus")?.optJSONObject(slot.name)
+                    if(cfg.goal==null || cfg.modelId==null)R.string.automatic_missing_settings
+                    else if(failure?.optString("day")==today.toString())R.string.automatic_action_required
+                    else if(slotKey(today,slot) in claimedSlots(json))R.string.reservation_claimed else R.string.automatic_registered
+                }
+                else if(cfg.testAnswerId==null)R.string.reservation_choose_answer
                 else if(runCatching{AnswerStore(context).load(cfg.testAnswerId)}.isFailure)R.string.reservation_missing_answer
                 else if(slotKey(today,slot) in claimedSlots(json))R.string.reservation_claimed
                 else if(json.getJSONObject("registrations").optJSONObject(slot.name)?.optLong("version",-1)==cfg.version(slot))R.string.reservation_registered
@@ -149,6 +171,6 @@ internal object ReservationSupport {
             }
         }
     }
-    fun status(context:Context,cfg:AppSettings):Int = if(!cfg.morning.enabled && !cfg.evening.enabled)R.string.reservation_off else R.string.reservation_test_only
+    fun status(context:Context,cfg:AppSettings):Int = if(!cfg.morning.enabled && !cfg.evening.enabled)R.string.reservation_off else if(cfg.automaticGeneration)R.string.automatic_notice else R.string.reservation_test_only
     fun slotStatuses(context:Context,cfg:AppSettings):Map<NoticeSlot,Int> = NoticeSlot.entries.associateWith{slotStatus(context,cfg,it)}
 }
