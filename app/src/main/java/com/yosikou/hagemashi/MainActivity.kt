@@ -52,6 +52,7 @@ class MainActivity : ComponentActivity() {
     private var healthPrivacy by mutableStateOf(false)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ReservationDiagnostics.record(this,ReservationEvent.APP_OPEN)
         history = ViewModelProvider(this)[HistoryViewModel::class.java]
         modePreview = ViewModelProvider(this)[ModePreviewViewModel::class.java]
         app = ViewModelProvider(this)[AppViewModel::class.java]
@@ -93,6 +94,7 @@ class MainActivity : ComponentActivity() {
                         "health" -> HealthConnectScreen(health, lifecycle, privacy = { healthPrivacy = true }, preview={route=if(it==GenerationKind.MORNING) "morning-preview" else "evening-preview"}) { route = "settings" }
                         "history" -> HistoryScreen(history,{detailId=it}){route="home";app.refresh()}
                         "morning-preview", "evening-preview" -> ModePreviewScreen(if(route=="morning-preview") GenerationKind.MORNING else GenerationKind.EVENING, modePreview, app.settings){route="health"}
+                        "reservation-diagnostics" -> ReservationDiagnosticScreen { route = "settings" }
                         "probes" -> ProbeScreen(probes) { route = "settings" }
                         "manual" -> ManualGenerationScreen(manual, model, app.settings, lifecycle, openDetail = { detailId = it }) { route = "home"; app.refresh() }
                         else -> app.settings?.let { cfg -> when (route) {
@@ -110,8 +112,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onStart() { super.onStart(); model.setForeground(true); probes.setForeground(true) }
-    override fun onStop() { model.setForeground(false); probes.setForeground(false); super.onStop() }
+    override fun onStart() { super.onStart(); ReservationDiagnostics.record(this,ReservationEvent.APP_VISIBLE); model.setForeground(true); probes.setForeground(true) }
+    override fun onStop() { ReservationDiagnostics.record(this,ReservationEvent.APP_HIDDEN); model.setForeground(false); probes.setForeground(false); super.onStop() }
     override fun onResume() { super.onResume(); model.setResumed(true); app.refresh() }
     override fun onPause() { model.setResumed(false); super.onPause() }
     override fun onNewIntent(intent: Intent) {

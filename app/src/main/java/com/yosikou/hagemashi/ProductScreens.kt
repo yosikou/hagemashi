@@ -104,7 +104,7 @@ internal fun SettingsMenu(open: (String) -> Unit, back: () -> Unit) {
             R.string.settings_encouragement_group to listOf("goal" to R.string.goal_settings, "agent" to R.string.agent_settings, "personas" to R.string.persona_settings),
             R.string.settings_connections_group to listOf("connection" to R.string.chatgpt_settings, "health" to R.string.health_settings),
             R.string.notification_settings_title to listOf("notice" to R.string.notification_settings_title),
-            R.string.settings_diagnostics_group to listOf("probes" to R.string.open_probes)
+            R.string.settings_diagnostics_group to listOf("probes" to R.string.open_probes, "reservation-diagnostics" to R.string.reservation_diagnostics)
         ).forEach { (heading, entries) ->
             SectionCard {
                 Text(stringResource(heading), style = MaterialTheme.typography.titleMedium)

@@ -315,7 +315,7 @@
 
     <string name="reservation_claimed">この枠の本日分は処理済みです。重複防止のため再送しません。</string>
 
-    <string name="reservation_registered">予約登録済みです。端末の現地時刻を目安に保存済み回答だけを通知します。省電力などAndroidの制約で遅れる場合があります。</string>
+    <string name="reservation_registered">予約APIへの登録要求が完了し、台帳を保存しました。OS内の予約の存続や通知到着は未確認です。端末の現地時刻を目安に保存済み回答だけを通知します。省電力などAndroidの制約で遅れる場合があります。</string>
 
     <string name="reservation_not_registered">設定は保存済みですが予約登録を確認できません。アプリを開き直して確認してください。</string>
 
@@ -345,4 +345,8 @@
     <string name="detail_collapse_data">使用したデータを折りたたむ</string>
     <string name="table_status_unknown">取得状況を確認できません</string>
     <string name="notification_test_title">検証用の通知</string>
+    <string name="reservation_diagnostics">予約通知の診断</string>
+    <string name="reservation_diagnostic_refresh">診断表示を更新</string>
+    <string name="reservation_diagnostic_copy">予約診断をコピー</string>
+    <string name="reservation_diagnostic_explanation">再起動後も直近128件の到達点を確認できます。REGISTER_RETURNEDは予約APIの呼び出し完了、RECEIVER_ENTEREDはOSからの受信、NOTIFY_RETURNEDは通知発行APIの結果です。トークンの存在だけではOS内の予約存続を証明できず、通知APIの成功も画面への到着を保証しません。APP_OPEN／APP_VISIBLEより前の記録と比較してください。診断の表示・更新は予約やAI送信を実行しません。健康値・回答・認証情報は含みません。</string>
 </resources>

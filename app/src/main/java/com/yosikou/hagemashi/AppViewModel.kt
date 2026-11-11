@@ -27,13 +27,16 @@ internal class AppViewModel(application: Application) : AndroidViewModel(applica
     var saving by mutableStateOf(false); private set
     private val store = SettingsStore(application)
     private val mutex = Mutex()
+    private var startupTokensCaptured=false
     init { refresh() }
     fun refresh() { viewModelScope.launch {
         mutex.withLock {
             try {
                 var schedulingFailed=false
                 val loaded = withContext(Dispatchers.IO) { synchronized(ReservationSupport.lock) {
-                    store.read().also { cfg -> schedulingFailed=runCatching{ReservationSupport.changed(getApplication<Application>(),cfg,cfg)}.isFailure }
+                    store.read().also { cfg ->
+                        if(!startupTokensCaptured){startupTokensCaptured=true;ReservationSupport.captureTokensBeforeRefresh(getApplication<Application>(),cfg)}
+                        schedulingFailed=runCatching{ReservationSupport.changed(getApplication<Application>(),cfg,cfg)}.isFailure }
                 } }
                 settings = loaded; failure = false
                 refreshDeliveryStatus(loaded,schedulingFailed)
