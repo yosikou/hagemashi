@@ -22,7 +22,7 @@ class ReservationTraceTest {
         val build=traceJson(event(3)).put("build","invalid\nSYNTHETIC_SECRET")
         val clean=sanitizeReservationTrace(JSONArray().put(extra).put(bad).put(build))
         assertEquals(1,clean.length())
-        assertEquals(traceJson(event(1)).keySet(),clean.getJSONObject(0).keySet())
+        assertEquals(traceJson(event(1)).keys().asSequence().toSet(),clean.getJSONObject(0).keys().asSequence().toSet())
         assertFalse(clean.toString().contains("SYNTHETIC"))
     }
     @Test fun partialExecutionAndReopenRemainDistinctWithoutOverwritingPreviousOutcome() {
