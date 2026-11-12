@@ -1,4 +1,25 @@
 <resources>
+    <string name="notification_fallback">今日も自分のペースを大切に。できたことを認めながら、無理なく続けるあなたを応援しています。</string>
+    <string name="notification_title">hagemashiからの励まし</string>
+    <string name="notification_channel">励ましの検証通知</string>
+    <string name="notification_channel_description">生成済みの回答で「通知を試す」を押した場合だけ通知します。</string>
+    <string name="notification_test">通知を試す</string>
+    <string name="notification_test_notice">この回答を使って通知を試します。AIへの追加送信はありません。通常の手動生成では通知しません。通知に測定値は載せず、ロック画面の表示・音などはAndroidの通知設定に従います。</string>
+    <string name="notification_posted">この回答の通知を送信しました。通知をタップすると、保存したこの回答を開きます。</string>
+    <string name="notification_denied">通知権限がありません。通知しませんでした。回答はこの画面で読めます。</string>
+    <string name="notification_disabled">アプリまたは通知チャンネルの通知が無効です。回答はこの画面で読めます。</string>
+    <string name="notification_failed">通知できませんでした。回答はこの画面で読めます。</string>
+    <string name="notification_sending">通知を準備しています。</string>
+    <string name="notification_settings">Androidの通知設定を開く</string>
+    <string name="detail_back">アプリへ戻る</string>
+    <string name="detail_title">励ましの詳細</string>
+    <string name="detail_open">回答の詳細を開く</string>
+    <string name="detail_generated_at">生成日時：%1$s</string>
+    <string name="detail_used_data">生成に使用した目標・健康データ</string>
+    <string name="detail_health_missing">健康データ未取得</string>
+    <string name="detail_load_failed">保存した回答を読み込めませんでした。別の回答には切り替えません。</string>
+    <string name="detail_retry">保存した回答を再読み込み</string>
+    <string name="detail_save_failed">回答を端末に保存できませんでした。この回答の通知・保存済み詳細は利用できませんが、全文は上に表示しています。</string>
     <string name="manual_open">実データで手動生成</string>
     <string name="manual_title">Health Connectの実データで手動生成</string>
     <string name="manual_notice">体重・体脂肪率は直近30日、歩数は今日を含む直近7日を読みます。送信前に項目・値・期間・プロンプトを確認できます。確認して送信するまでChatGPTへ健康データを送りません。過去の回答は送信しません。</string>
@@ -10,13 +31,13 @@
     <string name="manual_preview">ChatGPTへ送信する内容</string>
     <string name="manual_model">使用モデル：%1$s（%2$s）</string>
     <string name="manual_unavailable">Health Connectの利用状況または権限を確認できなかったため、健康値は含めません。目標と人格だけでも生成できます。</string>
-    <string name="manual_preview_notice">下の人格・生成方針と入力データをそのまま送信します。取得後の新しい記録や入力の変更は自動で混ぜません。再試行も同じ内容を送信します。画面を離れるとプレビューと回答は破棄します。</string>
+    <string name="manual_preview_notice">下の人格・生成方針と入力データをそのまま送信します。取得後の新しい記録や入力の変更は自動で混ぜません。再試行も同じ内容を送信します。画面を離れるとプレビューは破棄します。生成済みの回答と使用データは、通知から詳細を開くため端末内に暗号化保存します。通常の生成では通知しません。</string>
     <string name="manual_instructions">人格・生成方針</string>
     <string name="manual_input">入力データ</string>
     <string name="manual_send">表示内容を確認してChatGPTへ送信</string>
     <string name="manual_retry">表示内容のまま再試行</string>
     <string name="manual_edit">内容を変更・再取得</string>
-    <string name="manual_generation_rules">通知用短文40〜60文字と全文200〜300文字程度を日本語で生成してください。過去の回答はありません。測定日時・対象期間を考慮し、古い値を現在値と扱わないでください。未取得・権限なし・取得失敗を0や推測値で補完しないでください。全項目が未取得なら目標と人格だけを使って励ましてください。</string>
+    <string name="manual_generation_rules">日本語で、キーがshortとfullのJSONオブジェクトだけを返してください。shortは通知用の励まし40〜60文字目安、fullは回答全文200〜300文字目安です。shortには体重・体脂肪率・歩数・目標などの具体的な数値や単位を含めず、数値はfullだけに記載してください。Markdownのコード囲みは不要です。過去の回答はありません。測定日時・対象期間を考慮し、古い値を現在値と扱わないでください。未取得・権限なし・取得失敗を0や推測値で補完しないでください。全項目が未取得なら目標と人格だけを使って励ましてください。</string>
     <string name="manual_goal_format">目標体重：%1$s kg</string>
     <string name="manual_read_format">取得時刻：%1$s</string>
     <string name="manual_period_format">%1$sの対象期間：%2$s 〜 %3$s</string>
@@ -35,7 +56,7 @@
     <string name="manual_percent" formatted="false">%</string>
     <string name="health_open">Health Connect 読み取り検証</string>
     <string name="health_title">Health Connect 読み取り検証</string>
-    <string name="health_notice">体重・体脂肪率は過去7日間の最新20件、歩数は端末時刻の今日0時から取得時刻までを読みます。日時は端末のタイムゾーンで表示します。この画面からは送信しません。別の「実データで手動生成」で内容を確認して送信した場合だけChatGPTへ送ります。履歴保存・通知はありません。</string>
+    <string name="health_notice">体重・体脂肪率は過去7日間の最新20件、歩数は端末時刻の今日0時から取得時刻までを読みます。日時は端末のタイムゾーンで表示します。この画面からは送信しません。別の「実データで手動生成」で内容を確認して送信した場合だけChatGPTへ送ります。生成済み回答の詳細用保存と、明示的な検証通知は専用画面で行います。</string>
     <string name="health_checking">Health Connectの利用状況を確認します。</string>
     <string name="health_available">Health Connectを利用できます。</string>
     <string name="health_update_required">Health Connectのインストールまたは更新が必要です。</string>
@@ -67,7 +88,7 @@
     <string name="health_steps_aggregation">Health Connectの集計値です。提供元間の重複調整はHealth Connectの設定に従います。</string>
     <string name="health_privacy">健康データの利用目的・プライバシー</string>
     <string name="health_privacy_back">アプリへ戻る</string>
-    <string name="health_privacy_body">Health Connectから体重・体脂肪率・歩数を読み取り、値、測定日時または集計期間、提供元を表示します。読み取り検証画面からは送信しません。\n\n「実データで手動生成」では、目標体重・人格プロンプト・取得した健康データを送信前に表示します。ユーザーが確認して送信を押した内容だけを、接続中のChatGPTアカウントでOpenAIへ送信します。全項目が未取得でも、目標と人格だけで生成できます。過去の回答は送信しません。\n\n書き込み・履歴拡張・バックグラウンド読み取り権限は要求しません。健康値、送信内容、回答は画面用メモリだけに保持し、画面を離れると破棄します。ファイル・履歴・診断ログ・クリップボードには自動保存しません。認証情報は既存のKeystore保護で保持します。通知・自動生成はありません。\n\n権限はHealth Connectのアプリ権限からいつでも解除できます。提供元が書き込んでいない記録を推測で補いません。</string>
+    <string name="health_privacy_body">Health Connectから体重・体脂肪率・歩数を読み取り、値、測定日時または集計期間、提供元を表示します。読み取り検証画面からは送信しません。\n\n「実データで手動生成」では、目標体重・人格プロンプト・取得した健康データを送信前に表示します。ユーザーが確認して送信を押した内容だけを、接続中のChatGPTアカウントでOpenAIへ送信します。全項目が未取得でも、目標と人格だけで生成できます。過去の回答は送信しません。\n\n書き込み・履歴拡張・バックグラウンド読み取り権限は要求しません。送信前の健康値とプレビューは画面用メモリに保持します。生成済みの回答、生成日時、使用した目標・健康データは、通知から詳細を開くため端末内にKeystoreで保護して暗号化保存し、端末バックアップには含めません。診断ログ・クリップボードには自動保存しません。認証情報は既存のKeystore保護で保持します。通常の手動生成では通知しません。詳細画面で「通知を試す」を押した場合だけ生成済みの短文を通知し、追加のAI送信はしません。自動生成はありません。\n\n権限はHealth Connectのアプリ権限からいつでも解除できます。提供元が書き込んでいない記録を推測で補いません。</string>
     <string name="generation_diagnostic_title">直近の生成診断</string>
     <string name="generation_diagnostic_notice">固定分類と有無だけを記録します。HTTP 200だけでは成功としません。完了イベントの検証と、画面の回答本文を確認してください。コピーにはトークン・プロンプト・回答本文・生の応答は含みません。</string>
     <string name="copy_generation_diagnostic">生成の安全な診断をコピー</string>
@@ -82,7 +103,7 @@
     <string name="probe_back">手動接続画面へ戻る</string>
     <string name="app_name">hagemashi</string>
     <string name="screen_title">ChatGPT 手動接続の検証</string>
-    <string name="preview_notice">検証版：ブラウザから戻る認証とHealth Connectの読み取り検証です。実データのAI送信は専用画面で確認した手動送信だけです。予約生成・通知・履歴保存はありません。</string>
+    <string name="preview_notice">検証版：ブラウザから戻る認証とHealth Connectの読み取り検証です。実データのAI送信は専用画面で確認した手動送信だけです。予約生成はありません。生成済みの回答は詳細表示用に保存し、通知は「通知を試す」の操作だけです。</string>
     <string name="continue_chatgpt">Continue with ChatGPT</string>
     <string name="connected">接続済み</string>
     <string name="disconnected">未接続</string>

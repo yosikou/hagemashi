@@ -78,7 +78,8 @@ internal class ManualGenerationViewModel(application: Application) : AndroidView
                         HealthReadStatus.ERROR to string(R.string.manual_missing_error),
                         HealthReadStatus.HAS_RECORDS to string(R.string.health_has_records)))
                 val instructions = string(R.string.persona_prompt) + "\n" + string(R.string.manual_generation_rules)
-                val frozen = ReviewedGeneration(model.slug, model.name, instructions, healthGenerationInput(target, snapshot, zone, labels))
+                val frozen = ReviewedGeneration(model.slug, model.name, instructions, healthGenerationInput(target, snapshot, zone, labels),
+                    snapshot.results.any { it.samples.isNotEmpty() || it.steps != null || it.days.any { day -> day.value != null } })
                 if (generation == epoch) { review = frozen; readUnavailable = unavailable }
             } catch (e: CancellationException) { throw e }
             catch (_: Exception) { if (generation == epoch) prepareFailed = true }
