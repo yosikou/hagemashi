@@ -242,7 +242,7 @@
     <string name="notification_settings_title">通知</string>
     <string name="goal_input">目標体重</string>
     <string name="goal_date_input">目標日（任意・YYYY-MM-DD）</string>
-    <string name="goal_invalid">単位を付けず、数値として解釈できる正の目標体重を入力してください。長すぎる入力は保存できません。</string>
+    <string name="goal_invalid">小数は6桁以内で入力してください。単位を付けず、数値として解釈できる正の目標体重を入力してください。長すぎる入力は保存できません。</string>
     <string name="save_settings">保存する</string>
     <string name="settings_error">設定の読み込み・保存に失敗しました。再読み込みして確認してください。</string>
     <string name="settings_saved">設定を保存済みです。変更は次の生成から適用します。</string>
@@ -400,4 +400,11 @@
     <string name="persona_comparison_start">3人を同じ条件で比較する</string>
     <string name="persona_comparison_stop">比較を中断</string>
     <string name="persona_comparison_not_run">まだ生成していません</string>
+    <string name="weight_unit_title">体重の単位</string>
+    <string name="weight_unit_help">表示と目標入力の単位を選びます。体重・目標はkgを基準に保存し、単位を変えても目標は変わりません。表示言語とは独立した設定です。</string>
+    <string name="weight_value_unit">%1$s %2$s</string>
+    <string name="goal_value_unit">目標体重：%1$s %2$s</string>
+    <string name="goal_difference_unit">目標との差：%1$s %2$s</string>
+    <string name="weight_generation_rule">体重と目標体重は%1$sに統一して入力しています。回答本文の体重の単位も%1$sを使ってください。通知短文には具体的な測定値を含めないでください。</string>
+    <string name="weight_review_precision">送信する体重の単位：%1$s。概要は小数2桁まで、以下は送信する換算値（lbは小数12桁まで）です。元の測定記録は変更しません。</string>
 </resources>

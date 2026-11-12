@@ -75,11 +75,11 @@ internal fun HomeScreen(app: AppViewModel, connection: ConnectionViewModel, sett
                 Text(stringResource(R.string.home_weight), style = MaterialTheme.typography.titleMedium)
                 val weight = app.weight
                 if (weight == null) Text(stringResource(R.string.home_weight_missing)) else {
-                    Text(stringResource(R.string.health_weight_value, weight.value), style = MaterialTheme.typography.headlineMedium)
+                    Text(stringResource(R.string.weight_value_unit, cfg.weightUnit.display(weight.value.toString()), cfg.weightUnit.symbol), style = MaterialTheme.typography.headlineMedium)
                     Text(stringResource(R.string.health_measured_at, measurementDisplayTime(weight.measuredAt.toString(), ZoneId.systemDefault()).orEmpty()), style = MaterialTheme.typography.bodyMedium)
-                    cfg.goal?.toDoubleOrNull()?.let { target -> Text(stringResource(R.string.goal_difference, weight.value - target)) }
+                    cfg.goal?.toDoubleOrNull()?.let { target -> Text(stringResource(R.string.goal_difference_unit, cfg.weightUnit.display(java.math.BigDecimal.valueOf(weight.value).subtract(java.math.BigDecimal.valueOf(target)).toPlainString()), cfg.weightUnit.symbol)) }
                 }
-                cfg.goal?.let { Text(stringResource(R.string.manual_goal_format, it)) }
+                cfg.goal?.let { Text(stringResource(R.string.goal_value_unit, cfg.weightUnit.display(it), cfg.weightUnit.symbol)) }
                 TextButton(onClick = { settings("health") }) { Text(stringResource(R.string.health_settings)) }
             }
             if (!cfg.maintaining && cfg.goal != null && app.weight?.let { it.value <= cfg.goal.toDouble() } == true) {
@@ -101,7 +101,7 @@ internal fun HomeScreen(app: AppViewModel, connection: ConnectionViewModel, sett
 internal fun SettingsMenu(open: (String) -> Unit, back: () -> Unit) {
     Page(R.string.settings_title, back) {
         listOf(
-            R.string.settings_encouragement_group to listOf("goal" to R.string.goal_settings, "agent" to R.string.agent_settings, "personas" to R.string.persona_settings),
+            R.string.settings_encouragement_group to listOf("goal" to R.string.goal_settings, "units" to R.string.weight_unit_title, "agent" to R.string.agent_settings, "personas" to R.string.persona_settings),
             R.string.settings_connections_group to listOf("connection" to R.string.chatgpt_settings, "health" to R.string.health_settings),
             R.string.notification_settings_title to listOf("notice" to R.string.notification_settings_title),
             R.string.settings_diagnostics_group to listOf("probes" to R.string.open_probes, "reservation-diagnostics" to R.string.reservation_diagnostics, "dummy-generation" to R.string.diagnostic_generation)
@@ -117,7 +117,8 @@ internal fun SettingsMenu(open: (String) -> Unit, back: () -> Unit) {
 }
 @Composable
 internal fun GoalSettings(app: AppViewModel, cfg: AppSettings, back: () -> Unit) {
-    var goal by remember(cfg.goal) { mutableStateOf(cfg.goal.orEmpty()) }
+    val initial = remember(cfg.goal, cfg.weightUnit) { cfg.goal?.let(cfg.weightUnit::input).orEmpty() }
+    var goal by remember(cfg.goal, cfg.weightUnit) { mutableStateOf(initial) }
     var date by remember(cfg.goalDate) { mutableStateOf(cfg.goalDate) }
     var invalid by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -126,7 +127,7 @@ internal fun GoalSettings(app: AppViewModel, cfg: AppSettings, back: () -> Unit)
             Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(goal, { goal = it }, label = { Text(stringResource(R.string.goal_input)) }, modifier=Modifier.weight(1f),
                     singleLine=true, isError=invalid, keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=androidx.compose.ui.text.input.KeyboardType.Decimal))
-                Text(stringResource(R.string.manual_kg))
+                Text(cfg.weightUnit.symbol)
             }
             Text(date?.toString() ?: stringResource(R.string.goal_no_deadline))
             OutlinedButton(onClick = {
@@ -136,7 +137,7 @@ internal fun GoalSettings(app: AppViewModel, cfg: AppSettings, back: () -> Unit)
             if(date!=null) TextButton(onClick={date=null}){Text(stringResource(R.string.goal_clear_deadline))}
             if (invalid) Text(stringResource(R.string.goal_invalid))
             Button(onClick = {
-                val value=canonicalGoal(goal); invalid=value==null
+                val value=goalDraftKg(goal, initial, cfg.goal, cfg.weightUnit); invalid=value==null
                 if(value!=null) app.change { it.copy(goal=value, goalDate=date, maintaining=false) }
             }, enabled = !app.saving) { Text(stringResource(R.string.save_settings)) }
             SettingsStatus(app)
@@ -269,4 +270,19 @@ internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () 
     val permission=androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()){app.refresh()}
     if(android.os.Build.VERSION.SDK_INT>=33)OutlinedButton(onClick={permission.launch(android.Manifest.permission.POST_NOTIFICATIONS)}){Text(stringResource(R.string.reservation_grant))}
     OutlinedButton(onClick={runCatching{context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(android.provider.Settings.EXTRA_APP_PACKAGE,context.packageName))}}){Text(stringResource(R.string.notification_settings))}
+}
+
+@Composable internal fun WeightUnitSettings(app: AppViewModel, cfg: AppSettings, back: () -> Unit) {
+    Page(R.string.weight_unit_title, back) {
+        SectionCard {
+            Text(stringResource(R.string.weight_unit_help))
+            WeightUnit.entries.forEach { unit ->
+                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    RadioButton(selected = cfg.weightUnit == unit, onClick = { app.change { it.copy(weightUnit = unit) } }, enabled = !app.saving)
+                    Text(unit.symbol)
+                }
+            }
+            SettingsStatus(app)
+        }
+    }
 }

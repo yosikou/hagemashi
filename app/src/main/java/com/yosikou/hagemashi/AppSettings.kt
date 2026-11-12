@@ -13,7 +13,7 @@ internal data class AppSettings(val goal: String? = null, val goalDate: LocalDat
     val modelId: String? = null, val personas: List<Persona>, val personaId: String = "friend", val supplement: String = "",
     val morning: SlotSetting = SlotSetting(false, LocalTime.of(9,0)), val evening: SlotSetting = SlotSetting(false, LocalTime.of(20,0)),
     val automaticGeneration: Boolean = false, val testAnswerId: String? = null, val reservationVersion: Long = 0,
-    val morningVersion: Long = 0, val eveningVersion: Long = 0, val goalCycle: Long = 0) {
+    val morningVersion: Long = 0, val eveningVersion: Long = 0, val goalCycle: Long = 0, val weightUnit: WeightUnit = WeightUnit.KG) {
     fun persona(): Persona = personas.single { it.id == personaId }
     fun slot(slot: NoticeSlot): SlotSetting = if(slot == NoticeSlot.MORNING) morning else evening
     fun version(slot: NoticeSlot): Long = if(slot == NoticeSlot.MORNING) morningVersion else eveningVersion
@@ -37,7 +37,7 @@ internal fun nextSettings(old: AppSettings, changed: AppSettings, today: LocalDa
 }
 internal fun encodeSettings(value: AppSettings): JSONObject = JSONObject().put("schema", 2)
     .put("goal", value.goal ?: JSONObject.NULL).put("goalDate", value.goalDate?.toString() ?: JSONObject.NULL)
-    .put("maintaining", value.maintaining).put("modelId", value.modelId ?: JSONObject.NULL)
+    .put("weightUnit", value.weightUnit.name).put("maintaining", value.maintaining).put("modelId", value.modelId ?: JSONObject.NULL)
     .put("personas", JSONArray().also { a -> value.personas.forEach { a.put(JSONObject().put("id", it.id).put("name", it.name).put("prompt", it.prompt)) } })
     .put("personaId", value.personaId).put("supplement", value.supplement)
     .put("morningEnabled", value.morning.enabled).put("morningTime", value.morning.time.toString())
@@ -59,7 +59,7 @@ internal fun decodeSettings(json: JSONObject, defaults: List<Persona>): AppSetti
         else SlotSetting(json.getBoolean("morningEnabled"), LocalTime.parse(json.getString("morningTime")))
     val evening = if(legacy) SlotSetting(false, LocalTime.of(20,0))
         else SlotSetting(json.getBoolean("eveningEnabled"), LocalTime.parse(json.getString("eveningTime")))
-    return AppSettings(goal=goal, goalDate=json.optString("goalDate").takeUnless { json.isNull("goalDate") || it.isEmpty() }?.let(LocalDate::parse),
+    return AppSettings(weightUnit=runCatching { WeightUnit.valueOf(json.optString("weightUnit", "KG")) }.getOrDefault(WeightUnit.KG), goal=goal, goalDate=json.optString("goalDate").takeUnless { json.isNull("goalDate") || it.isEmpty() }?.let(LocalDate::parse),
         maintaining=json.optBoolean("maintaining"), modelId=json.optString("modelId").takeUnless { json.isNull("modelId") || it.isEmpty() },
         personas=personas, personaId=selected, supplement=json.optString("supplement"), morning=morning, evening=evening,
         automaticGeneration=json.optBoolean("automaticGeneration"), testAnswerId=json.optString("testAnswerId").takeUnless { json.isNull("testAnswerId") || it.isEmpty() }?.also { require(isAnswerId(it)) },

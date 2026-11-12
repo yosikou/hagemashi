@@ -54,13 +54,13 @@ internal suspend fun prepareGeneration(app:Context,settings:AppSettings,model:Mo
             HealthReadStatus.HAS_RECORDS to string(R.string.health_has_records)))
     val persona = settings.persona()
     val instructions = listOf(persona.prompt, settings.supplement,
-        if (settings.maintaining) string(R.string.maintain_prompt) else "", string(R.string.manual_generation_rules), string(if(kind==GenerationKind.MORNING)R.string.morning_rules else R.string.manual_reflection_rules))
+        if (settings.maintaining) string(R.string.maintain_prompt) else "", string(R.string.manual_generation_rules), app.getString(R.string.weight_generation_rule, settings.weightUnit.symbol), string(if(kind==GenerationKind.MORNING)R.string.morning_rules else R.string.manual_reflection_rules))
         .filter { it.isNotBlank() }.joinToString("\n")
-    val input = healthGenerationInput(target, snapshot, zone, labels) +
+    val input = healthGenerationInput(target, snapshot, zone, labels, settings.weightUnit) +
         (settings.goalDate?.let { "\n" + app.getString(R.string.goal_date_format, it.toString()) } ?: "")
     val frozen = ReviewedGeneration(model.slug, model.name, instructions, input,
         snapshot.results.any { it.samples.isNotEmpty() || it.steps != null || it.days.any { day -> day.value != null } }, persona.name,
-        measurementRows(snapshot, target, settings.goalDate?.toString(), zone), kind, persona.prompt, settings.supplement)
+        measurementRows(snapshot, target, settings.goalDate?.toString(), zone), kind, persona.prompt, settings.supplement, settings.weightUnit)
     if(status==ReservationEvent.HEALTH_READ)status=when {
         frozen.hasHealthData->ReservationEvent.HEALTH_READ
         snapshot.results.any{it.status==HealthReadStatus.ERROR}->ReservationEvent.HEALTH_FAILED

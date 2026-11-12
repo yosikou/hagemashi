@@ -6,12 +6,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
-@Composable internal fun MeasurementTable(rows: List<MeasurementRow>, showGroupingNote: Boolean = false, compactStepDates: Boolean = false) {
+@Composable internal fun MeasurementTable(rows: List<MeasurementRow>, showGroupingNote: Boolean = false, compactStepDates: Boolean = false, weightUnit: WeightUnit = LocalWeightUnit.current, preciseWeight: Boolean = false) {
     val zone = java.time.ZoneId.systemDefault()
     val display = measurementDisplay(rows, zone)
     if (showGroupingNote && display.combined) Text(stringResource(R.string.table_grouping_note))
     MeasureItem.entries.forEach { item ->
-        val selected = display.rows.filter { it.item == item }
+        val selected = display.rows.filter { it.item == item }.map { weightDisplayRow(it, weightUnit, preciseWeight) }
         if (selected.isNotEmpty()) {
             val label = stringResource(when(item) {
                 MeasureItem.WEIGHT -> R.string.health_weight; MeasureItem.BODY_FAT -> R.string.health_body_fat

@@ -79,7 +79,8 @@ internal fun AnswerDetailScreen(id: String, model: AnswerDetailViewModel, back: 
         Text(stringResource(R.string.detail_used_data), style = MaterialTheme.typography.titleMedium)
         Text(stringResource(R.string.detail_saved_snapshot), style = MaterialTheme.typography.bodyMedium)
         if (!answer.hasHealthData) Text(stringResource(R.string.detail_health_missing))
-        latest.forEach { row ->
+        latest.forEach { original ->
+            val row = weightDisplayRow(original, LocalWeightUnit.current)
             val label = stringResource(when (row.item) {
                 MeasureItem.WEIGHT -> R.string.health_weight
                 MeasureItem.BODY_FAT -> R.string.health_body_fat

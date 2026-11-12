@@ -80,6 +80,7 @@ class MainActivity : ComponentActivity() {
                     } catch (_: Exception) { model.browserFailed() }
                 }
             }
+            androidx.compose.runtime.CompositionLocalProvider(LocalWeightUnit provides (app.settings?.weightUnit ?: WeightUnit.KG)) {
             HagemashiTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val selectedDetail = detailId
@@ -100,6 +101,7 @@ class MainActivity : ComponentActivity() {
                         "dummy-generation" -> if(diagnosticUi()) DiagnosticGenerationScreen(model){route="settings"} else SettingsMenu({route=it}){route="home"}
                         "manual" -> ManualGenerationScreen(manual, model, app.settings, lifecycle, openDetail = { detailId = it }) { route = "home"; app.refresh() }
                         else -> app.settings?.let { cfg -> when (route) {
+                            "units" -> WeightUnitSettings(app, cfg) { route = "settings" }
                             "goal" -> GoalSettings(app, cfg) { route = "settings" }
                             "agent" -> AgentSettings(app, cfg, model) { route = "settings" }
                             "personas" -> PersonaSettings(app, cfg, compare={route="persona-comparison"}) { route = "settings" }
@@ -111,6 +113,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
         }
     }
 
