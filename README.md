@@ -1,11 +1,15 @@
 # hagemashi
 
-Kotlin / Jetpack Compose の単一Activityアプリです。このブランチはChatGPTの手動接続とHealth Connect読み取りの検証版です。
+Kotlin / Jetpack Compose の単一Activityアプリです。このブランチはHealth Connectの実データで、送信前に内容を確認してChatGPTへ手動生成する検証版です。
 Android 8.0（API 26）以上に対応し、Android Studioは不要です。
+
+## 実データによる手動生成
+
+[送信前確認・30日／7日の読み取り・欠損・Android実機手順](docs/health-manual-generation.md)を参照してください。読み取りPR #5の最新先端から分岐した依存PRで、どちらも未マージです。目標体重と既定人格、取得した健康値を確認して送信すると回答本文を表示します。過去の回答は送信せず、履歴保存・人格編集・自動生成・通知はありません。今回の結合動作は実機未確認です。
 
 ## Health Connectの読み取り検証
 
-[体重・体脂肪率・歩数の読み取り仕様、arboleaf到着確認、Androidだけの試験手順](docs/health-connect-read-spike.md)を参照してください。健康データは端末画面の表示だけに使用し、ChatGPT送信・書き込み・通知・履歴保存はありません。Health Connectの実機読み取りは未確認で、このPRはレビュー用です。
+[体重・体脂肪率・歩数の読み取り仕様、arboleaf到着確認、Androidだけの試験手順](docs/health-connect-read-spike.md)を参照してください。読み取り検証画面からは送信しません。ユーザーから実データ取得成功の報告を受けています。別の「実データで手動生成」画面では、プレビューを確認して送信した内容だけをChatGPTへ送ります。書き込み・通知・履歴保存はありません。
 
 ## ChatGPT接続の技術調査
 

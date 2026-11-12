@@ -39,6 +39,14 @@ class MainActivityTest {
         composeRule.onNodeWithText("安全な診断結果をコピー").performScrollTo().assertIsNotEnabled()
     }
 
+    @Test fun realDataGenerationRequiresPreparingAndReviewingBeforeThereIsASendButton() {
+        composeRule.onNodeWithText("実データで手動生成").performScrollTo().performClick()
+        composeRule.onNodeWithText("Health Connectの実データで手動生成").assertIsDisplayed()
+        composeRule.onNodeWithText("目標体重（kg・この画面だけに保持）").assertIsDisplayed()
+        composeRule.onNodeWithText("健康データを取得して送信内容を確認").performScrollTo().assertIsNotEnabled()
+        composeRule.onNodeWithText("表示内容を確認してChatGPTへ送信").assertDoesNotExist()
+    }
+
     @Test fun installedAppHasInternetAndDisallowsCleartext() {
         val facts = readNetworkFacts(composeRule.activity)
         assertNotNull(facts)

@@ -49,3 +49,7 @@ Health Connect SDKはAPI26以上に対応するが、実際のHealth Connect利�
 ## 結果の扱い
 
 自動テストは合成値と偽のデータソースだけで、実機Health Connectやarboleafに接続しない。CI成功・APK生成を実データ到着の成功と扱わない。現時点でHealth Connectの実機読み取り・権限画面・arboleaf新測定の到着は未実行。ユーザーが試すまで未確認とする。テスト件数、CI・APKリンク、署名／Manifest検査は提出PRに記録する。
+
+## 後続の手動生成検証
+
+ユーザーからHealth Connect実データ取得成功の報告を受領した。取得時のAPK識別子等は未指定のため推測しない。上記は読み取りPR #5の範囲であり、後続の依存PRでは[実データの手動生成](health-manual-generation.md)として明示的な送信前確認を追加する。旧読み取り画面は表示のみ、後続の専用画面だけが確認したデータを送信する。

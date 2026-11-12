@@ -141,11 +141,11 @@ internal class ConnectionRepository(context: Context) {
         }
     }
 
-    fun generate(model: String, instructions: String, dummy: String, operation: Operation): String {
+    fun generate(model: String, instructions: String, input: String, operation: Operation): String {
         // Re-fetch account-specific availability for each manual request; never fall back to a hardcoded slug.
         if (models(operation).none { it.slug == model }) throw Problem(Failure.POLICY)
         val session = usableSession(operation)
-        val body = generationRequest(model, instructions, dummy)
+        val body = generationRequest(model, instructions, input)
         return operation.step(Stage.GENERATION) { http.generate(body, session.getString("access"), operation) }
     }
 

@@ -10,6 +10,7 @@ import androidx.lifecycle.AndroidViewModel
 import java.util.concurrent.CancellationException
 import java.util.concurrent.Executors
 
+internal enum class AnswerContext { DUMMY, HEALTH }
 internal data class ConnectionUi(
     val busy: Boolean = true, val connected: Boolean = false, val permitted: Boolean = false,
     val name: String = "", val email: String = "", val accounts: List<Account> = emptyList(),
@@ -19,7 +20,7 @@ internal data class ConnectionUi(
     val progress: Progress = Progress(), val savedConnection: SavedConnection = SavedConnection.UNKNOWN,
     val lastWhileAway: Stage = Stage.NONE, val networkFacts: NetworkFacts? = null,
     val dnsObservations: List<DnsObservation> = emptyList(),
-    val generationDiagnostic: GenerationDiagnostic? = null
+    val generationDiagnostic: GenerationDiagnostic? = null, val answerContext: AnswerContext? = null
 )
 
 internal class ConnectionViewModel(application: Application) : AndroidViewModel(application) {
@@ -111,15 +112,31 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
     fun generate() {
         val model = ui.model ?: return
         if (ui.busy || !ui.permitted) return
-        ui = ui.copy(answer = "", generationDiagnostic = null)
+        val app = getApplication<Application>()
+        generatePrompt(model, app.getString(R.string.persona_prompt), app.getString(R.string.dummy_prompt), AnswerContext.DUMMY)
+    }
+
+    fun generateReviewed(review: ReviewedGeneration) {
+        if (ui.busy || !ui.permitted || ui.models.none { it.slug == review.model }) return
+        generatePrompt(review.model, review.instructions, review.input, AnswerContext.HEALTH)
+    }
+
+    private fun generatePrompt(model: String, instructions: String, input: String, context: AnswerContext) {
+        ui = ui.copy(answer = "", generationDiagnostic = null, answerContext = context)
         run(R.string.generating) { op ->
-            val app = getApplication<Application>()
-            Result(R.string.generation_success, answer = repository.generate(model, app.getString(R.string.persona_prompt), app.getString(R.string.dummy_prompt), op))
+            Result(R.string.generation_success, answer = repository.generate(model, instructions, input, op))
         }
     }
 
+    fun clearHealthResult() {
+        if (ui.answerContext != AnswerContext.HEALTH) return
+        val wasBusy = ui.busy
+        ui = ui.copy(answer = "", answerContext = null, generationDiagnostic = null)
+        if (wasBusy) cancel()
+    }
+
     fun disconnect() {
-        ui = ui.copy(answer = "", models = emptyList(), model = null, generationDiagnostic = null)
+        ui = ui.copy(answer = "", models = emptyList(), model = null, generationDiagnostic = null, answerContext = null)
         run(R.string.disconnecting, 60000) { op ->
             Result(if (repository.disconnect(op)) R.string.disconnected_confirmed else R.string.disconnected_unconfirmed)
         }
