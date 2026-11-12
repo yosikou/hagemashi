@@ -104,7 +104,7 @@ internal fun SettingsMenu(open: (String) -> Unit, back: () -> Unit) {
             R.string.settings_encouragement_group to listOf("goal" to R.string.goal_settings, "agent" to R.string.agent_settings, "personas" to R.string.persona_settings),
             R.string.settings_connections_group to listOf("connection" to R.string.chatgpt_settings, "health" to R.string.health_settings),
             R.string.notification_settings_title to listOf("notice" to R.string.notification_settings_title),
-            R.string.settings_diagnostics_group to listOf("probes" to R.string.open_probes)
+            R.string.settings_diagnostics_group to listOf("probes" to R.string.open_probes, "reservation-diagnostics" to R.string.reservation_diagnostics)
         ).forEach { (heading, entries) ->
             SectionCard {
                 Text(stringResource(heading), style = MaterialTheme.typography.titleMedium)
@@ -212,6 +212,7 @@ internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () 
             SectionCard {
                 val value=cfg.slot(slot)
                 Text(stringResource(if(slot==NoticeSlot.MORNING) R.string.kind_morning else R.string.kind_evening),style=MaterialTheme.typography.titleMedium)
+                Text(stringResource(app.slotStatuses[slot] ?: app.reservationStatus))
                 fun update(changed:SlotSetting) {
                     val candidate=cfg.withSlot(slot,changed); invalid=!candidate.validTimes()
                     if(!invalid) app.change { it.withSlot(slot,changed) }
@@ -232,7 +233,21 @@ internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () 
         SettingsStatus(app)
     }
 }
-@Composable internal fun ReservationSettings(app: AppViewModel, cfg: AppSettings) = Unit
+@Composable internal fun ReservationSettings(app: AppViewModel, cfg: AppSettings) {
+    val context = LocalContext.current
+    val permission = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { app.refresh() }
+    Text(stringResource(R.string.reservation_target, cfg.testAnswerId ?: stringResource(R.string.not_selected)))
+    OutlinedButton(onClick = { app.latest?.let { answer -> app.change { it.copy(testAnswerId = answer.id) } } }, enabled = app.latest != null && !app.saving) {
+        Text(stringResource(R.string.reservation_use_latest))
+    }
+    if (android.os.Build.VERSION.SDK_INT >= 33) OutlinedButton(onClick = { permission.launch(android.Manifest.permission.POST_NOTIFICATIONS) }) {
+        Text(stringResource(R.string.reservation_grant))
+    }
+    OutlinedButton(onClick = { runCatching { context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)) } }) {
+        Text(stringResource(R.string.notification_settings))
+    }
+    Text(stringResource(R.string.reservation_test_only))
+}
 @Composable private fun SettingsStatus(app: AppViewModel) {
     Text(stringResource(if (app.failure) R.string.settings_error else if (app.saving) R.string.saving else R.string.settings_saved))
 }

@@ -39,6 +39,13 @@ class MainActivityTest {
         composeRule.onNodeWithText("安全な診断結果をコピー").performScrollTo().assertIsNotEnabled()
     }
 
+    @Test fun reservationDiagnosticScreenShowsSafePersistedReportWithoutSchedulingOrAI() {
+        composeRule.onNode(androidx.compose.ui.test.hasContentDescription("設定")).performClick()
+        composeRule.onNodeWithText("予約通知の診断").performScrollTo().performClick()
+        composeRule.waitUntil(5000) { composeRule.onAllNodes(androidx.compose.ui.test.hasText("schema=HAGEMASHI_RESERVATION_V1",substring=true)).fetchSemanticsNodes().isNotEmpty() }
+        composeRule.onNodeWithText("予約診断をコピー").performScrollTo().assertIsDisplayed()
+    }
+
     @Test fun installedAppHasInternetAndDisallowsCleartext() {
         val facts = readNetworkFacts(composeRule.activity)
         assertNotNull(facts)

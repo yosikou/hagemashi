@@ -30,14 +30,34 @@ internal class AnswerNotifications(private val context: Context) {
             .setContentIntent(pending).setAutoCancel(true).setOnlyAlertOnce(true)
             .setVisibility(Notification.VISIBILITY_PRIVATE).build()
     }
-    fun post(answer: SavedEncouragement): NoticeState {
+    fun allowed(): Boolean = (Build.VERSION.SDK_INT < 33 || context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) &&
+        manager.areNotificationsEnabled() && manager.getNotificationChannel(channelId)?.importance != NotificationManager.IMPORTANCE_NONE
+    fun post(answer: SavedEncouragement, tag: String = answer.id): NoticeState {
         if (Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
             return NoticeState.PERMISSION_DENIED
         manager.createNotificationChannel(NotificationChannel(channelId, context.getString(R.string.notification_channel), NotificationManager.IMPORTANCE_DEFAULT)
             .apply { description = context.getString(R.string.notification_channel_description) })
         if (!manager.areNotificationsEnabled() || manager.getNotificationChannel(channelId)?.importance == NotificationManager.IMPORTANCE_NONE)
             return NoticeState.DISABLED
-        manager.notify(answer.id, 0, build(answer))
+        manager.notify(tag, 0, build(answer))
         return NoticeState.POSTED
     }
+    fun postGoalReminder(cycle: Long, day: java.time.LocalDate): NoticeState {
+        if (Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
+            return NoticeState.PERMISSION_DENIED
+        manager.createNotificationChannel(NotificationChannel(channelId, context.getString(R.string.notification_channel), NotificationManager.IMPORTANCE_DEFAULT))
+        if (!allowed()) return NoticeState.DISABLED
+        val intent=Intent(context, MainActivity::class.java).setAction("${context.packageName}.REVIEW_GOAL")
+            .setData(Uri.parse("${context.packageName}://goal-review/$cycle"))
+            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        val pending=PendingIntent.getActivity(context,45,intent,PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        val text=context.getString(R.string.goal_guide_body)
+        val notification=Notification.Builder(context,channelId).setSmallIcon(R.drawable.ic_encouragement)
+            .setContentTitle(context.getString(R.string.goal_guide_title)).setContentText(text)
+            .setStyle(Notification.BigTextStyle().bigText(text)).setContentIntent(pending)
+            .setAutoCancel(true).setOnlyAlertOnce(true).setVisibility(Notification.VISIBILITY_PRIVATE).build()
+        manager.notify("goal-guide:$day",0,notification)
+        return NoticeState.POSTED
+    }
+
 }

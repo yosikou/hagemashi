@@ -45,12 +45,14 @@ class MainActivity : ComponentActivity() {
     private lateinit var model: ConnectionViewModel
     private lateinit var probes: NetworkProbeViewModel
     private lateinit var details: AnswerDetailViewModel
+    private var goalReview by mutableStateOf(false)
     private var detailId by mutableStateOf<String?>(null)
     private lateinit var manual: ManualGenerationViewModel
     private lateinit var health: HealthConnectViewModel
     private var healthPrivacy by mutableStateOf(false)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ReservationDiagnostics.record(this,ReservationEvent.APP_OPEN)
         history = ViewModelProvider(this)[HistoryViewModel::class.java]
         modePreview = ViewModelProvider(this)[ModePreviewViewModel::class.java]
         app = ViewModelProvider(this)[AppViewModel::class.java]
@@ -60,10 +62,15 @@ class MainActivity : ComponentActivity() {
         manual = ViewModelProvider(this)[ManualGenerationViewModel::class.java]
         details = ViewModelProvider(this)[AnswerDetailViewModel::class.java]
         detailId = answerId(intent) ?: savedInstanceState?.getString("detailId")?.takeIf(::isAnswerId)
+        goalReview = isGoalReviewNavigation(intent?.action,intent?.dataString,packageName)
+        if(goalReview) detailId=null
         healthPrivacy = isHealthPrivacyIntent(intent)
         if (healthPrivacy) detailId = null
         setContent {
             var route by rememberSaveable { mutableStateOf("home") }
+            LaunchedEffect(goalReview) {
+                if(goalReview) { route="goal";detailId=null;goalReview=false;setIntent(Intent(this@MainActivity,MainActivity::class.java)) }
+            }
             val url = model.ui.browserUrl
             LaunchedEffect(url) {
                 if (url != null) {
@@ -87,6 +94,7 @@ class MainActivity : ComponentActivity() {
                         "health" -> HealthConnectScreen(health, lifecycle, privacy = { healthPrivacy = true }, preview={route=if(it==GenerationKind.MORNING) "morning-preview" else "evening-preview"}) { route = "settings" }
                         "history" -> HistoryScreen(history,{detailId=it}){route="home";app.refresh()}
                         "morning-preview", "evening-preview" -> ModePreviewScreen(if(route=="morning-preview") GenerationKind.MORNING else GenerationKind.EVENING, modePreview, app.settings){route="health"}
+                        "reservation-diagnostics" -> ReservationDiagnosticScreen { route = "settings" }
                         "probes" -> ProbeScreen(probes) { route = "settings" }
                         "manual" -> ManualGenerationScreen(manual, model, app.settings, lifecycle, openDetail = { detailId = it }) { route = "home"; app.refresh() }
                         else -> app.settings?.let { cfg -> when (route) {
@@ -104,14 +112,15 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onStart() { super.onStart(); model.setForeground(true); probes.setForeground(true) }
-    override fun onStop() { model.setForeground(false); probes.setForeground(false); super.onStop() }
+    override fun onStart() { super.onStart(); ReservationDiagnostics.record(this,ReservationEvent.APP_VISIBLE); model.setForeground(true); probes.setForeground(true) }
+    override fun onStop() { ReservationDiagnostics.record(this,ReservationEvent.APP_HIDDEN); model.setForeground(false); probes.setForeground(false); super.onStop() }
     override fun onResume() { super.onResume(); model.setResumed(true); app.refresh() }
     override fun onPause() { model.setResumed(false); super.onPause() }
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
         answerId(intent)?.let { detailId = it }
+        if(isGoalReviewNavigation(intent.action,intent.dataString,packageName)){detailId=null;goalReview=true}
         if (isHealthPrivacyIntent(intent)) { detailId = null; healthPrivacy = true }
     }
 

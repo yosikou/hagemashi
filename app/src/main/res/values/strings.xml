@@ -305,6 +305,35 @@
     <string name="manual_while_waiting">再設定前に手動で励ましを生成</string>
     <string name="slot_time_invalid">両方を有効にする場合、朝の時刻を夜より前にしてください。</string>
     <string name="table_steps">歩数</string>
+    <string name="reservation_off">朝・夜ともオフです。予約通知も自動生成も実行しません。</string>
+
+    <string name="reservation_choose_answer">設定は保存済みですが、配信は未登録です。検証用の保存済み回答を指定してください。</string>
+
+    <string name="reservation_permission">設定は保存済みですが、通知権限またはチャンネルが無効のため配信は停止しています。</string>
+
+    <string name="reservation_missing_answer">検証対象の保存済み回答を読めません。配信は停止しています。</string>
+
+    <string name="reservation_claimed">この枠の本日分は処理済みです。重複防止のため再送しません。</string>
+
+    <string name="reservation_registered">予約APIへの登録要求が完了し、台帳を保存しました。OS内の予約の存続や通知到着は未確認です。端末の現地時刻を目安に保存済み回答だけを通知します。省電力などAndroidの制約で遅れる場合があります。</string>
+
+    <string name="reservation_not_registered">設定は保存済みですが予約登録を確認できません。アプリを開き直して確認してください。</string>
+
+    <string name="reservation_target">検証対象の回答ID：%1$s</string>
+
+    <string name="reservation_use_latest">最新の保存済み回答を検証対象にする</string>
+
+    <string name="reservation_grant">通知権限を許可する</string>
+
+    <string name="reservation_test_only">予約通知は保存済み回答の朝夜2枠の検証です。自動AI生成は無効です。最新回答へ自動で置き換えたり、追加AI送信したりしません。</string>
+
+    <string name="reservation_slot_off">この枠はオフです。</string>
+    <string name="goal_guide_limit">再設定待ちです。案内処理は合計3回に達したため停止しています。目標を再設定すると通常の予約検証へ戻ります。</string>
+    <string name="goal_guide_done">本日の再設定案内は処理済みです。朝夜を合わせて同日に再送しません。</string>
+    <string name="goal_guide_only">期限切れのため通常の励ましは停止し、再設定案内だけを予約します。1日1回、再設定待ち1期間につき最大3回です。</string>
+    <string name="goal_guide_title">目標の再設定をご確認ください</string>
+    <string name="goal_guide_body">目標期限を見直して、これからの目標を設定しましょう。アプリの設定からいつでも変更できます。</string>
+    <string name="reservation_state_error">設定は保存されていますが予約状態を確認できません。予約は停止して確認してください。手動生成と履歴は利用できます。</string>
     <string name="table_grouping_note">同じ値の記録を表示上まとめています</string>
     <string name="table_unknown_time">日時不明</string>
     <string name="home_latest">最新の励まし</string>
@@ -316,4 +345,8 @@
     <string name="detail_collapse_data">使用したデータを折りたたむ</string>
     <string name="table_status_unknown">取得状況を確認できません</string>
     <string name="notification_test_title">検証用の通知</string>
+    <string name="reservation_diagnostics">予約通知の診断</string>
+    <string name="reservation_diagnostic_refresh">診断表示を更新</string>
+    <string name="reservation_diagnostic_copy">予約診断をコピー</string>
+    <string name="reservation_diagnostic_explanation">再起動後も直近128件の到達点を確認できます。REGISTER_RETURNEDは予約APIの呼び出し完了、RECEIVER_ENTEREDはOSからの受信、NOTIFY_RETURNEDは通知発行APIの結果です。トークンの存在だけではOS内の予約存続を証明できず、通知APIの成功も画面への到着を保証しません。APP_OPEN／APP_VISIBLEより前の記録と比較してください。診断の表示・更新は予約やAI送信を実行しません。健康値・回答・認証情報は含みません。</string>
 </resources>
