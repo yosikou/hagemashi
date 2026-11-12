@@ -52,7 +52,7 @@ class AppLanguageTest {
     @Test fun safeInternationalNotificationsAreNotRejectedForLatinOrIndicLetters() {
         val examples=listOf("Keep going at your own pace. Your efforts matter.","Avancez à votre rythme. Vos efforts comptent.","Bleiben Sie in Ihrem Tempo dabei. Ihr Einsatz zählt.","अपनी गति से आगे बढ़ें। आपकी कोशिशें मायने रखती हैं।")
         for(text in examples)assertEquals(text,notificationShort(text,"REJECTED"))
-        for(value in listOf("150 lb","seventy kg","70,5 kg","soixante kilos","siebzig kg","७० किलो","七十公斤")) {
+        for(value in listOf("150 lb","seventy kg","70,5 kg","soixante kilos","siebzig kg","७० किलो","七十公斤","FÜNF","ZÉRO")) {
             val text="Keep going at your own pace. "+value+" matters today."
             assertEquals(value,"SAFE",notificationShort(text,"SAFE"))
         }
