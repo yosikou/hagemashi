@@ -28,6 +28,11 @@ class AnswerDetailTest {
             MeasurementRow(MeasureItem.STEPS, "1234", "歩", "2026-11-09T00:00:00Z 〜 2026-11-10T00:00:00Z")
         ))
 
+    private fun text(id:Int)=languageContext(composeRule.activity).getString(id)
+    private fun value(kg:String):String {
+        val cfg=SettingsStore(composeRule.activity).read()
+        return localizedNumber(cfg.weightUnit.display(kg),appLocale(cfg.language),2)+" "+cfg.weightUnit.symbol
+    }
     @Test fun encryptedAnswersSurviveANewStoreInstanceAndKeepTheirOwnIdentity() {
         val context = composeRule.activity
         val dir = "test-answers-${UUID.randomUUID()}"
@@ -53,7 +58,7 @@ class AnswerDetailTest {
     @Test fun notificationExtrasContainOnlySafeShortTextAndNoFullOrUsedData() {
         val record = answer("synthetic-full-69.875", "synthetic-used-data-23.125")
         val notification = AnswerNotifications(composeRule.activity).build(record)
-        val fallback = composeRule.activity.getString(R.string.notification_fallback)
+        val fallback = text(R.string.notification_fallback)
         assertEquals(fallback, notification.extras.getString(Notification.EXTRA_TEXT))
         assertEquals(fallback, notification.extras.getString(Notification.EXTRA_BIG_TEXT))
         assertNotNull(notification.contentIntent)
@@ -79,13 +84,13 @@ class AnswerDetailTest {
             composeRule.onNodeWithText(b.full).assertDoesNotExist()
             composeRule.onNodeWithText(noticeA.extras.getString(Notification.EXTRA_TEXT)!!).performScrollTo().assertIsDisplayed()
             composeRule.onNodeWithText(context.getString(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER)).assertDoesNotExist()
-            composeRule.onNodeWithText("68.125 kg").performScrollTo().assertIsDisplayed()
-            composeRule.onNodeWithText("69.875 kg").assertDoesNotExist()
-            composeRule.onNodeWithText("未許可").performScrollTo().assertIsDisplayed()
-            composeRule.onNodeWithText("使用したデータをすべて見る").performScrollTo().performClick()
-            composeRule.onNodeWithText("69.875 kg").performScrollTo().assertIsDisplayed()
-            composeRule.onNodeWithText("使用したデータを折りたたむ").performScrollTo().performClick()
-            composeRule.onNodeWithText("69.875 kg").assertDoesNotExist()
+            composeRule.onNodeWithText(value("68.125")).performScrollTo().assertIsDisplayed()
+            composeRule.onNodeWithText(value("69.875")).assertDoesNotExist()
+            composeRule.onNodeWithText(text(R.string.table_unpermitted)).performScrollTo().assertIsDisplayed()
+            composeRule.onNodeWithText(text(R.string.detail_expand_data)).performScrollTo().performClick()
+            composeRule.onNodeWithText(value("69.875")).performScrollTo().assertIsDisplayed()
+            composeRule.onNodeWithText(text(R.string.detail_collapse_data)).performScrollTo().performClick()
+            composeRule.onNodeWithText(value("69.875")).assertDoesNotExist()
         } finally {
             for (record in listOf(a, b)) File(context.noBackupFilesDir, "encouragements/${record.id}.v1").delete()
         }

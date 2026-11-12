@@ -24,7 +24,7 @@ internal fun appLocale(language:AppLanguage):Locale {
 internal fun languageContext(context:Context,language:AppLanguage=savedLanguage(context)):Context {
     val locale=appLocale(language)
     val config=Configuration(context.resources.configuration).apply { setLocales(LocaleList(locale));setLayoutDirection(locale) }
-    return context.createConfigurationContext(config)
+    return android.view.ContextThemeWrapper(context,0).apply { applyOverrideConfiguration(config) }
 }
 internal val LocalAppLocale=staticCompositionLocalOf { Locale.ENGLISH }
 @Composable internal fun LanguageContent(language:AppLanguage,content:@Composable ()->Unit) {

@@ -32,6 +32,8 @@ jobs:
         run: python3 .github/scripts/restore-signing.py
       - name: Test signing secret handling
         run: python3 -m unittest discover -s .github/scripts -p 'test_*.py'
+      - name: Check production translations
+        run: python3 scripts/check-localizations.py
       - name: Test, lint and build app and UI test APKs
         env:
           HAGEMASHI_BUILD_ID: ${{ github.sha }}.${{ github.run_id }}.${{ github.run_attempt }}

@@ -53,7 +53,8 @@ internal suspend fun prepareGeneration(context:Context,settings:AppSettings,mode
             HealthReadStatus.ACCESS_DENIED to string(R.string.manual_missing_denied),
             HealthReadStatus.ERROR to string(R.string.manual_missing_error),
             HealthReadStatus.HAS_RECORDS to string(R.string.health_has_records)))
-    val persona = settings.persona()
+    val selectedPersona = settings.persona()
+    val persona = if(selectedPersona.defaultContent==true)defaultPersonas(app).single{it.id==selectedPersona.id} else selectedPersona
     val instructions = listOf(persona.prompt, settings.supplement,
         if (settings.maintaining) string(R.string.maintain_prompt) else "", string(R.string.manual_generation_rules), app.getString(R.string.output_language_rule,app.resources.configuration.locales[0].toLanguageTag()), app.getString(R.string.weight_generation_rule, settings.weightUnit.symbol), string(if(kind==GenerationKind.MORNING)R.string.morning_rules else R.string.manual_reflection_rules))
         .filter { it.isNotBlank() }.joinToString("\n")

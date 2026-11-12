@@ -57,4 +57,18 @@ class AppLanguageTest {
             assertEquals(value,"SAFE",notificationShort(text,"SAFE"))
         }
     }
+
+    @Test fun displayDatesFollowLocaleButHistoryRemainsOriginal() {
+        val time=java.time.Instant.parse("2026-11-10T03:04:05Z")
+        val zone=java.time.ZoneId.of("Asia/Tokyo")
+        assertEquals("2026/11/10 12:04",measurementDisplayTime(time.toString(),zone,Locale.JAPANESE))
+        assertNotEquals(measurementDisplayTime(time.toString(),zone,Locale.FRANCE),measurementDisplayTime(time.toString(),zone,Locale.US))
+        val saved=SavedEncouragement("00000000-0000-0000-0000-000000000002",time,"original 日本語","original body 68 kg","original input",false)
+        val encoded=encodeEncouragement(saved).toString()
+        for(language in AppLanguage.entries) {
+            val loaded=decodeEncouragement(saved.id,org.json.JSONObject(encoded))
+            answerDisplayTime(loaded.generatedAt,zone,language.locale(listOf(Locale.ENGLISH)))
+            assertEquals(encoded,encodeEncouragement(loaded).toString())
+        }
+    }
 }
