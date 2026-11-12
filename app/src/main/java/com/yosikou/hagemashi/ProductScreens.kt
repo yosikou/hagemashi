@@ -294,7 +294,11 @@ internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () 
         AppLanguage.entries.forEach { language ->
             Row(Modifier.fillMaxWidth(),verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
                 RadioButton(selected=cfg.language==language,onClick={app.change{it.copy(language=language)}},enabled=!app.saving)
-                Text(if(language==AppLanguage.SYSTEM)stringResource(R.string.language_system) else language.nativeName,Modifier.weight(1f))
+                Text(stringResource(when(language) {
+                    AppLanguage.SYSTEM->R.string.language_system;AppLanguage.JA->R.string.language_name_ja
+                    AppLanguage.EN->R.string.language_name_en;AppLanguage.FR->R.string.language_name_fr
+                    AppLanguage.DE->R.string.language_name_de;AppLanguage.HI->R.string.language_name_hi;AppLanguage.ZH->R.string.language_name_zh
+                }),Modifier.weight(1f))
             }
         }
         SettingsStatus(app)

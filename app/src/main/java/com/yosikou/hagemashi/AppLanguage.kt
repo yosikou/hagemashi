@@ -10,8 +10,8 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
 
-internal enum class AppLanguage(val tag: String, val nativeName: String) {
-    SYSTEM("", ""), JA("ja", "日本語"), EN("en", "English"), FR("fr", "Français"), DE("de", "Deutsch"), HI("hi", "हिन्दी"), ZH("zh-Hans", "简体中文");
+internal enum class AppLanguage(val tag: String) {
+    SYSTEM(""), JA("ja"), EN("en"), FR("fr"), DE("de"), HI("hi"), ZH("zh-Hans");
     fun locale(device: List<Locale>): Locale = if (this == SYSTEM) resolveDeviceLanguage(device).locale(emptyList()) else Locale.forLanguageTag(tag)
 }
 internal fun resolveDeviceLanguage(locales: List<Locale>): AppLanguage {
