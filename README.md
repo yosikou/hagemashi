@@ -1,7 +1,11 @@
 # hagemashi
 
-Kotlin / Jetpack Compose の単一Activityアプリです。このブランチはChatGPTの手動接続検証版です。
+Kotlin / Jetpack Compose の単一Activityアプリです。このブランチはChatGPTの手動接続とHealth Connect読み取りの検証版です。
 Android 8.0（API 26）以上に対応し、Android Studioは不要です。
+
+## Health Connectの読み取り検証
+
+[体重・体脂肪率・歩数の読み取り仕様、arboleaf到着確認、Androidだけの試験手順](docs/health-connect-read-spike.md)を参照してください。健康データは端末画面の表示だけに使用し、ChatGPT送信・書き込み・通知・履歴保存はありません。Health Connectの実機読み取りは未確認で、このPRはレビュー用です。
 
 ## ChatGPT接続の技術調査
 
@@ -9,7 +13,7 @@ Android 8.0（API 26）以上に対応し、Android Studioは不要です。
 
 [生成JSON・ストリーム仕様の照合、修正、安全な生成診断と合格条件](docs/generation-stream-check.md)。HTTP200だけを成功とせず、完了イベントとアプリ画面の回答本文まで確認しました。
 
-[通常のブラウザ認証後にアプリへ戻って接続を完了する手順](docs/login-return-fix.md)を標準として採用しています。ユーザー実機でサインイン、モデル一覧取得、接続解除が成功しました。
+[ブラウザ認証後にタブを閉じてアプリへ戻り、接続を完了する手順](docs/login-return-fix.md)を標準として採用しています。ユーザー実機でサインイン、モデル一覧取得、接続解除が成功しました。
 
 [認証不要の通信診断・継続署名・別IDでの併存試験](docs/network-probe-test.md)を追加しています。診断APKは `hagemashi-diagnostic-apk`、アプリ名は「hagemashi 診断」です。Secret未設定時はAPKを配布しません。
 
@@ -60,11 +64,15 @@ CIで配布するAPKは所有者が登録するActions Secretの同じ診断署�
 | Kotlin / Compose compiler Gradle plugin | 2.2.21 |
 | Compose BOM | 2025.04.01 |
 | Activity Compose | 1.10.1 |
-| compileSdk / targetSdk | 35 |
+| compileSdk / targetSdk | 36 / 35 |
 | minSdk | 26 |
 | Android SDK Build Tools | 35.0.0 |
+| Health Connect Client | 1.1.0 |
+| Coroutine Android（直接宣言） | 1.7.3 |
 
 確認根拠:
+
+- [Health Connect導入要件](https://developer.android.com/health-and-fitness/health-connect/get-started)と1.1.0のAAR metadataによりcompileSdk36／AGP8.9.1以上が必要。AGP8.10は[API36まで対応](https://developer.android.com/build/releases/agp-8-10-0-release-notes)するため、既存AGP等を上げずcompileSdkだけ更新しました。targetSdk35・minSdk26は維持しています。Health Connectの実利用はAPI28以上と端末の提供状況に依存します。
 
 - [Kotlin公式互換性表](https://github.com/JetBrains/kotlin-web-site/blob/52e6b6cafda7e0542d2166ea7fb62c990ede8a11/docs/topics/gradle/gradle-configure-project.md): Kotlin 2.2.20–2.2.21はGradle 7.6.3–8.14、AGP 7.3.1–8.11.1をサポートします。
 - [AGP 8.10公式リリース情報](https://developer.android.com/build/releases/past-releases/agp-8-10-0-release-notes): Gradle 8.11.1・JDK 17に対応する系列です。公式配布のAGP 8.10.1 JAR内の `VersionCheckPlugin.GRADLE_MIN_VERSION` も8.11.1であることを確認しています。
@@ -82,7 +90,7 @@ SDKの `cmdline-tools/latest/bin` と `platform-tools` をPATHに追加します
 
 ```sh
 sdkmanager --licenses
-sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+sdkmanager "platform-tools" "platforms;android-35" "platforms;android-36" "build-tools;35.0.0"
 ./gradlew --no-daemon :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
 ./gradlew --no-daemon :app:testDebugUnitTest
 ```

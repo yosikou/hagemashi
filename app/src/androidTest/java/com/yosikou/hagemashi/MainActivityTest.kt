@@ -14,7 +14,7 @@ import org.junit.Assert.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import android.content.Intent
-import android.net.Uri
+import android.content.pm.PackageManager
 import java.util.concurrent.atomic.AtomicReference
 
 @RunWith(AndroidJUnit4::class)
@@ -46,15 +46,17 @@ class MainActivityTest {
         assertFalse(facts.cleartextPermitted)
     }
 
-    @Test fun returnLinkResolvesToTheSameActivityWithoutCarryingAnAuthorizationResult() {
+    @Test fun healthManifestRequestsOnlyTheThreeReadPermissions() {
         val activity = composeRule.activity
-        val navigation = Intent(Intent.ACTION_VIEW, Uri.parse("${BuildConfig.APPLICATION_ID}://auth-return/"))
-            .addCategory(Intent.CATEGORY_BROWSABLE).setPackage(BuildConfig.APPLICATION_ID)
-        val component = navigation.resolveActivity(activity.packageManager)
-        assertNotNull(component)
-        assertEquals(MainActivity::class.java.name, component!!.className)
-        assertNull(navigation.data?.query)
-        assertNull(navigation.extras)
+        @Suppress("DEPRECATION")
+        val info = activity.packageManager.getPackageInfo(activity.packageName, PackageManager.GET_PERMISSIONS)
+        val health = info.requestedPermissions.orEmpty().filter { it.startsWith("android.permission.health.") }.toSet()
+        assertEquals(setOf("android.permission.health.READ_WEIGHT", "android.permission.health.READ_BODY_FAT", "android.permission.health.READ_STEPS"), health)
+        val rationale = Intent("android.intent.action.VIEW_PERMISSION_USAGE")
+            .addCategory("android.intent.category.HEALTH_PERMISSIONS").setPackage(activity.packageName)
+        @Suppress("DEPRECATION")
+        val handlers = activity.packageManager.queryIntentActivities(rationale, 0)
+        assertTrue(handlers.any { it.activityInfo.name.endsWith(".ViewHealthPermissionUsageActivity") })
     }
 
     @Test fun connectionViewModelSurvivesStopAndRecreation() {

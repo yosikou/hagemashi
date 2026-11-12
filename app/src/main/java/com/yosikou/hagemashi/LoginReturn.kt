@@ -23,16 +23,11 @@ internal class LoginReturn {
     }
 }
 
-internal fun loginReturnLink(applicationId: String): String {
-    require(applicationId in setOf("com.yosikou.hagemashi", "com.yosikou.hagemashi.diagnostic"))
-    return "intent://auth-return/#Intent;scheme=$applicationId;package=$applicationId;end"
-}
-
-internal fun loginReplyPage(message: String, label: String, applicationId: String): String {
+internal fun loginReplyPage(message: String): String {
     fun escape(value: String) = value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
         .replace("\"", "&quot;").replace("'", "&#39;")
-    // Only localized static strings and the fixed applicationId. Callback data never enters this page or link.
+    // Static close-browser instructions only. Callback data never enters the page.
     return "<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\">" +
         "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"></head><body>" +
-        "<p>${escape(message)}</p><p><a href=\"${escape(loginReturnLink(applicationId))}\">${escape(label)}</a></p></body></html>"
+        "<p>${escape(message)}</p></body></html>"
 }

@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.yosikou.hagemashi"
-    compileSdk = 35
+    compileSdk = 36
     buildToolsVersion = "35.0.0"
 
     val buildIdentifier = System.getenv("HAGEMASHI_BUILD_ID") ?: "local"
@@ -59,6 +59,8 @@ kotlin {
 }
 
 dependencies {
+    implementation("androidx.health.connect:connect-client:1.1.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation(platform("androidx.compose:compose-bom:2025.04.01"))
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation("androidx.compose.foundation:foundation")

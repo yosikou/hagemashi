@@ -41,12 +41,17 @@ import androidx.lifecycle.ViewModelProvider
 class MainActivity : ComponentActivity() {
     private lateinit var model: ConnectionViewModel
     private lateinit var probes: NetworkProbeViewModel
+    private lateinit var health: HealthConnectViewModel
+    private var healthPrivacy by mutableStateOf(false)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         model = ViewModelProvider(this)[ConnectionViewModel::class.java]
         probes = ViewModelProvider(this)[NetworkProbeViewModel::class.java]
+        health = ViewModelProvider(this)[HealthConnectViewModel::class.java]
+        healthPrivacy = isHealthPrivacyIntent(intent)
         setContent {
             var showProbes by rememberSaveable { mutableStateOf(false) }
+            var showHealth by rememberSaveable { mutableStateOf(false) }
             val url = model.ui.browserUrl
             LaunchedEffect(url) {
                 if (url != null) {
@@ -58,8 +63,10 @@ class MainActivity : ComponentActivity() {
             }
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    if (showProbes) ProbeScreen(probes) { showProbes = false }
-                    else ConnectionScreen(model, openProbes = { showProbes = true }) {
+                    if (healthPrivacy) HealthPrivacyScreen { healthPrivacy = false }
+                    else if (showHealth) HealthConnectScreen(health, lifecycle, privacy = { healthPrivacy = true }) { showHealth = false }
+                    else if (showProbes) ProbeScreen(probes) { showProbes = false }
+                    else ConnectionScreen(model, openProbes = { showProbes = true }, openHealth = { showHealth = true }) {
                         runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://chatgpt.com/settings/usage"))) }
                     }
                 }
@@ -71,10 +78,17 @@ class MainActivity : ComponentActivity() {
     override fun onStop() { model.setForeground(false); probes.setForeground(false); super.onStop() }
     override fun onResume() { super.onResume(); model.setResumed(true) }
     override fun onPause() { model.setResumed(false); super.onPause() }
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (isHealthPrivacyIntent(intent)) healthPrivacy = true
+    }
+
+    private fun isHealthPrivacyIntent(intent: Intent?): Boolean = intent?.action in setOf(
+        "androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE", "android.intent.action.VIEW_PERMISSION_USAGE")
 }
 
 @Composable
-private fun ConnectionScreen(model: ConnectionViewModel, openProbes: () -> Unit, openUsage: () -> Unit) {
+private fun ConnectionScreen(model: ConnectionViewModel, openProbes: () -> Unit, openHealth: () -> Unit, openUsage: () -> Unit) {
     val ui = model.ui
     val context = LocalContext.current
     var confirmErase by remember { mutableStateOf(false) }
@@ -83,6 +97,7 @@ private fun ConnectionScreen(model: ConnectionViewModel, openProbes: () -> Unit,
         Text(stringResource(R.string.screen_title), style = MaterialTheme.typography.headlineSmall)
         Text(stringResource(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER))
         OutlinedButton(onClick = openProbes, enabled = !ui.busy) { Text(stringResource(R.string.open_probes)) }
+        OutlinedButton(onClick = openHealth, enabled = !ui.busy) { Text(stringResource(R.string.health_open)) }
         Text(stringResource(R.string.preview_notice))
         Text(stringResource(if (ui.savedConnection == SavedConnection.UNKNOWN) R.string.connection_unknown
             else if (ui.connected) R.string.connected else R.string.disconnected), style = MaterialTheme.typography.titleMedium)

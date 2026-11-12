@@ -78,7 +78,6 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
             op.check()
             main.post { if (epoch == generation) ui = ui.copy(browserUrl = attempt.url, forceNew = false) }
             repository.finishLogin(attempt, op, app.getString(R.string.browser_reply), app.getString(R.string.browser_rejected),
-                app.getString(R.string.browser_return, app.getString(R.string.app_name)), BuildConfig.APPLICATION_ID,
                 beforeNetwork = { loginReturn.await(op) }) {
                 if (compareDns) sampleDns(DnsPoint.AFTER_CALLBACK, op, generation)
                 op.check()

@@ -90,19 +90,15 @@ class LoginReturnTest {
         assertEquals(Stage.SAVE_CREDENTIALS, op.progress.completed)
     }
 
-    @Test fun returnLinkIsPackageSpecificAndContainsNoCallbackOrCredentials() {
-        val normal = loginReturnLink("com.yosikou.hagemashi")
-        val diagnostic = loginReturnLink("com.yosikou.hagemashi.diagnostic")
-        assertNotEquals(normal, diagnostic)
-        assertTrue(diagnostic.contains("package=com.yosikou.hagemashi.diagnostic;"))
-        for (forbidden in listOf("?", "127.0.0.1", "client_id", "code=", "state=", "token", "verifier")) {
-            assertFalse(diagnostic.contains(forbidden))
+    @Test fun browserClosePageHasNoNavigationOrAutomaticBrowserControl() {
+        val page = loginReplyPage("Close this browser tab and return to the app")
+        for (forbidden in listOf("href=", "intent://", "auth-return", "<script", "window.close", "http-equiv", "127.0.0.1", "code=")) {
+            assertFalse(page.contains(forbidden))
         }
-        assertThrows(IllegalArgumentException::class.java) { loginReturnLink("untrusted.application") }
     }
 
     @Test fun browserPageCannotInjectMarkupThroughLocalizedText() {
-        val page = loginReplyPage("<script>synthetic</script>", "\"<img>", "com.yosikou.hagemashi.diagnostic")
+        val page = loginReplyPage("<script>synthetic</script>\"<img>")
         assertFalse(page.contains("<script>"))
         assertFalse(page.contains("<img>"))
         assertTrue(page.contains("&lt;script&gt;"))
