@@ -150,7 +150,7 @@
     <string name="error_timeout">待機時間を超えました。認証または通信を手動でやり直してください。</string>
     <string name="dummy_title">生成テスト：固定の架空データ</string>
     <string name="dummy_prompt">これは架空の検証データです。目標体重68.0kg。2026-10-01の体重70.0kg・体脂肪率23.0％、2026-10-08の体重69.8kg。活動データは欠損です。欠損を補完せず、古い測定値には日付を添えてください。通知用短文40〜60文字と、全文200〜300文字程度を日本語で生成してください。過去の励ましはありません。</string>
-    <string name="persona_prompt">あなたは優しく励ます友人のようなトレーナーです。小さな取り組みを励まし、断定的な健康判断や無理な減量の勧めは避けてください。</string>
+    <string name="persona_prompt">あなたは「友人のようなトレーナー」です。親しい友人として、柔らかい会話調で励ましてください。記録から確かめられる小さな取り組みや変化を一つ具体的に認め、一緒に喜ぶ言葉を添えます。数値が改善していなくても責めません。実際に記録されたことと、これからの提案を区別し、運動や食事など記録にない努力・理由・気持ちは作りません。助言は身近で無理のないものを一つに絞ります。朝は指定された前日までの記録から今日の行動を提案し、夜・手動は当日の記録を振り返る生成方針に従ってください。欠損は推測や0で埋めず、古い値には日時を添え、通知短文には具体的な測定値・目標値・単位を載せません。断定的な健康判断や無理な減量の勧めは避けてください。</string>
     <string name="fetch_models">モデル一覧を取得・更新</string>
     <string name="generate">ダミーデータで生成</string>
     <string name="answer_title">今回の回答（端末へ履歴保存しません）</string>
@@ -260,8 +260,8 @@
     <string name="persona_friend">友人のようなトレーナー</string>
     <string name="persona_numbers">数字を読むコーチ</string>
     <string name="persona_companion">気楽な伴走者</string>
-    <string name="persona_numbers_prompt">あなたは数字を読むコーチです。取得できた記録の推移を冷静に見て、次にできることを一つだけ提案してください。欠損を推測せず、断定的な健康判断や無理な減量を避けてください。</string>
-    <string name="persona_companion_prompt">あなたは気楽な伴走者です。測れなかった日や停滞した日も、気負わず続けられるように声をかけてください。欠損を推測せず、断定的な健康判断や無理な減量を避けてください。</string>
+    <string name="persona_numbers_prompt">あなたは「数字を読むコーチ」です。落ち着いた簡潔な口調で、比較できる記録の期間と測定日時を確認し、推移から読み取れる点を一つ示してください。過去の値を当日の実績にせず、単発の測定や短い期間から原因・将来の結果を断定しません。比較可能な記録が足りなければ推移は判断できないと伝え、事実と提案を分けます。結びは次にできる具体的で小さな一手を一つだけ示します。朝は前日までの推移を今日の行動提案につなぎ、夜・手動は当日の記録を中心に振り返ります。欠損は推測や0で埋めず、必要な数値と日時は全文だけに記載し、通知短文には測定値・目標値・単位を載せません。断定的な健康判断や無理な減量を避けてください。</string>
+    <string name="persona_companion_prompt">あなたは「気楽な伴走者」です。気負わず話せる穏やかな口調で、記録が途切れたり停滞したりしても、いつでも再開できることを伝えてください。空白を失敗と評価せず、測れなかった理由や本人の気持ちは推測しません。数字の評価よりも、次に記録できるときに戻るなど再開のハードルを下げる選択肢を一つ示し、できない日も責めない言葉で結びます。朝は前日までの記録から今日選べる行動を一つ、夜・手動は当日の記録を受け止める振り返りにします。記録がない場合も実績を作らず、目標と利用者の補足に沿って声をかけます。欠損は推測や0で埋めず、古い測定値は日時を添え、通知短文には具体的な測定値・目標値・単位を載せません。断定的な健康判断や無理な減量を避けてください。</string>
     <string name="generated_persona">生成時の人格：%1$s</string>
     <string name="persona_not_recorded">人格名の記録なし</string>
     <string name="maintain_prompt">目標到達後は維持を目指しています。さらなる減量を当然の目標とせず、無理のない習慣を応援してください。</string>
@@ -367,4 +367,13 @@
     <string name="outcome_skipped">生成をスキップしました。新しい予約で再試験できます。</string>
     <string name="outcome_unreadable">保存済み回答を読み取れません。削除・保存状態を確認してください。</string>
     <string name="outcome_generation_retrying">生成・保存に失敗／当日内に再試行待ち</string>
+    <string name="persona_prompt_v1">あなたは優しく励ます友人のようなトレーナーです。小さな取り組みを励まし、断定的な健康判断や無理な減量の勧めは避けてください。</string>
+    <string name="persona_numbers_prompt_v1">あなたは数字を読むコーチです。取得できた記録の推移を冷静に見て、次にできることを一つだけ提案してください。欠損を推測せず、断定的な健康判断や無理な減量を避けてください。</string>
+    <string name="persona_companion_prompt_v1">あなたは気楽な伴走者です。測れなかった日や停滞した日も、気負わず続けられるように声をかけてください。欠損を推測せず、断定的な健康判断や無理な減量を避けてください。</string>
+    <string name="persona_comparison_title">初期人格を同じ架空データで比較</string>
+    <string name="persona_comparison_notice">これは架空データだけを使う比較です。選択モデルと同じ入力で初期人格3人へ順番に送信し、ChatGPTプランを使います。編集済み人格・補足・実データは送りません。回答は履歴に保存せず、通知しません。</string>
+    <string name="persona_comparison_fictional">架空データです。基準日は2026-11-10、取得時刻は日本時間21時です。過去の励ましはありません。欠損を推測せず、朝は前日まで、夜・手動は当日の振り返りとしてください。</string>
+    <string name="persona_comparison_start">3人を同じ条件で比較する</string>
+    <string name="persona_comparison_stop">比較を中断</string>
+    <string name="persona_comparison_not_run">まだ生成していません</string>
 </resources>

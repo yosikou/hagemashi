@@ -92,6 +92,7 @@ class MainActivity : ComponentActivity() {
                             runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://chatgpt.com/settings/usage"))) }
                         }
                         "health" -> HealthConnectScreen(health, lifecycle, privacy = { healthPrivacy = true }, preview={route=if(it==GenerationKind.MORNING) "morning-preview" else "evening-preview"}) { route = "settings" }
+                        "persona-comparison" -> if(BuildConfig.BUILD_TYPE=="diagnostic")PersonaComparisonScreen(model,app.settings){route="personas"} else SettingsMenu({route=it}){route="home"}
                         "history" -> HistoryScreen(history,{detailId=it}){route="home";app.refresh()}
                         "morning-preview", "evening-preview" -> ModePreviewScreen(if(route=="morning-preview") GenerationKind.MORNING else GenerationKind.EVENING, modePreview, app.settings){route="health"}
                         "reservation-diagnostics" -> ReservationDiagnosticScreen { route = "settings" }
@@ -100,7 +101,7 @@ class MainActivity : ComponentActivity() {
                         else -> app.settings?.let { cfg -> when (route) {
                             "goal" -> GoalSettings(app, cfg) { route = "settings" }
                             "agent" -> AgentSettings(app, cfg, model) { route = "settings" }
-                            "personas" -> PersonaSettings(app, cfg) { route = "settings" }
+                            "personas" -> PersonaSettings(app, cfg, compare={route="persona-comparison"}) { route = "settings" }
                             "notice" -> NotificationSettings(app, cfg) { route = "settings" }
                         } } ?: Page(R.string.settings_title, { route = "settings" }) {
                             Text(stringResource(R.string.settings_error))
