@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 // Strings are frozen at review time. No health object, previous answer, or mutable UI is read at send time.
-internal class ReviewedGeneration(val model: String, val modelName: String, val instructions: String, val input: String, val hasHealthData: Boolean = false)
+internal class ReviewedGeneration(val model: String, val modelName: String, val instructions: String, val input: String, val hasHealthData: Boolean = false, val personaName: String? = null, val rows: List<MeasurementRow> = emptyList(), val kind: GenerationKind = GenerationKind.MANUAL)
 internal data class HealthPromptLabels(
     val goal: String, val readAt: String, val period: String, val measurements: String, val steps: String,
     val sample: String, val day: String, val stepCount: String, val missing: String, val weight: String, val bodyFat: String,
@@ -14,9 +14,13 @@ internal data class HealthPromptLabels(
     val statuses: Map<HealthReadStatus, String>
 )
 internal fun canonicalGoal(text: String): String? {
-    val value = text.trim()
-    if (!value.matches(Regex("[0-9]{1,3}(\\.[0-9]{1,2})?"))) return null
-    return BigDecimal(value).takeIf { it.signum() > 0 }?.stripTrailingZeros()?.toPlainString()
+    val value = java.text.Normalizer.normalize(text.trim(), java.text.Normalizer.Form.NFKC)
+    if(value.isEmpty() || value.length > 64) return null
+    return try {
+        val number = BigDecimal(value)
+        if(number.signum() <= 0 || kotlin.math.abs(number.scale().toLong()) > 64 || number.precision() > 64) null
+        else number.stripTrailingZeros().toPlainString().takeIf { it.length <= 128 }
+    } catch (_: NumberFormatException) { null }
 }
 internal fun healthGenerationInput(goal: String, snapshot: HealthSnapshot, zone: ZoneId, text: HealthPromptLabels): String {
     require(canonicalGoal(goal) == goal)

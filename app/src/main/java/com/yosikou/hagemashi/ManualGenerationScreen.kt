@@ -26,9 +26,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 
 @Composable
-internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection: ConnectionViewModel,
+internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection: ConnectionViewModel, settings: AppSettings?,
     lifecycle: Lifecycle, openDetail: (String) -> Unit, back: () -> Unit) {
     BackHandler(onBack = back)
+    androidx.compose.runtime.LaunchedEffect(Unit) { if (connection.ui.permitted && !connection.ui.modelsLoaded && !connection.ui.busy) connection.loadModels() }
     DisposableEffect(lifecycle) {
         fun discard() { model.reset(); connection.clearHealthResult() }
         val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_STOP) discard() }
@@ -45,24 +46,14 @@ internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection
         Text(stringResource(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER))
         Text(stringResource(R.string.manual_notice))
         if (!ui.permitted) Text(stringResource(R.string.manual_need_connection))
-        OutlinedTextField(value = model.goal, onValueChange = model::editGoal,
-            label = { Text(stringResource(R.string.manual_goal)) }, singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            enabled = !busy && review == null, isError = model.goalInvalid)
-        if (model.goalInvalid) Text(stringResource(R.string.manual_goal_invalid))
+        if (settings == null) Text(stringResource(R.string.settings_error))
+        else Text(stringResource(R.string.manual_goal_format, settings.goal.orEmpty()))
         if (review == null) {
-            OutlinedButton(onClick = connection::loadModels, enabled = !busy && ui.permitted) {
-                Text(stringResource(R.string.fetch_models))
-            }
-            ui.models.forEach { item ->
-                TextButton(onClick = { connection.selectModel(item.slug) }, enabled = !busy) {
-                    Text(stringResource(if (ui.model == item.slug) R.string.selected_option else R.string.option, item.name))
-                }
-            }
+            if (settings?.modelId != null && (ui.unavailableModel == settings.modelId || (ui.modelsLoaded && ui.models.none { it.slug == settings.modelId }))) Text(stringResource(R.string.agent_unavailable))
             OutlinedButton(onClick = {
-                val selected = connection.ui.models.find { it.slug == connection.ui.model }
-                if (selected != null) { connection.clearHealthResult(); model.prepare(selected) }
-            }, enabled = !busy && ui.model != null) { Text(stringResource(R.string.manual_prepare)) }
+                val selected = connection.ui.models.find { it.slug == settings?.modelId }
+                if (selected != null && settings != null) { connection.clearHealthResult(); model.prepare(selected, settings) }
+            }, enabled = !busy && settings?.goal != null && ui.models.any { it.slug == settings.modelId }) { Text(stringResource(R.string.manual_prepare)) }
             if (model.reading) Text(stringResource(R.string.health_loading))
             if (model.prepareFailed) Text(stringResource(R.string.manual_prepare_failed))
         } else {
@@ -74,7 +65,7 @@ internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection
             Text(stringResource(R.string.manual_instructions))
             Text(review.instructions)
             Text(stringResource(R.string.manual_input))
-            Text(review.input)
+            MeasurementTable(review.rows, showGroupingNote = true)
             Button(onClick = { connection.generateReviewed(review) }, enabled = !busy && ui.permitted) {
                 Text(stringResource(if (isHealth && ui.failure != null) R.string.manual_retry else R.string.manual_send))
             }

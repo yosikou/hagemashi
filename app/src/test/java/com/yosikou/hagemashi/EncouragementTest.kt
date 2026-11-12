@@ -75,7 +75,7 @@ class EncouragementTest {
         assertEquals("full-A", restored.full)
         assertTrue(restored.hasHealthData)
         assertFalse(json.toString().contains("persona-not-stored"))
-        assertEquals(setOf("schema", "id", "generatedAt", "short", "full", "usedData", "hasHealthData"), json.keys().asSequence().toSet())
+        assertEquals(setOf("schema", "id", "generatedAt", "short", "full", "usedData", "hasHealthData", "personaName", "rows", "kind"), json.keys().asSequence().toSet())
     }
     @Test fun laterGenerationHasADifferentIdAndCannotChangeTheEarlierSavedValue() {
         val review = ReviewedGeneration("model", "Model", "persona", "data-A", true)
@@ -86,6 +86,25 @@ class EncouragementTest {
         assertEquals("full-A", decodeEncouragement(first.id, JSONObject(serialized)).full)
         assertEquals("data-A", first.usedData)
         assertFalse(second.hasHealthData)
+    }
+    @Test fun oldAnswersKeepMissingPersonaAndNewAnswersKeepTheNameAtGenerationTime() {
+        val old = encodeEncouragement(SavedEncouragement(a, Instant.EPOCH, safe, "old", "data", true)).put("schema", 1)
+        old.remove("personaName")
+        assertNull(decodeEncouragement(a, old).personaName)
+        val review = ReviewedGeneration("m", "M", "prompt", "data", true, "original name")
+        val saved = newSavedEncouragement(EncouragementText(safe, "full"), review, Instant.EPOCH)
+        assertEquals("original name", decodeEncouragement(saved.id, encodeEncouragement(saved)).personaName)
+    }
+
+    @Test fun generatedKindAndRowsAreFrozenAndRoundTripSeparatelyFromTheCurrentSettings() {
+        val rows=mutableListOf(MeasurementRow(MeasureItem.WEIGHT,"69.875","kg","synthetic-time"))
+        val review=ReviewedGeneration("m","M","prompt","input",true,"persona-A",rows,GenerationKind.MORNING)
+        val saved=newSavedEncouragement(EncouragementText(safe,"full-A"),review,Instant.EPOCH)
+        rows.clear()
+        val restored=decodeEncouragement(saved.id,encodeEncouragement(saved))
+        assertEquals(GenerationKind.MORNING,restored.kind)
+        assertEquals("persona-A",restored.personaName)
+        assertEquals("69.875",restored.rows.single().value)
     }
     @Test fun wrongRecordIdentityUnknownSchemaOrCorruptionDoesNotOpenAnotherAnswer() {
         val record = SavedEncouragement(a, Instant.EPOCH, safe, "full-A", "data-A", true)

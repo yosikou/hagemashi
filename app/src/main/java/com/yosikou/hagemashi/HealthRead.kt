@@ -27,11 +27,13 @@ internal interface HealthDataSource {
 
 // Read-only domain boundary: no AI client, prompt builder, storage, logger, scheduler, or notification dependency.
 internal class HealthReader(private val source: HealthDataSource) {
-    suspend fun read(now: Instant, zone: ZoneId, plan: HealthReadPlan = HealthReadPlan.INSPECTION): HealthSnapshot {
+    suspend fun read(now: Instant, zone: ZoneId, plan: HealthReadPlan = HealthReadPlan.INSPECTION, kind: GenerationKind = GenerationKind.MANUAL): HealthSnapshot {
         val generation = plan == HealthReadPlan.GENERATION
-        val measurements = HealthWindow(now.minus(Duration.ofDays(if (generation) 30 else 7)), now)
-        val date = now.atZone(zone).toLocalDate()
-        val today = HealthWindow(date.minusDays(if (generation) 6 else 0).atStartOfDay(zone).toInstant(), now)
+        val localDate = now.atZone(zone).toLocalDate()
+        val cutoff = if (generation && kind == GenerationKind.MORNING) localDate.atStartOfDay(zone).toInstant() else now
+        val measurements = HealthWindow(cutoff.minus(Duration.ofDays(if (generation) 30 else 7)), cutoff)
+        val date = if (generation && kind == GenerationKind.MORNING) localDate.minusDays(1) else localDate
+        val today = HealthWindow(date.minusDays(if (generation) 6 else 0).atStartOfDay(zone).toInstant(), cutoff)
         val granted = source.permissions()
         val results = HealthKind.entries.map { kind ->
             if (kind !in granted) HealthResult(kind, HealthReadStatus.PERMISSION_REQUIRED)
@@ -40,7 +42,7 @@ internal class HealthReader(private val source: HealthDataSource) {
                     if (generation) {
                         val days = (6L downTo 0L).map { offset ->
                             val start = date.minusDays(offset).atStartOfDay(zone).toInstant()
-                            val end = if (offset == 0L) now else date.minusDays(offset - 1).atStartOfDay(zone).toInstant()
+                            val end = if (offset == 0L) cutoff else date.minusDays(offset - 1).atStartOfDay(zone).toInstant()
                             val window = HealthWindow(start, end)
                             try {
                                 val value = if (start < end) source.steps(window) else null
@@ -62,9 +64,10 @@ internal class HealthReader(private val source: HealthDataSource) {
                     }
                 } else {
                     val page = source.samples(kind, measurements)
-                    HealthResult(kind, if (page.samples.isEmpty()) HealthReadStatus.NO_RECORDS else HealthReadStatus.HAS_RECORDS,
-                        samples = page.samples.sortedByDescending { it.measuredAt }.let { if (generation) it else it.take(20) },
-                        hasMore = page.hasMore || (!generation && page.samples.size > 20))
+                    val filtered = page.samples.filter { it.measuredAt >= measurements.start && it.measuredAt < measurements.end }
+                    HealthResult(kind, if (filtered.isEmpty()) HealthReadStatus.NO_RECORDS else HealthReadStatus.HAS_RECORDS,
+                        samples = filtered.sortedByDescending { it.measuredAt }.let { if (generation) it else it.take(20) },
+                        hasMore = page.hasMore || (!generation && filtered.size > 20))
                 }
             } catch (e: CancellationException) { throw e }
             catch (_: SecurityException) { HealthResult(kind, HealthReadStatus.ACCESS_DENIED) }

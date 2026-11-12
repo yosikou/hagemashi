@@ -39,6 +39,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : ComponentActivity() {
+    private lateinit var history: HistoryViewModel
+    private lateinit var modePreview: ModePreviewViewModel
+    private lateinit var app: AppViewModel
     private lateinit var model: ConnectionViewModel
     private lateinit var probes: NetworkProbeViewModel
     private lateinit var details: AnswerDetailViewModel
@@ -48,6 +51,9 @@ class MainActivity : ComponentActivity() {
     private var healthPrivacy by mutableStateOf(false)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        history = ViewModelProvider(this)[HistoryViewModel::class.java]
+        modePreview = ViewModelProvider(this)[ModePreviewViewModel::class.java]
+        app = ViewModelProvider(this)[AppViewModel::class.java]
         model = ViewModelProvider(this)[ConnectionViewModel::class.java]
         probes = ViewModelProvider(this)[NetworkProbeViewModel::class.java]
         health = ViewModelProvider(this)[HealthConnectViewModel::class.java]
@@ -57,9 +63,7 @@ class MainActivity : ComponentActivity() {
         healthPrivacy = isHealthPrivacyIntent(intent)
         if (healthPrivacy) detailId = null
         setContent {
-            var showProbes by rememberSaveable { mutableStateOf(false) }
-            var showManual by rememberSaveable { mutableStateOf(false) }
-            var showHealth by rememberSaveable { mutableStateOf(false) }
+            var route by rememberSaveable { mutableStateOf("home") }
             val url = model.ui.browserUrl
             LaunchedEffect(url) {
                 if (url != null) {
@@ -69,16 +73,31 @@ class MainActivity : ComponentActivity() {
                     } catch (_: Exception) { model.browserFailed() }
                 }
             }
-            MaterialTheme {
+            HagemashiTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val selectedDetail = detailId
                     if (selectedDetail != null) AnswerDetailScreen(selectedDetail, details) { closeDetail() }
                     else if (healthPrivacy) HealthPrivacyScreen { healthPrivacy = false }
-                    else if (showManual) ManualGenerationScreen(manual, model, lifecycle, openDetail = { detailId = it }) { showManual = false }
-                    else if (showHealth) HealthConnectScreen(health, lifecycle, privacy = { healthPrivacy = true }) { showHealth = false }
-                    else if (showProbes) ProbeScreen(probes) { showProbes = false }
-                    else ConnectionScreen(model, openProbes = { showProbes = true }, openHealth = { showHealth = true }, openManual = { showManual = true }) {
-                        runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://chatgpt.com/settings/usage"))) }
+                    else when (route) {
+                        "home" -> HomeScreen(app, model, { route = it }, { route = "manual" }, { detailId = it })
+                        "settings" -> SettingsMenu({ route = it }) { route = "home" }
+                        "connection" -> ConnectionScreen(model, { route = "settings" }) {
+                            runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://chatgpt.com/settings/usage"))) }
+                        }
+                        "health" -> HealthConnectScreen(health, lifecycle, privacy = { healthPrivacy = true }, preview={route=if(it==GenerationKind.MORNING) "morning-preview" else "evening-preview"}) { route = "settings" }
+                        "history" -> HistoryScreen(history,{detailId=it}){route="home";app.refresh()}
+                        "morning-preview", "evening-preview" -> ModePreviewScreen(if(route=="morning-preview") GenerationKind.MORNING else GenerationKind.EVENING, modePreview, app.settings){route="health"}
+                        "probes" -> ProbeScreen(probes) { route = "settings" }
+                        "manual" -> ManualGenerationScreen(manual, model, app.settings, lifecycle, openDetail = { detailId = it }) { route = "home"; app.refresh() }
+                        else -> app.settings?.let { cfg -> when (route) {
+                            "goal" -> GoalSettings(app, cfg) { route = "settings" }
+                            "agent" -> AgentSettings(app, cfg, model) { route = "settings" }
+                            "personas" -> PersonaSettings(app, cfg) { route = "settings" }
+                            "notice" -> NotificationSettings(app, cfg) { route = "settings" }
+                        } } ?: Page(R.string.settings_title, { route = "settings" }) {
+                            Text(stringResource(R.string.settings_error))
+                            OutlinedButton(onClick = app::refresh) { Text(stringResource(R.string.detail_retry)) }
+                        }
                     }
                 }
             }
@@ -87,7 +106,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() { super.onStart(); model.setForeground(true); probes.setForeground(true) }
     override fun onStop() { model.setForeground(false); probes.setForeground(false); super.onStop() }
-    override fun onResume() { super.onResume(); model.setResumed(true) }
+    override fun onResume() { super.onResume(); model.setResumed(true); app.refresh() }
     override fun onPause() { model.setResumed(false); super.onPause() }
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -108,17 +127,15 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun ConnectionScreen(model: ConnectionViewModel, openProbes: () -> Unit, openHealth: () -> Unit, openManual: () -> Unit, openUsage: () -> Unit) {
+private fun ConnectionScreen(model: ConnectionViewModel, back: () -> Unit, openUsage: () -> Unit) {
+    androidx.activity.compose.BackHandler(onBack = back)
     val ui = model.ui
     val context = LocalContext.current
     var confirmErase by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(stringResource(R.string.screen_title), style = MaterialTheme.typography.headlineSmall)
+        Text(stringResource(R.string.chatgpt_settings), style = MaterialTheme.typography.headlineSmall)
         Text(stringResource(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER))
-        OutlinedButton(onClick = openProbes, enabled = !ui.busy) { Text(stringResource(R.string.open_probes)) }
-        OutlinedButton(onClick = openHealth, enabled = !ui.busy) { Text(stringResource(R.string.health_open)) }
-        OutlinedButton(onClick = openManual, enabled = !ui.busy) { Text(stringResource(R.string.manual_open)) }
         Text(stringResource(R.string.preview_notice))
         Text(stringResource(if (ui.savedConnection == SavedConnection.UNKNOWN) R.string.connection_unknown
             else if (ui.connected) R.string.connected else R.string.disconnected), style = MaterialTheme.typography.titleMedium)
@@ -172,31 +189,8 @@ private fun ConnectionScreen(model: ConnectionViewModel, openProbes: () -> Unit,
         } ?: Text(stringResource(R.string.network_settings_unknown))
         TextButton(onClick = openUsage) { Text(stringResource(R.string.manage_usage)) }
         if (ui.failure == Failure.STORAGE) OutlinedButton(onClick = { confirmErase = true }, enabled = !ui.busy) { Text(stringResource(R.string.erase_storage)) }
-        HorizontalDivider()
-        Text(stringResource(R.string.dummy_title), style = MaterialTheme.typography.titleMedium)
-        Text(stringResource(R.string.dummy_prompt))
-        Text(stringResource(R.string.persona_prompt))
-        OutlinedButton(onClick = model::loadModels, enabled = !ui.busy && ui.permitted) { Text(stringResource(R.string.fetch_models)) }
-        ui.models.forEach { item ->
-            TextButton(onClick = { model.selectModel(item.slug) }, enabled = !ui.busy) {
-                Text(stringResource(if (ui.model == item.slug) R.string.selected_option else R.string.option, item.name))
-            }
-        }
-        Button(onClick = model::generate, enabled = !ui.busy && ui.permitted && ui.model != null) { Text(stringResource(R.string.generate)) }
-        if (ui.answer.isNotEmpty() && ui.answerContext == AnswerContext.DUMMY) {
-            Text(stringResource(R.string.answer_title), style = MaterialTheme.typography.titleMedium)
-            SelectionContainer { Text(ui.answer) }
-        }
-        ui.generationDiagnostic?.let { state ->
-            val report = generationReport(BuildConfig.BUILD_IDENTIFIER, BuildConfig.APPLICATION_ID, BuildConfig.BUILD_TYPE, state)
-            Text(stringResource(R.string.generation_diagnostic_title), style = MaterialTheme.typography.titleMedium)
-            Text(stringResource(R.string.generation_diagnostic_notice))
-            SelectionContainer { Text(report) }
-            OutlinedButton(onClick = {
-                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                clipboard.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.copy_generation_diagnostic), report))
-            }, enabled = !ui.busy) { Text(stringResource(R.string.copy_generation_diagnostic)) }
-        }
+        OutlinedButton(onClick = back) { Text(stringResource(R.string.app_back)) }
+
     }
     if (ui.welcome && !ui.busy) AlertDialog(onDismissRequest = model::dismissWelcome,
         title = { Text(stringResource(R.string.plan_welcome_title)) }, text = { Text(stringResource(R.string.plan_welcome)) },

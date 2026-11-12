@@ -7,7 +7,7 @@ import org.json.JSONObject
 
 internal class EncouragementText(val short: String, val full: String)
 internal class SavedEncouragement(val id: String, val generatedAt: Instant, val short: String,
-    val full: String, val usedData: String, val hasHealthData: Boolean)
+    val full: String, val usedData: String, val hasHealthData: Boolean, val personaName: String? = null, val rows: List<MeasurementRow> = emptyList(), val kind: GenerationKind = GenerationKind.MANUAL)
 internal fun isAnswerId(value: String): Boolean = value.matches(Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"))
 
 // Deliberately conservative: reject numeric glyphs, kanji numbers, Latin text, units and health labels.
@@ -35,18 +35,20 @@ internal fun encouragementText(answer: String, fallback: String): EncouragementT
     } catch (_: Exception) { throw Problem(Failure.PROTOCOL) }
 }
 internal fun newSavedEncouragement(text: EncouragementText, review: ReviewedGeneration, at: Instant): SavedEncouragement =
-    SavedEncouragement(UUID.randomUUID().toString(), at, text.short, text.full, review.input, review.hasHealthData)
+    SavedEncouragement(UUID.randomUUID().toString(), at, text.short, text.full, review.input, review.hasHealthData, review.personaName, review.rows.toList(), review.kind)
 internal fun encodeEncouragement(value: SavedEncouragement): JSONObject {
     require(isAnswerId(value.id))
-    return JSONObject().put("schema", 1).put("id", value.id).put("generatedAt", value.generatedAt.toString())
-        .put("short", value.short).put("full", value.full).put("usedData", value.usedData).put("hasHealthData", value.hasHealthData)
+    return JSONObject().put("schema", 3).put("id", value.id).put("generatedAt", value.generatedAt.toString())
+        .put("short", value.short).put("full", value.full).put("usedData", value.usedData).put("hasHealthData", value.hasHealthData).put("personaName", value.personaName ?: JSONObject.NULL).put("rows", encodeRows(value.rows)).put("kind", value.kind.name)
 }
 internal fun decodeEncouragement(id: String, json: JSONObject): SavedEncouragement {
     try {
-        if (!isAnswerId(id) || json.getInt("schema") != 1 || json.getString("id") != id) throw Problem(Failure.STORAGE)
+        if (!isAnswerId(id) || json.getInt("schema") !in 1..3 || json.getString("id") != id) throw Problem(Failure.STORAGE)
         val full = json.getString("full").takeIf { it.isNotBlank() } ?: throw Problem(Failure.STORAGE)
         return SavedEncouragement(id, Instant.parse(json.getString("generatedAt")), json.getString("short"), full,
-            json.getString("usedData"), json.getBoolean("hasHealthData"))
+            json.getString("usedData"), json.getBoolean("hasHealthData"),
+            json.optString("personaName").takeUnless { json.isNull("personaName") || it.isEmpty() },
+            json.optJSONArray("rows")?.let(::decodeRows).orEmpty(), json.optString("kind").takeIf { it.isNotEmpty() }?.let(GenerationKind::valueOf) ?: GenerationKind.MANUAL)
     } catch (_: Exception) { throw Problem(Failure.STORAGE) }
 }
 internal fun answerNavigation(id: String, applicationId: String): String {

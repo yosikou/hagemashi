@@ -21,7 +21,7 @@ internal data class ConnectionUi(
     val lastWhileAway: Stage = Stage.NONE, val networkFacts: NetworkFacts? = null,
     val dnsObservations: List<DnsObservation> = emptyList(),
     val generationDiagnostic: GenerationDiagnostic? = null, val answerContext: AnswerContext? = null,
-    val savedAnswerId: String? = null, val answerShort: String = "", val answerSaveFailed: Boolean = false
+    val unavailableModel: String? = null, val modelsLoaded: Boolean = false, val savedAnswerId: String? = null, val answerShort: String = "", val answerSaveFailed: Boolean = false
 )
 
 internal class ConnectionViewModel(application: Application) : AndroidViewModel(application) {
@@ -34,6 +34,7 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
     private val main = Handler(Looper.getMainLooper())
     private var epoch = 0L
     private var operation: Operation? = null
+    private var requestedModel: String? = null
     private val dnsComparison = DnsComparison()
     private val comparisonCoordinator = Executors.newSingleThreadExecutor()
     private var comparisonGeneration = -1L
@@ -125,6 +126,7 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
     }
 
     private fun generatePrompt(model: String, instructions: String, input: String, context: AnswerContext, review: ReviewedGeneration? = null) {
+        requestedModel = model
         ui = ui.copy(answer = "", generationDiagnostic = null, answerContext = context, savedAnswerId = null, answerShort = "", answerSaveFailed = false)
         run(R.string.generating) { op ->
             val raw = repository.generate(model, instructions, input, op)
@@ -196,7 +198,8 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
                         val models = if (!snapshot.connected) emptyList() else result.models ?: ui.models
                         ui = ui.copy(busy = false, connected = snapshot.connected, permitted = snapshot.permitted,
                             name = snapshot.name, email = snapshot.email, accounts = snapshot.accounts,
-                            models = models, model = ui.model?.takeIf { selected -> models.any { it.slug == selected } } ?: models.firstOrNull()?.slug,
+                            models = models, model = ui.model, modelsLoaded = snapshot.connected && (result.models != null || ui.modelsLoaded),
+                            unavailableModel = if (result.models?.any { it.slug == ui.unavailableModel } == true) null else ui.unavailableModel,
                             savedAnswerId = result.savedAnswer?.id ?: ui.savedAnswerId,
                             answerShort = if (result.answer != null) result.short else ui.answerShort,
                             answerSaveFailed = if (result.answer != null) result.saveFailed else ui.answerSaveFailed,
@@ -215,7 +218,9 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
                 val snapshot = runCatching { repository.snapshot() }.getOrNull()
                 main.post {
                     if (generation == epoch) {
-                        ui = ui.copy(busy = false, failure = failure, status = if (failure == null) R.string.cancelled else R.string.operation_failed,
+                        ui = ui.copy(busy = false, failure = failure,
+                            unavailableModel = if (failure == Failure.POLICY && ui.answerContext == AnswerContext.HEALTH) requestedModel else ui.unavailableModel,
+                            status = if (failure == null) R.string.cancelled else R.string.operation_failed,
                             connected = snapshot?.connected ?: false, permitted = snapshot?.permitted ?: false,
                             name = snapshot?.name.orEmpty(), email = snapshot?.email.orEmpty(), accounts = snapshot?.accounts ?: ui.accounts,
                             welcome = snapshot?.welcome ?: false, browserUrl = null,
