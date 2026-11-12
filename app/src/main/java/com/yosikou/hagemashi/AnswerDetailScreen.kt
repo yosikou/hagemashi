@@ -41,7 +41,7 @@ internal fun AnswerDetailScreen(id: String, model: AnswerDetailViewModel, back: 
         }
         model.answer?.takeIf { it.id == id }?.let { answer ->
             SavedAnswerContent(answer)
-            SectionCard {
+            if(diagnosticUi()) SectionCard {
                 Text(stringResource(R.string.notification_test_title), style = MaterialTheme.typography.titleMedium)
                 Text(stringResource(R.string.notification_test_notice))
                 OutlinedButton(onClick = {

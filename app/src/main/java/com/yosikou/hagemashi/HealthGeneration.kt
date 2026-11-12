@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 // Strings are frozen at review time. No health object, previous answer, or mutable UI is read at send time.
-internal class ReviewedGeneration(val model: String, val modelName: String, val instructions: String, val input: String, val hasHealthData: Boolean = false, val personaName: String? = null, val rows: List<MeasurementRow> = emptyList(), val kind: GenerationKind = GenerationKind.MANUAL)
+internal class ReviewedGeneration(val model: String, val modelName: String, val instructions: String, val input: String, val hasHealthData: Boolean = false, val personaName: String? = null, val rows: List<MeasurementRow> = emptyList(), val kind: GenerationKind = GenerationKind.MANUAL, val personaPrompt:String="", val supplement:String="")
 internal data class HealthPromptLabels(
     val goal: String, val readAt: String, val period: String, val measurements: String, val steps: String,
     val sample: String, val day: String, val stepCount: String, val missing: String, val weight: String, val bodyFat: String,

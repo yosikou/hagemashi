@@ -60,7 +60,7 @@ internal suspend fun prepareGeneration(app:Context,settings:AppSettings,model:Mo
         (settings.goalDate?.let { "\n" + app.getString(R.string.goal_date_format, it.toString()) } ?: "")
     val frozen = ReviewedGeneration(model.slug, model.name, instructions, input,
         snapshot.results.any { it.samples.isNotEmpty() || it.steps != null || it.days.any { day -> day.value != null } }, persona.name,
-        measurementRows(snapshot, target, settings.goalDate?.toString(), zone), kind)
+        measurementRows(snapshot, target, settings.goalDate?.toString(), zone), kind, persona.prompt, settings.supplement)
     if(status==ReservationEvent.HEALTH_READ)status=when {
         frozen.hasHealthData->ReservationEvent.HEALTH_READ
         snapshot.results.any{it.status==HealthReadStatus.ERROR}->ReservationEvent.HEALTH_FAILED

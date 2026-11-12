@@ -42,8 +42,8 @@ internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection
     val isHealth = ui.answerContext == AnswerContext.HEALTH
     Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(stringResource(R.string.manual_title), style = MaterialTheme.typography.headlineSmall)
-        Text(stringResource(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER))
+        Text(stringResource(if(diagnosticUi())R.string.manual_title else R.string.generate_encouragement), style = MaterialTheme.typography.headlineSmall)
+        if(diagnosticUi()) Text(stringResource(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER))
         Text(stringResource(R.string.manual_notice))
         if (!ui.permitted) Text(stringResource(R.string.manual_need_connection))
         if (settings == null) Text(stringResource(R.string.settings_error))
@@ -58,16 +58,9 @@ internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection
             if (model.prepareFailed) Text(stringResource(R.string.manual_prepare_failed))
         } else {
             HorizontalDivider()
-            Text(stringResource(R.string.manual_preview), style = MaterialTheme.typography.titleMedium)
-            Text(stringResource(R.string.manual_model, review.modelName, review.model))
-            if (model.readUnavailable) Text(stringResource(R.string.manual_unavailable))
-            Text(stringResource(R.string.manual_preview_notice))
-            Text(stringResource(R.string.manual_instructions))
-            Text(review.instructions)
-            Text(stringResource(R.string.manual_input))
-            MeasurementTable(review.rows, showGroupingNote = true)
+            SendReviewContent(review)
             Button(onClick = { connection.generateReviewed(review) }, enabled = !busy && ui.permitted) {
-                Text(stringResource(if (isHealth && ui.failure != null) R.string.manual_retry else R.string.manual_send))
+                Text(stringResource(if (isHealth && ui.failure != null) R.string.manual_retry else R.string.review_generate))
             }
             OutlinedButton(onClick = { connection.clearHealthResult(); model.reset() }, enabled = !busy) {
                 Text(stringResource(R.string.manual_edit))
@@ -75,7 +68,7 @@ internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection
         }
         if (isHealth) {
             Text(stringResource(ui.status))
-            if (ui.failure != null) Text(stringResource(failureText(ui.failure)))
+            if (ui.failure != null) Text(stringResource(if(diagnosticUi())failureText(ui.failure)else userFailureText(ui.failure)))
             if (ui.answer.isNotBlank()) {
                 Text(stringResource(R.string.answer_title), style = MaterialTheme.typography.titleMedium)
                 Text(if (ui.savedAnswerId != null) ui.answerShort else ui.answer)
@@ -85,7 +78,7 @@ internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection
                 if (ui.answerSaveFailed) Text(stringResource(R.string.detail_save_failed))
             }
             if (ui.busy) OutlinedButton(onClick = connection::cancel) { Text(stringResource(R.string.cancel)) }
-        } else if (ui.failure != null) Text(stringResource(failureText(ui.failure)))
+        } else if (ui.failure != null) Text(stringResource(if(diagnosticUi())failureText(ui.failure)else userFailureText(ui.failure)))
         OutlinedButton(onClick = back) { Text(stringResource(R.string.probe_back)) }
     }
 }

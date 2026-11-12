@@ -94,8 +94,9 @@ class MainActivity : ComponentActivity() {
                         "health" -> HealthConnectScreen(health, lifecycle, privacy = { healthPrivacy = true }, preview={route=if(it==GenerationKind.MORNING) "morning-preview" else "evening-preview"}) { route = "settings" }
                         "history" -> HistoryScreen(history,{detailId=it}){route="home";app.refresh()}
                         "morning-preview", "evening-preview" -> ModePreviewScreen(if(route=="morning-preview") GenerationKind.MORNING else GenerationKind.EVENING, modePreview, app.settings){route="health"}
-                        "reservation-diagnostics" -> ReservationDiagnosticScreen { route = "settings" }
-                        "probes" -> ProbeScreen(probes) { route = "settings" }
+                        "reservation-diagnostics" -> if(diagnosticUi()) ReservationDiagnosticScreen { route = "settings" } else SettingsMenu({route=it}){route="home"}
+                        "probes" -> if(diagnosticUi()) ProbeScreen(probes) { route = "settings" } else SettingsMenu({route=it}){route="home"}
+                        "dummy-generation" -> if(diagnosticUi()) DiagnosticGenerationScreen(model){route="settings"} else SettingsMenu({route=it}){route="home"}
                         "manual" -> ManualGenerationScreen(manual, model, app.settings, lifecycle, openDetail = { detailId = it }) { route = "home"; app.refresh() }
                         else -> app.settings?.let { cfg -> when (route) {
                             "goal" -> GoalSettings(app, cfg) { route = "settings" }
@@ -144,8 +145,8 @@ private fun ConnectionScreen(model: ConnectionViewModel, back: () -> Unit, openU
     Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(stringResource(R.string.chatgpt_settings), style = MaterialTheme.typography.headlineSmall)
-        Text(stringResource(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER))
-        Text(stringResource(R.string.preview_notice))
+        if(diagnosticUi()) Text(stringResource(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER))
+        if(diagnosticUi()) Text(stringResource(R.string.preview_notice))
         Text(stringResource(if (ui.savedConnection == SavedConnection.UNKNOWN) R.string.connection_unknown
             else if (ui.connected) R.string.connected else R.string.disconnected), style = MaterialTheme.typography.titleMedium)
         if (ui.name.isNotEmpty()) Text(stringResource(R.string.account_name, ui.name))
@@ -161,14 +162,15 @@ private fun ConnectionScreen(model: ConnectionViewModel, back: () -> Unit, openU
             OutlinedButton(onClick = { model.selectAccount(null) }, enabled = !ui.busy) { Text(stringResource(R.string.new_account)) }
         }
         Button(onClick = { model.signIn() }, enabled = !ui.busy && !ui.connected && ui.failure != Failure.STORAGE) { Text(stringResource(R.string.continue_chatgpt)) }
-        OutlinedButton(onClick = { model.signIn(compareDns = true) }, enabled = !ui.busy && !ui.connected && ui.failure != Failure.STORAGE) {
+        if(diagnosticUi()) OutlinedButton(onClick = { model.signIn(compareDns = true) }, enabled = !ui.busy && !ui.connected && ui.failure != Failure.STORAGE) {
             Text(stringResource(R.string.dns_compare_sign_in))
         }
         OutlinedButton(onClick = model::disconnect, enabled = ui.connected) { Text(stringResource(R.string.disconnect)) }
         if (ui.busy) OutlinedButton(onClick = { model.cancel() }) { Text(stringResource(R.string.cancel)) }
         Text(stringResource(ui.status))
         if (ui.progress.stage == Stage.WAIT_APP_RETURN && ui.progress.phase == Phase.RUNNING) Text(stringResource(R.string.wait_app_return))
-        ui.failure?.let { Text(stringResource(failureText(it)), color = MaterialTheme.colorScheme.error) }
+        ui.failure?.let { Text(stringResource(if(diagnosticUi())failureText(it)else userFailureText(it)), color = MaterialTheme.colorScheme.error) }
+        if(diagnosticUi()) {
         if (ui.progress.stage != Stage.NONE) {
             Text(stringResource(R.string.diagnostic_stage, stringResource(stageText(ui.progress.stage)), stringResource(phaseText(ui.progress.phase))))
             Text(stringResource(R.string.diagnostic_completed, stringResource(stageText(ui.progress.completed))))
@@ -196,6 +198,7 @@ private fun ConnectionScreen(model: ConnectionViewModel, back: () -> Unit, openU
             Text(stringResource(if (it.internetGranted) R.string.internet_granted else R.string.internet_missing))
             Text(stringResource(if (it.cleartextPermitted) R.string.cleartext_allowed else R.string.https_only))
         } ?: Text(stringResource(R.string.network_settings_unknown))
+        }
         TextButton(onClick = openUsage) { Text(stringResource(R.string.manage_usage)) }
         if (ui.failure == Failure.STORAGE) OutlinedButton(onClick = { confirmErase = true }, enabled = !ui.busy) { Text(stringResource(R.string.erase_storage)) }
         OutlinedButton(onClick = back) { Text(stringResource(R.string.app_back)) }
@@ -218,7 +221,7 @@ private fun ProbeScreen(model: NetworkProbeViewModel, back: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(stringResource(R.string.probe_title), style = MaterialTheme.typography.headlineSmall)
         Text(stringResource(R.string.probe_notice))
-        Text(stringResource(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER))
+        if(diagnosticUi()) Text(stringResource(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER))
         OutlinedButton(onClick = { model.runProbe(ProbeKind.DNS) }, enabled = !model.busy) { Text(stringResource(R.string.probe_dns)) }
         OutlinedButton(onClick = { model.runProbe(ProbeKind.HTTPS_GET) }, enabled = !model.busy) { Text(stringResource(R.string.probe_get)) }
         OutlinedButton(onClick = { model.runProbe(ProbeKind.EMPTY_POST) }, enabled = !model.busy) { Text(stringResource(R.string.probe_post)) }
