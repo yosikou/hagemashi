@@ -33,5 +33,6 @@ internal val LocalAppLocale=staticCompositionLocalOf { Locale.ENGLISH }
     val localized=remember(context,language,configuration){languageContext(context,language)}
     LaunchedEffect(localized) { runCatching { AnswerNotifications(localized).refreshChannel() } }
     CompositionLocalProvider(LocalContext provides localized,LocalConfiguration provides localized.resources.configuration,
-        LocalAppLocale provides localized.resources.configuration.locales[0],content=content)
+        LocalAppLocale provides localized.resources.configuration.locales[0],
+        androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr,content=content)
 }
