@@ -19,12 +19,12 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 @Composable
-internal fun Page(title: Int, back: () -> Unit, content: @Composable ColumnScope.() -> Unit) {
+internal fun Page(title: Int, back: () -> Unit, titleText:String?=null, content: @Composable ColumnScope.() -> Unit) {
     BackHandler(onBack = back)
     Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            Text(stringResource(title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
+            Text(titleText ?: stringResource(title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
             TextButton(onClick = back) { Text(stringResource(R.string.app_back)) }
         }
         content()
@@ -207,6 +207,15 @@ internal fun PersonaSettings(app: AppViewModel, cfg: AppSettings, back: () -> Un
 internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () -> Unit) {
     val context = LocalContext.current
     Page(R.string.notification_settings_title, back) {
+        SectionCard {
+            Text(stringResource(R.string.automatic_title),style=MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.automatic_notice))
+            Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+                Switch(cfg.automaticGeneration,onCheckedChange={enabled->app.change{it.copy(automaticGeneration=enabled)}},enabled=!app.saving)
+                Text(stringResource(R.string.automatic_enabled))
+            }
+            BackgroundHealthPermissionControl()
+        }
         var invalid by remember { mutableStateOf(false) }
         NoticeSlot.entries.forEach { slot ->
             SectionCard {
@@ -228,8 +237,8 @@ internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () 
         }
         if(invalid) Text(stringResource(R.string.slot_time_invalid))
         Text(stringResource(app.reservationStatus))
-        ReservationSettings(app, cfg)
-        Text(stringResource(R.string.no_automatic_ai))
+        if(!cfg.automaticGeneration)ReservationSettings(app, cfg)
+        Text(stringResource(if(cfg.automaticGeneration)R.string.automatic_active else R.string.no_automatic_ai))
         SettingsStatus(app)
     }
 }

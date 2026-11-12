@@ -45,7 +45,7 @@ internal fun decodeEncouragement(id: String, json: JSONObject): SavedEncourageme
     try {
         if (!isAnswerId(id) || json.getInt("schema") !in 1..3 || json.getString("id") != id) throw Problem(Failure.STORAGE)
         val full = json.getString("full").takeIf { it.isNotBlank() } ?: throw Problem(Failure.STORAGE)
-        return SavedEncouragement(id, Instant.parse(json.getString("generatedAt")), json.getString("short"), full,
+        return SavedEncouragement(id, Instant.parse(json.getString("generatedAt")), json.optString("short", ""), full,
             json.getString("usedData"), json.getBoolean("hasHealthData"),
             json.optString("personaName").takeUnless { json.isNull("personaName") || it.isEmpty() },
             json.optJSONArray("rows")?.let(::decodeRows).orEmpty(), json.optString("kind").takeIf { it.isNotEmpty() }?.let(GenerationKind::valueOf) ?: GenerationKind.MANUAL)
@@ -62,3 +62,8 @@ internal fun answerIdFromNavigation(action: String?, data: String?, applicationI
     id.takeIf { action == "$applicationId.OPEN_ANSWER" && uri.scheme == applicationId && uri.rawAuthority == "answer" &&
         uri.rawQuery == null && uri.rawFragment == null && isAnswerId(id) }
 } catch (_: Exception) { null }
+
+internal fun scheduledAnswerId(day:java.time.LocalDate,slot:NoticeSlot,version:Long=0):String =
+    UUID.nameUUIDFromBytes("hagemashi:auto:$day:${slot.name}:$version".toByteArray(Charsets.UTF_8)).toString()
+internal fun answerTitle(answer:SavedEncouragement,fallback:String,legacy:String):String =
+    if(answer.short.isBlank())legacy else notificationShort(answer.short,fallback)

@@ -41,7 +41,7 @@ class ReservationTraceTest {
         val start=reservationAt(day,cfg.morning.time,zone)
         for(hour in -24..36) for(version in listOf(3L,4L)) for(enabled in listOf(true,false)) for(claimed in listOf(true,false)) {
             val value=cfg.copy(morning=cfg.morning.copy(enabled=enabled));val at=start.plusSeconds(hour*3600L)
-            val ledger=if(claimed)claimSlot(empty,day,NoticeSlot.MORNING)else empty
+            val ledger=if(claimed)claimRun(empty,day,NoticeSlot.MORNING,cfg.morningVersion)else empty
             assertEquals(reservationDue(version,day,NoticeSlot.MORNING,value,at,zone,ledger),
                 reservationDecision(version,day,NoticeSlot.MORNING,value,at,zone,ledger)==ReservationReason.DUE)
         }

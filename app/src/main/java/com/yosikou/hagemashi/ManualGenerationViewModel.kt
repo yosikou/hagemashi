@@ -44,49 +44,8 @@ internal class ManualGenerationViewModel(application: Application) : AndroidView
         prepareFailed = false
         job = viewModelScope.launch {
             try {
-                val app = getApplication<Application>()
-                val now = Instant.now()
-                val zone = ZoneId.systemDefault()
-                var unavailable = false
-                val snapshot = withContext(Dispatchers.IO) {
-                    try {
-                        check(Build.VERSION.SDK_INT >= 28 && HealthConnectClient.getSdkStatus(app) == HealthConnectClient.SDK_AVAILABLE)
-                        HealthReader(HealthConnectSource(HealthConnectClient.getOrCreate(app))).read(now, zone, HealthReadPlan.GENERATION)
-                    } catch (e: CancellationException) { throw e }
-                    catch (_: Exception) {
-                        unavailable = true
-                        val empty = object : HealthDataSource {
-                            override suspend fun permissions() = emptySet<HealthKind>()
-                            override suspend fun samples(kind: HealthKind, window: HealthWindow): HealthPage = error("unreachable")
-                            override suspend fun steps(window: HealthWindow): HealthSteps? = error("unreachable")
-                        }
-                        HealthReader(empty).read(now, zone, HealthReadPlan.GENERATION).let { snapshot ->
-                            snapshot.copy(results = snapshot.results.map { it.copy(status = HealthReadStatus.ERROR) })
-                        }
-                    }
-                }
-                fun string(id: Int) = app.getString(id)
-                val labels = HealthPromptLabels(
-                    string(R.string.manual_goal_format), string(R.string.manual_read_format), string(R.string.manual_period_format),
-                    string(R.string.manual_measurements), string(R.string.manual_steps), string(R.string.manual_sample_format),
-                    string(R.string.manual_day_format), string(R.string.manual_step_count), string(R.string.manual_missing_format), string(R.string.health_weight),
-                    string(R.string.health_body_fat), string(R.string.manual_kg), string(R.string.manual_percent),
-                    string(R.string.health_origin_unknown), string(R.string.manual_partial),
-                    mapOf(HealthReadStatus.PERMISSION_REQUIRED to string(R.string.manual_missing_permission),
-                        HealthReadStatus.NO_RECORDS to string(R.string.manual_missing_record),
-                        HealthReadStatus.ACCESS_DENIED to string(R.string.manual_missing_denied),
-                        HealthReadStatus.ERROR to string(R.string.manual_missing_error),
-                        HealthReadStatus.HAS_RECORDS to string(R.string.health_has_records)))
-                val persona = settings.persona()
-                val instructions = listOf(persona.prompt, settings.supplement,
-                    if (settings.maintaining) string(R.string.maintain_prompt) else "", string(R.string.manual_generation_rules), string(R.string.manual_reflection_rules))
-                    .filter { it.isNotBlank() }.joinToString("\n")
-                val input = healthGenerationInput(target, snapshot, zone, labels) +
-                    (settings.goalDate?.let { "\n" + app.getString(R.string.goal_date_format, it.toString()) } ?: "")
-                val frozen = ReviewedGeneration(model.slug, model.name, instructions, input,
-                    snapshot.results.any { it.samples.isNotEmpty() || it.steps != null || it.days.any { day -> day.value != null } }, persona.name,
-                    measurementRows(snapshot, target, settings.goalDate?.toString(), zone), GenerationKind.MANUAL)
-                if (generation == epoch) { review = frozen; readUnavailable = unavailable }
+                val prepared=withContext(Dispatchers.IO){prepareGeneration(getApplication<Application>(),settings,model,GenerationKind.MANUAL)}
+                if(generation==epoch){review=prepared.review;readUnavailable=prepared.health in setOf(ReservationEvent.HEALTH_UNSUPPORTED,ReservationEvent.HEALTH_FAILED)}
             } catch (e: CancellationException) { throw e }
             catch (_: Exception) { if (generation == epoch) prepareFailed = true }
             finally { if (generation == epoch) reading = false }

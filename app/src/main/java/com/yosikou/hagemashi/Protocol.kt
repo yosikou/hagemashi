@@ -43,7 +43,7 @@ internal fun form(values: Map<String, String>): String = values.entries.joinToSt
 private val resourceCloser = Executors.newCachedThreadPool { task -> Thread(task, "connection-cleanup").apply { isDaemon = true } }
 
 internal class Operation(timeoutMillis: Long = 180000, private val onProgress: (Progress) -> Unit = {}) {
-    private val deadline = System.nanoTime() + timeoutMillis * 1_000_000
+    private var deadline = System.nanoTime() + timeoutMillis * 1_000_000
     private var cancelled = false
     private val resources = mutableSetOf<Closeable>()
     @Volatile var progress = Progress()
@@ -74,6 +74,8 @@ internal class Operation(timeoutMillis: Long = 180000, private val onProgress: (
     }
 
     private fun publish(value: Progress) { progress = value; onProgress(value) }
+    @Synchronized fun wasCancelled():Boolean=cancelled
+    @Synchronized fun limitDuration(millis:Long) { deadline=minOf(deadline,System.nanoTime()+maxOf(0,millis)*1_000_000) }
     @Synchronized fun check() {
         if (cancelled) throw CancellationException()
         if (System.nanoTime() > deadline) throw Problem(Failure.TIMEOUT, network = NetworkFailure.TIMEOUT)
