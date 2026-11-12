@@ -163,7 +163,7 @@ internal fun AgentSettings(app: AppViewModel, cfg: AppSettings, connection: Conn
     }
 }
 @Composable
-internal fun PersonaSettings(app: AppViewModel, cfg: AppSettings, back: () -> Unit) {
+internal fun PersonaSettings(app: AppViewModel, cfg: AppSettings, compare:()->Unit={}, back: () -> Unit) {
     val context = LocalContext.current
     var editing by remember { mutableStateOf<String?>(null) }
     var name by remember(editing) { mutableStateOf(cfg.personas.find { it.id == editing }?.name.orEmpty()) }
@@ -200,6 +200,7 @@ internal fun PersonaSettings(app: AppViewModel, cfg: AppSettings, back: () -> Un
         HorizontalDivider()
         OutlinedTextField(supplement, { supplement = it }, label = { Text(stringResource(R.string.common_prompt)) }, minLines = 2)
         Button(onClick = { app.change { it.copy(supplement = supplement) } }, enabled = !app.saving) { Text(stringResource(R.string.save_supplement)) }
+        if(BuildConfig.BUILD_TYPE=="diagnostic")OutlinedButton(onClick=compare){Text(stringResource(R.string.persona_comparison_title))}
         SettingsStatus(app)
     }
 }

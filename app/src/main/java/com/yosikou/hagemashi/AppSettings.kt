@@ -75,3 +75,12 @@ internal fun homeAction(settings: AppSettings, connected: Boolean, modelUnavaila
     settings.modelId == null || modelUnavailable -> HomeAction.SELECT_AGENT
     else -> HomeAction.GENERATE
 }
+
+// Update only untouched built-ins. An edited name, whitespace or prompt preserves the whole persona.
+internal fun upgradeDefaultPersonas(settings:AppSettings,previous:List<Persona>,current:List<Persona>):AppSettings {
+    val updated=settings.personas.map{saved->
+        val old=previous.find{it.id==saved.id}
+        if(saved.id in builtInPersonaIds && old==saved)current.find{it.id==saved.id} ?: saved else saved
+    }
+    return if(updated==settings.personas)settings else settings.copy(personas=updated)
+}

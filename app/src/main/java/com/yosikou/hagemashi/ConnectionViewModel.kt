@@ -124,6 +124,10 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
         generatePrompt(model, app.getString(R.string.persona_prompt), app.getString(R.string.dummy_prompt), AnswerContext.DUMMY)
     }
 
+    fun comparePersona(model:String,instructions:String,input:String) {
+        if(BuildConfig.BUILD_TYPE!="diagnostic" || ui.busy || !ui.permitted || ui.models.none{it.slug==model})return
+        generatePrompt(model,instructions,input,AnswerContext.DUMMY)
+    }
     fun generateReviewed(review: ReviewedGeneration) {
         if (ui.busy || !ui.permitted || ui.models.none { it.slug == review.model }) return
         generatePrompt(review.model, review.instructions, review.input, AnswerContext.HEALTH, review)
