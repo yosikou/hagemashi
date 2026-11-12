@@ -13,11 +13,12 @@ import androidx.compose.ui.res.stringResource
         Text(stringResource(R.string.review_persona,review.personaName ?: stringResource(R.string.persona_not_recorded)))
         Text(stringResource(R.string.review_items),style=MaterialTheme.typography.bodyMedium)
         Text(stringResource(R.string.review_latest),style=MaterialTheme.typography.titleSmall)
-        MeasurementTable(latestAnswerMeasurements(review.rows)+review.rows.filter{it.item in setOf(MeasureItem.GOAL,MeasureItem.GOAL_DATE,MeasureItem.WEIGHT_PERIOD,MeasureItem.STEP_PERIOD)})
+        MeasurementTable(latestAnswerMeasurements(review.rows)+review.rows.filter{it.item in setOf(MeasureItem.GOAL,MeasureItem.GOAL_DATE,MeasureItem.WEIGHT_PERIOD,MeasureItem.STEP_PERIOD)}, weightUnit=review.weightUnit)
         Text(stringResource(R.string.review_frozen),style=MaterialTheme.typography.bodyMedium)
         OutlinedButton(onClick={expanded=!expanded}){Text(stringResource(if(expanded)R.string.review_collapse else R.string.review_expand))}
         if(expanded) {
-            MeasurementTable(review.rows,showGroupingNote=true)
+            Text(stringResource(R.string.weight_review_precision, review.weightUnit.symbol))
+            MeasurementTable(review.rows,showGroupingNote=true, weightUnit=review.weightUnit, preciseWeight=true)
             Text(stringResource(R.string.review_persona_prompt),style=MaterialTheme.typography.titleSmall)
             Text(review.personaPrompt.ifBlank{review.instructions})
             Text(stringResource(R.string.review_supplement),style=MaterialTheme.typography.titleSmall)

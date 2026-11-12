@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 // Strings are frozen at review time. No health object, previous answer, or mutable UI is read at send time.
-internal class ReviewedGeneration(val model: String, val modelName: String, val instructions: String, val input: String, val hasHealthData: Boolean = false, val personaName: String? = null, val rows: List<MeasurementRow> = emptyList(), val kind: GenerationKind = GenerationKind.MANUAL, val personaPrompt:String="", val supplement:String="")
+internal class ReviewedGeneration(val model: String, val modelName: String, val instructions: String, val input: String, val hasHealthData: Boolean = false, val personaName: String? = null, val rows: List<MeasurementRow> = emptyList(), val kind: GenerationKind = GenerationKind.MANUAL, val personaPrompt:String="", val supplement:String="", val weightUnit:WeightUnit=WeightUnit.KG)
 internal data class HealthPromptLabels(
     val goal: String, val readAt: String, val period: String, val measurements: String, val steps: String,
     val sample: String, val day: String, val stepCount: String, val missing: String, val weight: String, val bodyFat: String,
@@ -22,12 +22,12 @@ internal fun canonicalGoal(text: String): String? {
         else number.stripTrailingZeros().toPlainString().takeIf { it.length <= 128 }
     } catch (_: NumberFormatException) { null }
 }
-internal fun healthGenerationInput(goal: String, snapshot: HealthSnapshot, zone: ZoneId, text: HealthPromptLabels): String {
+internal fun healthGenerationInput(goal: String, snapshot: HealthSnapshot, zone: ZoneId, text: HealthPromptLabels, weightUnit: WeightUnit = WeightUnit.KG): String {
     require(canonicalGoal(goal) == goal)
     fun format(template: String, vararg args: Any) = String.format(Locale.ROOT, template, *args)
     fun time(value: java.time.Instant) = DateTimeFormatter.ISO_OFFSET_DATE_TIME.withZone(zone).format(value)
     fun number(value: Double) = BigDecimal.valueOf(value).stripTrailingZeros().toPlainString()
-    val lines = mutableListOf(format(text.goal, goal), format(text.readAt, time(snapshot.readAt)),
+    val lines = mutableListOf(format(text.goal.replace("kg", weightUnit.symbol), weightUnit.prompt(goal)), format(text.readAt, time(snapshot.readAt)),
         format(text.period, text.measurements, time(snapshot.measurementWindow.start), time(snapshot.measurementWindow.end)),
         format(text.period, text.steps, time(snapshot.stepsWindow.start), time(snapshot.stepsWindow.end)))
     for (kind in HealthKind.entries) {
@@ -41,8 +41,8 @@ internal fun healthGenerationInput(goal: String, snapshot: HealthSnapshot, zone:
                     value?.origins?.sorted()?.joinToString(", ")?.ifBlank { text.originsUnknown } ?: text.originsUnknown)
             }
         } else if (result.samples.isNotEmpty()) {
-            result.samples.forEach { sample -> lines += format(text.sample, label, number(sample.value),
-                if (kind == HealthKind.WEIGHT) text.kg else text.percent, time(sample.measuredAt), sample.origin.ifBlank { text.originsUnknown }) }
+            result.samples.forEach { sample -> lines += format(text.sample, label, if (kind == HealthKind.WEIGHT) weightUnit.prompt(number(sample.value)) else number(sample.value),
+                if (kind == HealthKind.WEIGHT) weightUnit.symbol else text.percent, time(sample.measuredAt), sample.origin.ifBlank { text.originsUnknown }) }
         } else {
             lines += format(text.missing, label, text.statuses.getValue(result.status))
         }
