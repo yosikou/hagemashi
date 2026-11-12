@@ -80,6 +80,7 @@ class MainActivity : ComponentActivity() {
                     } catch (_: Exception) { model.browserFailed() }
                 }
             }
+            LanguageContent(app.settings?.language ?: savedLanguage(this@MainActivity)) {
             androidx.compose.runtime.CompositionLocalProvider(LocalWeightUnit provides (app.settings?.weightUnit ?: WeightUnit.KG)) {
             HagemashiTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
@@ -101,6 +102,7 @@ class MainActivity : ComponentActivity() {
                         "dummy-generation" -> if(diagnosticUi()) DiagnosticGenerationScreen(model){route="settings"} else SettingsMenu({route=it}){route="home"}
                         "manual" -> ManualGenerationScreen(manual, model, app.settings, lifecycle, openDetail = { detailId = it }) { route = "home"; app.refresh() }
                         else -> app.settings?.let { cfg -> when (route) {
+                            "language" -> LanguageSettings(app,cfg) { route="settings" }
                             "units" -> WeightUnitSettings(app, cfg) { route = "settings" }
                             "goal" -> GoalSettings(app, cfg) { route = "settings" }
                             "agent" -> AgentSettings(app, cfg, model) { route = "settings" }
@@ -113,6 +115,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
         }
         }
     }

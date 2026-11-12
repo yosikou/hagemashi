@@ -32,8 +32,8 @@ import androidx.compose.ui.unit.dp
                     Text(if(row.state != MeasureState.VALUE) stringResource(when(row.state) {
                         MeasureState.UNPERMITTED -> R.string.table_unpermitted; MeasureState.NO_RECORDS -> R.string.table_no_records
                         else -> R.string.health_read_error
-                    }) else row.value?.let { "$it ${row.unit}" } ?: stringResource(R.string.table_not_applicable),Modifier.weight(.25f))
-                    Text(if (row.at.isBlank()) stringResource(if (row.state == MeasureState.VALUE) R.string.table_setting_at_generation else R.string.table_not_applicable) else (if (compactStepDates && row.item == MeasureItem.STEPS) measurementDisplayStepDates(row.at, zone) else measurementDisplayTime(row.at, zone)) ?: stringResource(R.string.table_unknown_time),Modifier.weight(.5f))
+                    }) else row.value?.let { measurementValueText(row,LocalAppLocale.current,stringResource(R.string.step_unit)) } ?: stringResource(R.string.table_not_applicable),Modifier.weight(.25f))
+                    Text(if (row.at.isBlank()) stringResource(if (row.state == MeasureState.VALUE) R.string.table_setting_at_generation else R.string.table_not_applicable) else (if (compactStepDates && row.item == MeasureItem.STEPS) measurementDisplayStepDates(row.at, zone,LocalAppLocale.current) else measurementDisplayTime(row.at, zone,LocalAppLocale.current)) ?: stringResource(R.string.table_unknown_time),Modifier.weight(.5f))
                 }
                 if(row.origin.isNotBlank()) Text(row.origin,style=MaterialTheme.typography.labelSmall)
                 HorizontalDivider()

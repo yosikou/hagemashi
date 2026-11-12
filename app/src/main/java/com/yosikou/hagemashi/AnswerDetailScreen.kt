@@ -89,14 +89,14 @@ internal fun AnswerDetailScreen(id: String, model: AnswerDetailViewModel, back: 
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(label, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                    Text(if (row.state == MeasureState.VALUE && row.value != null) "${row.value} ${row.unit}" else stringResource(when (row.state) {
+                    Text(if (row.state == MeasureState.VALUE && row.value != null) measurementValueText(row,LocalAppLocale.current,stringResource(R.string.step_unit)) else stringResource(when (row.state) {
                         MeasureState.UNPERMITTED -> R.string.table_unpermitted
                         MeasureState.ERROR -> R.string.table_status_unknown
                         else -> R.string.table_no_records
                     }), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 }
-                if (row.state == MeasureState.VALUE && row.value != null) Text((if (row.item == MeasureItem.STEPS) measurementDisplayStepDates(row.at, ZoneId.systemDefault())
-                    else measurementDisplayTime(row.at, ZoneId.systemDefault())) ?: stringResource(R.string.table_unknown_time),
+                if (row.state == MeasureState.VALUE && row.value != null) Text((if (row.item == MeasureItem.STEPS) measurementDisplayStepDates(row.at, ZoneId.systemDefault(),LocalAppLocale.current)
+                    else measurementDisplayTime(row.at, ZoneId.systemDefault(),LocalAppLocale.current)) ?: stringResource(R.string.table_unknown_time),
                     style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             HorizontalDivider()

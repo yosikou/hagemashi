@@ -38,16 +38,14 @@ internal fun measurementDisplay(rows: List<MeasurementRow>, zone: ZoneId): Measu
 }
 
 // Null means unknown/unsupported time; callers show a localized placeholder, never a raw timestamp.
-internal fun measurementDisplayTime(value: String, zone: ZoneId): String? {
-    val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm", Locale.ROOT).withZone(zone)
+internal fun measurementDisplayTime(value: String, zone: ZoneId, locale:Locale=Locale.JAPANESE): String? {
     val parts = value.split(" 〜 ")
     if (parts.size !in 1..2) return null
     val instants = parts.map { measurementInstant(it) ?: return null }
-    return instants.joinToString("\n〜\n") { formatter.format(it) }
+    return instants.joinToString(if(locale.language=="ja")"\n〜\n" else "\n–\n") { localizedMoment(it,zone,locale,false) }
 }
 
-internal fun answerDisplayTime(value: Instant, zone: ZoneId): String =
-    DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss", Locale.ROOT).withZone(zone).format(value)
+internal fun answerDisplayTime(value: Instant, zone: ZoneId, locale:Locale=Locale.JAPANESE): String = localizedMoment(value,zone,locale,true)
 
 // Only the saved answer's rows enter this function. No live Health Connect reads or inferred zeroes.
 internal fun latestAnswerMeasurements(rows: List<MeasurementRow>): List<MeasurementRow> =
@@ -60,13 +58,12 @@ internal fun latestAnswerMeasurements(rows: List<MeasurementRow>): List<Measurem
     }
 
 // Daily Health Connect step windows have an exclusive end. Multi-day legacy windows stay ranges.
-internal fun measurementDisplayStepDates(value: String, zone: ZoneId): String? {
+internal fun measurementDisplayStepDates(value: String, zone: ZoneId, locale:Locale=Locale.JAPANESE): String? {
     val parts = value.split(" 〜 ")
     if (parts.size != 2) return null
     val start = measurementInstant(parts[0]) ?: return null
     val end = measurementInstant(parts[1])?.takeIf { it > start } ?: return null
     val first = start.atZone(zone).toLocalDate()
     val last = end.minusNanos(1).atZone(zone).toLocalDate()
-    val format = DateTimeFormatter.ofPattern("yyyy/MM/dd", Locale.ROOT)
-    return if (first == last) first.format(format) else first.format(format) + "\n〜\n" + last.format(format)
+    return if (first == last) localizedDay(first,locale) else localizedDay(first,locale) + (if(locale.language=="ja")"\n〜\n" else "\n–\n") + localizedDay(last,locale)
 }

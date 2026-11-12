@@ -44,9 +44,9 @@ import androidx.compose.ui.unit.sp
 @Composable internal fun AnswerMetadata(answer: SavedEncouragement) {
     Text(answer.personaName?.let { stringResource(R.string.generated_persona, it) }
         ?: stringResource(R.string.persona_not_recorded), style = MaterialTheme.typography.titleMedium)
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         GenerationBadge(answer.kind)
-        Text(answerDisplayTime(answer.generatedAt, java.time.ZoneId.systemDefault()), style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+        Text(answerDisplayTime(answer.generatedAt, java.time.ZoneId.systemDefault(),LocalAppLocale.current), style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

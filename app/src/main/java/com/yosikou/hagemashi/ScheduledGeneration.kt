@@ -92,7 +92,7 @@ private fun executeAutomatic(context:Context,slot:NoticeSlot,version:Long,day:Lo
             event(ReservationEvent.CHATGPT_COMPLETED)
             operation.check()
             if(!automaticDue(context,slot,version,day))return false
-            val text=encouragementText(raw,context.getString(R.string.notification_fallback))
+            val text=encouragementText(raw,prepared.review.notificationFallback)
             val saved=SavedEncouragement(answerId,Instant.now(),text.short,text.full,prepared.review.input,prepared.review.hasHealthData,
                 prepared.review.personaName,prepared.review.rows,prepared.review.kind)
             try{operation.commit{store.save(saved)};synchronized(ReservationSupport.lock){ReservationSupport.saveOutcome(context,day,slot,version,ReservationOutcome.SAVED,answerId)};event(ReservationEvent.AUTO_SAVED)}catch(e:Exception){event(ReservationEvent.AUTO_SAVE_FAILED);throw e}

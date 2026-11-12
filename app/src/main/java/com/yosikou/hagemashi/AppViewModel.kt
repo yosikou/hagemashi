@@ -71,7 +71,7 @@ internal class AppViewModel(application: Application) : AndroidViewModel(applica
                         val old = store.read(); val next = nextSettings(old, transform(old))
                         store.write(next)
                         schedulingFailed=runCatching{ReservationSupport.changed(getApplication<Application>(), old, next)}.isFailure
-                        next
+                        store.read()
                     } }
                 }
                 settings = value; failure = false

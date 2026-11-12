@@ -1,8 +1,8 @@
 <resources>
     <string name="notification_fallback">今日も自分のペースを大切に。できたことを認めながら、無理なく続けるあなたを応援しています。</string>
     <string name="notification_title">hagemashiからの励まし</string>
-    <string name="notification_channel">励ましの検証通知</string>
-    <string name="notification_channel_description">生成済みの回答で「通知を試す」を押した場合だけ通知します。</string>
+    <string name="notification_channel">励まし</string>
+    <string name="notification_channel_description">励ましと目標の再設定案内。Androidの通知設定に従います。</string>
     <string name="notification_test">通知を試す</string>
     <string name="notification_test_notice">この回答を使って通知を試します。AIへの追加送信はありません。通常の手動生成では通知しません。通知に測定値は載せず、ロック画面の表示・音などはAndroidの通知設定に従います。</string>
     <string name="notification_posted">この回答の通知を送信しました。通知をタップすると、保存したこの回答を開きます。</string>
@@ -306,27 +306,16 @@
     <string name="slot_time_invalid">両方を有効にする場合、朝の時刻を夜より前にしてください。</string>
     <string name="table_steps">歩数</string>
     <string name="reservation_off">朝・夜ともオフです。予約通知も自動生成も実行しません。</string>
-
     <string name="reservation_choose_answer">設定は保存済みですが、配信は未登録です。検証用の保存済み回答を指定してください。</string>
-
     <string name="reservation_permission">設定は保存済みですが、通知権限またはチャンネルが無効のため配信は停止しています。</string>
-
     <string name="reservation_missing_answer">検証対象の保存済み回答を読めません。配信は停止しています。</string>
-
     <string name="reservation_claimed">この予約は処理済みです。時刻を変更して再予約すると、同じ日でも再試験できます。</string>
-
     <string name="reservation_registered">予約APIへの登録要求が完了し、台帳を保存しました。OS内の予約の存続や通知到着は未確認です。端末の現地時刻を目安に保存済み回答だけを通知します。省電力などAndroidの制約で遅れる場合があります。</string>
-
     <string name="reservation_not_registered">設定は保存済みですが予約登録を確認できません。アプリを開き直して確認してください。</string>
-
     <string name="reservation_target">検証対象の回答ID：%1$s</string>
-
     <string name="reservation_use_latest">最新の保存済み回答を検証対象にする</string>
-
     <string name="reservation_grant">通知権限を許可する</string>
-
     <string name="reservation_test_only">予約通知は保存済み回答の朝夜2枠の検証です。自動AI生成は無効です。最新回答へ自動で置き換えたり、追加AI送信したりしません。</string>
-
     <string name="reservation_slot_off">この枠はオフです。</string>
     <string name="goal_guide_limit">再設定待ちです。案内処理は合計3回に達したため停止しています。目標を再設定すると通常の予約検証へ戻ります。</string>
     <string name="goal_guide_done">本日の再設定案内は処理済みです。朝夜を合わせて同日に再送しません。</string>
@@ -407,4 +396,9 @@
     <string name="goal_difference_unit">目標との差：%1$s %2$s</string>
     <string name="weight_generation_rule">体重と目標体重は%1$sに統一して入力しています。回答本文の体重の単位も%1$sを使ってください。通知短文には具体的な測定値を含めないでください。</string>
     <string name="weight_review_precision">送信する体重の単位：%1$s。概要は小数2桁まで、以下は送信する換算値（lbは小数12桁まで）です。元の測定記録は変更しません。</string>
+    <string name="language_title">言語</string>
+    <string name="language_system">端末の設定に従う</string>
+    <string name="language_help">画面と生成する回答の言語を選びます。体重の単位は別に保存します。</string>
+    <string name="step_unit">歩</string>
+    <string name="output_language_rule">通知短文shortと本文fullは、アプリの表示言語%1$sで書いてください。カスタム人格が別の言語でもこの出力言語を優先します。JSONのキーshortとfullは変更しないでください。</string>
 </resources>
