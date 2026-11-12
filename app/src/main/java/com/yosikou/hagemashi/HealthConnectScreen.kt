@@ -48,9 +48,9 @@ internal fun HealthConnectScreen(model: HealthConnectViewModel, lifecycle: Lifec
     }
     Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(stringResource(R.string.health_title), style = MaterialTheme.typography.headlineSmall)
-        Text(stringResource(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER))
-        Text(stringResource(R.string.health_notice))
+        Text(stringResource(if(diagnosticUi())R.string.health_title else R.string.health_settings), style = MaterialTheme.typography.headlineSmall)
+        if(diagnosticUi()) Text(stringResource(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER))
+        Text(stringResource(if(diagnosticUi())R.string.health_notice else R.string.product_health_notice))
         Text(stringResource(when (ui.provider) {
             HealthProvider.CHECKING -> R.string.health_checking
             HealthProvider.AVAILABLE -> R.string.health_available
@@ -77,8 +77,8 @@ internal fun HealthConnectScreen(model: HealthConnectViewModel, lifecycle: Lifec
                 Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata"))) }.onFailure { model.settingsFailed() }
         }) { Text(stringResource(R.string.health_open_store)) }
         if (ui.settingsFailed) Text(stringResource(R.string.health_settings_failed))
-        OutlinedButton(onClick={preview(GenerationKind.MORNING)}){Text(stringResource(R.string.preview_morning))}
-        OutlinedButton(onClick={preview(GenerationKind.EVENING)}){Text(stringResource(R.string.preview_evening))}
+        if(diagnosticUi()) OutlinedButton(onClick={preview(GenerationKind.MORNING)}){Text(stringResource(R.string.preview_morning))}
+        if(diagnosticUi()) OutlinedButton(onClick={preview(GenerationKind.EVENING)}){Text(stringResource(R.string.preview_evening))}
         ui.snapshot?.let { snapshot -> MeasurementTable(measurementRows(snapshot,null,null,ZoneId.systemDefault())) }
         OutlinedButton(onClick = privacy) { Text(stringResource(R.string.health_privacy)) }
         OutlinedButton(onClick = back) { Text(stringResource(R.string.probe_back)) }

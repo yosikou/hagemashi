@@ -34,6 +34,11 @@ class MainActivityTest {
 
     @Test fun diagnosticsRemainUnderSettingsWithoutAutomaticNetworkRequests() {
         composeRule.onNode(androidx.compose.ui.test.hasContentDescription("設定")).performClick()
+        if(!diagnosticUi()) {
+            composeRule.onNodeWithText("通信診断（認証不要）").assertDoesNotExist()
+            composeRule.onNodeWithText("固定ダミーデータで生成").assertDoesNotExist()
+            return
+        }
         composeRule.onNodeWithText("通信診断（認証不要）").performScrollTo().performClick()
         composeRule.onNodeWithText("認証情報なしの通信診断").assertIsDisplayed()
         composeRule.onNodeWithText("安全な診断結果をコピー").performScrollTo().assertIsNotEnabled()
@@ -41,6 +46,7 @@ class MainActivityTest {
 
     @Test fun reservationDiagnosticScreenShowsSafePersistedReportWithoutSchedulingOrAI() {
         composeRule.onNode(androidx.compose.ui.test.hasContentDescription("設定")).performClick()
+        if(!diagnosticUi()) {composeRule.onNodeWithText("予約通知の診断").assertDoesNotExist();return}
         composeRule.onNodeWithText("予約通知の診断").performScrollTo().performClick()
         composeRule.waitUntil(5000) { composeRule.onAllNodes(androidx.compose.ui.test.hasText("schema=HAGEMASHI_RESERVATION_V1",substring=true)).fetchSemanticsNodes().isNotEmpty() }
         composeRule.onNodeWithText("予約診断をコピー").performScrollTo().assertIsDisplayed()

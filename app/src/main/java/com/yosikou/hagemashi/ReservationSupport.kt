@@ -73,7 +73,7 @@ internal object ReservationSupport {
         if(oldVersion>=0 && oldVersion!=cfg.version(slot))cancel(context,slot,oldVersion,ReservationReason.VERSION_CHANGED)
         val today=LocalDate.now();val waiting=goalNeedsReset(cfg,today)
         val valid=cfg.slot(slot).enabled && (cfg.automaticGeneration || AnswerNotifications(context).allowed()) &&
-            (if(waiting) reminderDays(json,cfg.goalCycle).size<3 else if(cfg.automaticGeneration)cfg.goal!=null && cfg.modelId!=null else cfg.testAnswerId?.let{runCatching{AnswerStore(context).load(it)}.isSuccess}==true)
+            (if(waiting) reminderDays(json,cfg.goalCycle).size<3 else if(cfg.automaticGeneration)cfg.goal!=null && cfg.modelId!=null else diagnosticUi() && cfg.testAnswerId?.let{runCatching{AnswerStore(context).load(it)}.isSuccess}==true)
         if(!valid) {
             ReservationDiagnostics.record(context,ReservationEvent.REGISTER_SKIPPED,slot,cfg.version(slot),reason=when {
                 !cfg.slot(slot).enabled->ReservationReason.SLOT_DISABLED
@@ -112,6 +112,7 @@ internal object ReservationSupport {
             else ReservationDiagnostics.record(context,ReservationEvent.DELIVERY_SKIPPED,slot,version,reason=reservationDecision(version,day,slot,cfg,now,zone,json))
             return@synchronized
         }
+        if(!cfg.automaticGeneration && !diagnosticUi() && !goalNeedsReset(cfg,day))return@synchronized
         val json=ledger(context)
         ReservationDiagnostics.record(context,ReservationEvent.LEDGER_LOADED,slot,version)
         val now=Instant.now();val zone=ZoneId.systemDefault()
@@ -169,6 +170,7 @@ internal object ReservationSupport {
                         null->R.string.automatic_registered
                     }
                 }
+                else if(!diagnosticUi())R.string.product_automatic_off
                 else if(cfg.testAnswerId==null)R.string.reservation_choose_answer
                 else if(runCatching{AnswerStore(context).load(cfg.testAnswerId)}.isFailure)R.string.reservation_missing_answer
                 else if(runClaimed(json,today,slot,cfg))R.string.reservation_claimed
@@ -177,6 +179,6 @@ internal object ReservationSupport {
             }
         }
     }
-    fun status(context:Context,cfg:AppSettings):Int = if(!cfg.morning.enabled && !cfg.evening.enabled)R.string.reservation_off else if(cfg.automaticGeneration)R.string.automatic_notice else R.string.reservation_test_only
+    fun status(context:Context,cfg:AppSettings):Int = if(!cfg.morning.enabled && !cfg.evening.enabled)R.string.reservation_off else if(cfg.automaticGeneration)R.string.automatic_notice else if(diagnosticUi())R.string.reservation_test_only else R.string.product_automatic_off
     fun slotStatuses(context:Context,cfg:AppSettings):Map<NoticeSlot,Int> = NoticeSlot.entries.associateWith{slotStatus(context,cfg,it)}
 }

@@ -104,9 +104,9 @@ internal fun SettingsMenu(open: (String) -> Unit, back: () -> Unit) {
             R.string.settings_encouragement_group to listOf("goal" to R.string.goal_settings, "agent" to R.string.agent_settings, "personas" to R.string.persona_settings),
             R.string.settings_connections_group to listOf("connection" to R.string.chatgpt_settings, "health" to R.string.health_settings),
             R.string.notification_settings_title to listOf("notice" to R.string.notification_settings_title),
-            R.string.settings_diagnostics_group to listOf("probes" to R.string.open_probes, "reservation-diagnostics" to R.string.reservation_diagnostics)
+            R.string.settings_diagnostics_group to listOf("probes" to R.string.open_probes, "reservation-diagnostics" to R.string.reservation_diagnostics, "dummy-generation" to R.string.diagnostic_generation)
         ).forEach { (heading, entries) ->
-            SectionCard {
+            if(diagnosticUi() || heading!=R.string.settings_diagnostics_group) SectionCard {
                 Text(stringResource(heading), style = MaterialTheme.typography.titleMedium)
                 entries.forEach { (route, label) ->
                     OutlinedButton(onClick = { open(route) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(label)) }
@@ -151,7 +151,7 @@ internal fun AgentSettings(app: AppViewModel, cfg: AppSettings, connection: Conn
             OutlinedButton(onClick = connection::loadModels, enabled = connection.ui.permitted && !connection.ui.busy) { Text(stringResource(R.string.fetch_models)) }
             if (!connection.ui.permitted) Text(stringResource(R.string.manual_need_connection))
             if (cfg.modelId != null && (connection.ui.unavailableModel == cfg.modelId || (connection.ui.modelsLoaded && connection.ui.models.none { it.slug == cfg.modelId }))) Text(stringResource(R.string.agent_unavailable))
-            if (connection.ui.failure != null) Text(stringResource(failureText(connection.ui.failure!!)))
+            if (connection.ui.failure != null) Text(stringResource(if(diagnosticUi())failureText(connection.ui.failure!!)else userFailureText(connection.ui.failure!!)))
             connection.ui.models.forEach { model ->
                 Row {
                     RadioButton(selected = cfg.modelId == model.slug, onClick = { app.change { it.copy(modelId = model.slug) } }, enabled = !app.saving)
@@ -209,8 +209,8 @@ internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () 
     val context = LocalContext.current
     Page(R.string.notification_settings_title, back) {
         SectionCard {
-            Text(stringResource(R.string.automatic_title),style=MaterialTheme.typography.titleMedium)
-            Text(stringResource(R.string.automatic_notice))
+            Text(stringResource(if(diagnosticUi())R.string.automatic_title else R.string.product_automatic_title),style=MaterialTheme.typography.titleMedium)
+            Text(stringResource(if(diagnosticUi())R.string.automatic_notice else R.string.product_automatic_notice))
             Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
                 Switch(cfg.automaticGeneration,onCheckedChange={enabled->app.change{it.copy(automaticGeneration=enabled)}},enabled=!app.saving)
                 Text(stringResource(R.string.automatic_enabled))
@@ -222,7 +222,8 @@ internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () 
             SectionCard {
                 val value=cfg.slot(slot)
                 Text(stringResource(if(slot==NoticeSlot.MORNING) R.string.kind_morning else R.string.kind_evening),style=MaterialTheme.typography.titleMedium)
-                Text(stringResource(app.slotStatuses[slot] ?: app.reservationStatus))
+                val status=app.slotStatuses[slot] ?: app.reservationStatus
+                Text(stringResource(if(!diagnosticUi() && status==R.string.automatic_registered)R.string.product_slot_registered else if(!diagnosticUi() && status==R.string.automatic_action_required)R.string.product_slot_action else status))
                 fun update(changed:SlotSetting) {
                     val candidate=cfg.withSlot(slot,changed); invalid=!candidate.validTimes()
                     if(!invalid) app.change { it.withSlot(slot,changed) }
@@ -238,8 +239,9 @@ internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () 
         }
         if(invalid) Text(stringResource(R.string.slot_time_invalid))
         Text(stringResource(app.reservationStatus))
-        if(!cfg.automaticGeneration)ReservationSettings(app, cfg)
-        Text(stringResource(if(cfg.automaticGeneration)R.string.automatic_active else R.string.no_automatic_ai))
+        if(diagnosticUi() && !cfg.automaticGeneration)ReservationSettings(app, cfg)
+        if(!diagnosticUi())ProductNotificationPermissions(app)
+        Text(stringResource(if(diagnosticUi()){if(cfg.automaticGeneration)R.string.automatic_active else R.string.no_automatic_ai}else if(cfg.automaticGeneration)R.string.product_automatic_active else R.string.product_automatic_off))
         SettingsStatus(app)
     }
 }
@@ -260,4 +262,11 @@ internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () 
 }
 @Composable private fun SettingsStatus(app: AppViewModel) {
     Text(stringResource(if (app.failure) R.string.settings_error else if (app.saving) R.string.saving else R.string.settings_saved))
+}
+
+@Composable private fun ProductNotificationPermissions(app:AppViewModel) {
+    val context=LocalContext.current
+    val permission=androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()){app.refresh()}
+    if(android.os.Build.VERSION.SDK_INT>=33)OutlinedButton(onClick={permission.launch(android.Manifest.permission.POST_NOTIFICATIONS)}){Text(stringResource(R.string.reservation_grant))}
+    OutlinedButton(onClick={runCatching{context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(android.provider.Settings.EXTRA_APP_PACKAGE,context.packageName))}}){Text(stringResource(R.string.notification_settings))}
 }
