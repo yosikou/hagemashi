@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : ComponentActivity() {
+    private lateinit var personaShare: PersonaShareViewModel
     private lateinit var history: HistoryViewModel
     private lateinit var modePreview: ModePreviewViewModel
     private lateinit var app: AppViewModel
@@ -53,6 +54,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ReservationDiagnostics.record(this,ReservationEvent.APP_OPEN)
+        personaShare = ViewModelProvider(this)[PersonaShareViewModel::class.java]
         history = ViewModelProvider(this)[HistoryViewModel::class.java]
         modePreview = ViewModelProvider(this)[ModePreviewViewModel::class.java]
         app = ViewModelProvider(this)[AppViewModel::class.java]
@@ -106,7 +108,7 @@ class MainActivity : ComponentActivity() {
                             "units" -> WeightUnitSettings(app, cfg) { route = "settings" }
                             "goal" -> GoalSettings(app, cfg) { route = "settings" }
                             "agent" -> AgentSettings(app, cfg, model) { route = "settings" }
-                            "personas" -> PersonaSettings(app, cfg, compare={route="persona-comparison"}) { route = "settings" }
+                            "personas" -> PersonaSettings(app, cfg, personaShare, compare={route="persona-comparison"}) { route = "settings" }
                             "notice" -> NotificationSettings(app, cfg) { route = "settings" }
                         } } ?: Page(R.string.settings_title, { route = "settings" }) {
                             Text(stringResource(R.string.settings_error))

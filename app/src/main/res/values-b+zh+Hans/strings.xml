@@ -276,4 +276,23 @@
     <string name="output_language_rule">short和full都使用应用语言%1$s，即使自定义人格使用其他语言。JSON键名short和full保持不变。</string>
     <string name="maintain_prompt">达到目标后以维持为主，不默认需要继续减重，鼓励可持续的习惯。</string>
     <string name="health_privacy_body">Health Connect提供体重、体脂率和步数，以及时间、期间和来源。此读取页面不发送数据。手动生成仅在确认后，通过已连接的ChatGPT账户向OpenAI发送核对过的目标、人格、补充和可用健康数据。启用的早晚预约会在设定时间使用当前设置与可用数据；未获得后台读取权限时，健康数据视为未取得。不会发送过去的回答。\n\n回答及其使用的数据通过Android Keystore保护并在设备内加密保存，不包含在备份中。诊断日志不含健康数据、提示词、回答或认证信息。普通手动生成不发通知。预约通知仅显示安全短文，点按打开对应的已保存回答。可随时在Health Connect中撤销权限。不推测缺失记录，也不填零。</string>
+    <string name="persona_share_scope">仅以JSON分享名称和提示词，不包含共用补充、目标、连接、健康数据和历史。</string>
+    <string name="persona_export">导出此人格</string>
+    <string name="persona_import">导入人格</string>
+    <string name="persona_import_preview">确认导入的人格</string>
+    <string name="persona_import_notice">请核对完整名称和提示词。确认后将新增自定义人格，不覆盖同名人格，也不更改当前选择。不会发送给AI。</string>
+    <string name="persona_import_confirm">添加为自定义人格</string>
+    <string name="persona_import_cancel">取消导入</string>
+    <string name="persona_file_busy">正在处理文件…</string>
+    <string name="persona_export_done">人格JSON文件已保存。</string>
+    <string name="persona_import_done">已添加自定义人格，当前选择未改变。</string>
+    <string name="persona_file_cancelled">已取消，未更改人格设置。</string>
+    <string name="persona_file_json_error">不是有效的UTF-8 JSON文件，请检查JSON语法。</string>
+    <string name="persona_file_version_error">不支持此格式版本，目前支持版本1。</string>
+    <string name="persona_file_missing_error">缺少必填字段formatVersion、name或prompt。</string>
+    <string name="persona_file_fields_error">名称和提示词必须是非空字符串，formatVersion必须为整数1，不接受其他字段。</string>
+    <string name="persona_file_size_error">超过大小限制：JSON最多64KiB，名称120个字符，提示词12000个字符。</string>
+    <string name="persona_file_read_error">无法读取文件，请检查文件和访问权限后重新选择。</string>
+    <string name="persona_file_write_error">无法保存文件，请检查位置后重新导出，可能会留下不完整文件。</string>
+    <string name="persona_file_save_error">无法将人格保存到设备，已保留确认内容，请重试。</string>
 </resources>

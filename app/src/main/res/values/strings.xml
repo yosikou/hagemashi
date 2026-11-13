@@ -407,4 +407,24 @@
     <string name="language_name_de" translatable="false">Deutsch</string>
     <string name="language_name_hi" translatable="false">हिन्दी</string>
     <string name="language_name_zh" translatable="false">简体中文</string>
+    <string name="persona_share_scope">名前とプロンプトだけをJSONで共有します。補足・目標・連携・健康データ・履歴は含めません。</string>
+    <string name="persona_export">この人格をエクスポート</string>
+    <string name="persona_import">人格をインポート</string>
+    <string name="persona_import_preview">取り込む人格の確認</string>
+    <string name="persona_import_notice">名前とプロンプトの全文を確認してください。確認後に新しいカスタム人格として追加します。同名の人格を上書きせず、使用中の人格も変えません。AIへは送信しません。</string>
+    <string name="persona_import_confirm">カスタム人格として追加</string>
+    <string name="persona_import_cancel">取り込みをキャンセル</string>
+    <string name="persona_file_busy">ファイルを処理しています…</string>
+    <string name="persona_export_done">人格のJSONファイルを保存しました。</string>
+    <string name="persona_import_done">カスタム人格を追加しました。使用中の人格は変更していません。</string>
+    <string name="persona_file_cancelled">キャンセルしました。人格の設定は変更していません。</string>
+    <string name="persona_file_json_error">正しいUTF-8のJSONファイルではありません。JSONの書式を確認してください。</string>
+    <string name="persona_file_version_error">この形式バージョンには対応していません。対応バージョンは1です。</string>
+    <string name="persona_file_missing_error">形式バージョン・名前・プロンプトの必須項目が不足しています。</string>
+    <string name="persona_file_fields_error">名前とプロンプトは空でない文字列、形式バージョンは整数1にしてください。その他の項目は取り込めません。</string>
+    <string name="persona_file_size_error">サイズ上限を超えています。JSONは64KiB、名前は120文字、プロンプトは12000文字までです。</string>
+    <string name="persona_file_read_error">ファイルを読み込めませんでした。ファイルとアクセス権を確認して、選び直してください。</string>
+    <string name="persona_file_write_error">ファイルを保存できませんでした。保存先を確認して再度エクスポートしてください。不完全なファイルが残る場合があります。</string>
+    <string name="persona_file_save_error">人格を端末に保存できませんでした。確認内容を保持しています。再試行してください。</string>
+    <string name="persona_share_filename" translatable="false">hagemashi-persona.json</string>
 </resources>

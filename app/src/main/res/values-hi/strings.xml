@@ -276,4 +276,23 @@
     <string name="output_language_rule">short और full दोनों ऐप भाषा %1$s में लिखें, भले कस्टम व्यक्तित्व किसी दूसरी भाषा में हो। JSON कुंजियाँ short और full ही रखें।</string>
     <string name="maintain_prompt">लक्ष्य पहुँचने के बाद वज़न बनाए रखना है। आगे घटाना लक्ष्य न मानें; आसान आदतों को समर्थन दें।</string>
     <string name="health_privacy_body">Health Connect से वज़न, शरीर की चर्बी और कदम तारीख, अवधि और स्रोत सहित मिलते हैं। इस पढ़ने वाली स्क्रीन से कुछ नहीं भेजा जाता। मैन्युअल अनुरोध में पुष्टि के बाद ही दिखाए लक्ष्य, व्यक्तित्व, साझा निर्देश और उपलब्ध डेटा जुड़े ChatGPT खाते से OpenAI को भेजे जाते हैं। चालू सुबह/शाम समय पर वर्तमान सेटिंग और उपलब्ध डेटा भेजे जाते हैं; पृष्ठभूमि अनुमति न हो तो स्वास्थ्य डेटा अनुपलब्ध रहता है। पुराने उत्तर नहीं भेजे जाते।\n\nउत्तर और इस्तेमाल डेटा Android Keystore से सुरक्षित करके डिवाइस पर एन्क्रिप्ट होते हैं, बैकअप में नहीं जाते। निदान लॉग में स्वास्थ्य डेटा, प्रॉम्प्ट, उत्तर या प्रवेश जानकारी नहीं होती। सामान्य मैन्युअल अनुरोध सूचना नहीं भेजता। तय सूचनाएँ सुरक्षित छोटा पाठ दिखाती हैं और सहेजा उत्तर खोलती हैं। Health Connect अनुमति कभी भी हटा सकते हैं। गायब मान अनुमान या शून्य से नहीं भरे जाते।</string>
+    <string name="persona_share_scope">JSON में केवल नाम और प्रॉम्प्ट साझा करें। साझा अतिरिक्त निर्देश, लक्ष्य, कनेक्शन, स्वास्थ्य डेटा और इतिहास शामिल नहीं होते।</string>
+    <string name="persona_export">यह व्यक्तित्व एक्सपोर्ट करें</string>
+    <string name="persona_import">व्यक्तित्व इंपोर्ट करें</string>
+    <string name="persona_import_preview">इंपोर्ट किए व्यक्तित्व की समीक्षा</string>
+    <string name="persona_import_notice">पूरा नाम और प्रॉम्प्ट जाँचें। पुष्टि पर नया कस्टम व्यक्तित्व जुड़ेगा। समान नाम वाला व्यक्तित्व और मौजूदा चयन नहीं बदलेंगे। AI को कुछ नहीं भेजा जाता।</string>
+    <string name="persona_import_confirm">कस्टम व्यक्तित्व के रूप में जोड़ें</string>
+    <string name="persona_import_cancel">इंपोर्ट रद्द करें</string>
+    <string name="persona_file_busy">फ़ाइल पर काम हो रहा है…</string>
+    <string name="persona_export_done">व्यक्तित्व की JSON फ़ाइल सहेजी गई।</string>
+    <string name="persona_import_done">कस्टम व्यक्तित्व जुड़ गया। चुना हुआ व्यक्तित्व नहीं बदला।</string>
+    <string name="persona_file_cancelled">रद्द किया गया। व्यक्तित्व की सेटिंग नहीं बदली।</string>
+    <string name="persona_file_json_error">यह मान्य UTF-8 JSON नहीं है। JSON का प्रारूप जाँचें।</string>
+    <string name="persona_file_version_error">यह प्रारूप संस्करण समर्थित नहीं है। संस्करण 1 समर्थित है।</string>
+    <string name="persona_file_missing_error">ज़रूरी formatVersion, name या prompt मौजूद नहीं है।</string>
+    <string name="persona_file_fields_error">नाम और प्रॉम्प्ट खाली न हों और टेक्स्ट हों। formatVersion पूर्णांक 1 हो। अतिरिक्त फ़ील्ड स्वीकार नहीं हैं।</string>
+    <string name="persona_file_size_error">आकार सीमा से अधिक: JSON अधिकतम 64 KiB, नाम 120 अक्षर और प्रॉम्प्ट 12000 अक्षर।</string>
+    <string name="persona_file_read_error">फ़ाइल नहीं पढ़ी गई। फ़ाइल और पहुँच की अनुमति जाँचकर फिर चुनें।</string>
+    <string name="persona_file_write_error">फ़ाइल सहेजी नहीं गई। स्थान जाँचकर फिर एक्सपोर्ट करें। अधूरी फ़ाइल रह सकती है।</string>
+    <string name="persona_file_save_error">व्यक्तित्व डिवाइस पर नहीं सहेजा गया। समीक्षा बनी हुई है। फिर प्रयास करें।</string>
 </resources>
