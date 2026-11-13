@@ -60,25 +60,29 @@ internal class AppViewModel(application: Application) : AndroidViewModel(applica
             catch (_: Exception) { null }
         }
     } }
-    fun change(transform: (AppSettings) -> AppSettings) {
-        if (settings == null || saving) return
+    fun change(transform: (AppSettings) -> AppSettings) = saveChange(transform,true){}
+    fun importPersona(persona:Persona,completed:(Boolean)->Unit) = saveChange({appendImportedPersona(it,persona)},false,completed)
+    private fun saveChange(transform:(AppSettings)->AppSettings,reschedule:Boolean,completed:(Boolean)->Unit) {
+        if (settings == null || saving) { completed(false);return }
         saving = true
         viewModelScope.launch {
+            var success=false
             try {
                 var schedulingFailed=false
                 val value = mutex.withLock {
                     withContext(Dispatchers.IO) { synchronized(ReservationSupport.lock) {
                         val old = store.read(); val next = nextSettings(old, transform(old))
                         store.write(next)
-                        schedulingFailed=runCatching{ReservationSupport.changed(getApplication<Application>(), old, next)}.isFailure
+                        if(reschedule)schedulingFailed=runCatching{ReservationSupport.changed(getApplication<Application>(), old, next)}.isFailure
                         store.read()
                     } }
                 }
                 settings = value; failure = false
                 refreshDeliveryStatus(value,schedulingFailed)
+                success=true
             } catch (e: CancellationException) { throw e }
             catch (_: Exception) { failure = true }
-            finally { saving = false }
+            finally { saving = false;completed(success) }
         }
     }
     private suspend fun refreshDeliveryStatus(cfg:AppSettings,failed:Boolean) {

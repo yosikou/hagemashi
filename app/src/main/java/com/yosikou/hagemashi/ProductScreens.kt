@@ -165,25 +165,44 @@ internal fun AgentSettings(app: AppViewModel, cfg: AppSettings, connection: Conn
     }
 }
 @Composable
-internal fun PersonaSettings(app: AppViewModel, cfg: AppSettings, compare:()->Unit={}, back: () -> Unit) {
+internal fun PersonaSettings(app: AppViewModel, cfg: AppSettings, share:PersonaShareViewModel, compare:()->Unit={}, back: () -> Unit) {
     val context = LocalContext.current
+    val exporter=androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/json"),share::finishExport)
+    val importer=androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.OpenDocument(),share::readImport)
+    val locked=app.saving || share.busy
     var editing by remember { mutableStateOf<String?>(null) }
     var name by remember(editing) { mutableStateOf(cfg.personas.find { it.id == editing }?.name.orEmpty()) }
     var prompt by remember(editing) { mutableStateOf(cfg.personas.find { it.id == editing }?.prompt.orEmpty()) }
     var supplement by remember(cfg.supplement) { mutableStateOf(cfg.supplement) }
-    Page(R.string.persona_settings, back) {
+    Page(R.string.persona_settings, {if(!app.saving){share.closeScreen();back()}}) {
+        Text(stringResource(R.string.persona_share_scope))
+        OutlinedButton(onClick={
+            share.startImport()
+            runCatching{importer.launch(arrayOf("application/json","text/plain","application/octet-stream"))}
+                .onFailure{share.pickerFailed(false)}
+        },enabled=!locked){Text(stringResource(R.string.persona_import))}
+        PersonaShareFeedback(share)
+        if(share.busy && !app.saving)OutlinedButton(onClick=share::cancelPreview){Text(stringResource(R.string.cancel))}
+        share.pending?.let { candidate ->
+            PersonaImportPreview(candidate,!locked,{share.confirmImport(app)},share::cancelPreview)
+        }
         cfg.personas.forEach { persona ->
             SectionCard {
                 Row {
-                    RadioButton(cfg.personaId == persona.id, onClick = { app.change { it.copy(personaId = persona.id) } }, enabled = !app.saving)
+                    RadioButton(cfg.personaId == persona.id, onClick = { app.change { it.copy(personaId = persona.id) } }, enabled = !locked)
                     Column {
                         Text(persona.name, style = MaterialTheme.typography.titleMedium)
-                        TextButton(onClick = { editing = persona.id }) { Text(stringResource(R.string.edit_persona)) }
+                        TextButton(onClick = { editing = persona.id },enabled=!locked) { Text(stringResource(R.string.edit_persona)) }
                     }
                 }
+                OutlinedButton(onClick={
+                    val actual=if(persona.defaultContent==true)defaultPersonas(context).single{it.id==persona.id} else persona
+                    if(share.prepareExport(actual))runCatching{exporter.launch(context.getString(R.string.persona_share_filename))}
+                        .onFailure{share.pickerFailed(true)}
+                },enabled=!locked){Text(stringResource(R.string.persona_export))}
             }
         }
-        OutlinedButton(onClick = { editing = "new" }) { Text(stringResource(R.string.add_persona)) }
+        OutlinedButton(onClick = { editing = "new" },enabled=!locked) { Text(stringResource(R.string.add_persona)) }
         if (editing != null) {
             OutlinedTextField(name, { name = it }, label = { Text(stringResource(R.string.persona_name_input)) })
             OutlinedTextField(prompt, { prompt = it }, label = { Text(stringResource(R.string.persona_prompt_input)) }, minLines = 3)
@@ -192,16 +211,16 @@ internal fun PersonaSettings(app: AppViewModel, cfg: AppSettings, compare:()->Un
                 val persona = Persona(if (id == "new") UUID.randomUUID().toString() else id, name.trim(), prompt.trim(),false)
                 app.change { it.copy(personas = if (id == "new") it.personas + persona else it.personas.map { old -> if (old.id == id) persona else old }) }
                 editing = null
-            }, enabled = !app.saving && name.isNotBlank() && prompt.isNotBlank()) { Text(stringResource(R.string.save_settings)) }
+            }, enabled = !locked && name.isNotBlank() && prompt.isNotBlank()) { Text(stringResource(R.string.save_settings)) }
             if (editing in builtInPersonaIds) OutlinedButton(onClick = {
                 val original = defaultPersonas(context).single { it.id == editing }
                 app.change { it.copy(personas = it.personas.map { old -> if (old.id == original.id) original else old }) }; editing = null
-            }, enabled = !app.saving) { Text(stringResource(R.string.reset_persona)) }
-            else if (editing != "new") OutlinedButton(onClick = { val id = editing!!; app.change { it.deletePersona(id) }; editing = null }, enabled = !app.saving) { Text(stringResource(R.string.delete_persona)) }
+            }, enabled = !locked) { Text(stringResource(R.string.reset_persona)) }
+            else if (editing != "new") OutlinedButton(onClick = { val id = editing!!; app.change { it.deletePersona(id) }; editing = null }, enabled = !locked) { Text(stringResource(R.string.delete_persona)) }
         }
         HorizontalDivider()
         OutlinedTextField(supplement, { supplement = it }, label = { Text(stringResource(R.string.common_prompt)) }, minLines = 2)
-        Button(onClick = { app.change { it.copy(supplement = supplement) } }, enabled = !app.saving) { Text(stringResource(R.string.save_supplement)) }
+        Button(onClick = { app.change { it.copy(supplement = supplement) } }, enabled = !locked) { Text(stringResource(R.string.save_supplement)) }
         if(BuildConfig.BUILD_TYPE=="diagnostic")OutlinedButton(onClick=compare){Text(stringResource(R.string.persona_comparison_title))}
         SettingsStatus(app)
     }

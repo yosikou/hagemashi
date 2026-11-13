@@ -276,4 +276,23 @@
     <string name="output_language_rule">Schreiben Sie short und full in der App-Sprache %1$s, auch wenn eigene Persönlichkeitsanweisungen eine andere Sprache verwenden. JSON-Schlüssel short und full unverändert lassen.</string>
     <string name="maintain_prompt">Nach Zielerreichung geht es um Gewichtserhalt. Weiteres Abnehmen nicht voraussetzen; machbare Gewohnheiten unterstützen.</string>
     <string name="health_privacy_body">Health Connect liefert Gewicht, Körperfett und Schritte mit Zeiten, Zeiträumen und Quellen. Dieser Lesebildschirm sendet nichts. Manuelle Erstellung sendet erst nach Bestätigung die geprüften Ziele, Persönlichkeit, Anweisungen und verfügbaren Gesundheitsdaten über Ihr ChatGPT-Konto an OpenAI. Aktive Morgen-/Abendzeiträume nutzen aktuelle Einstellungen und verfügbare Daten; ohne Hintergrundberechtigung fehlen Gesundheitsdaten. Frühere Antworten werden nie gesendet.\n\nAntworten und verwendete Daten werden auf diesem Gerät mit Android Keystore verschlüsselt und nicht gesichert. Diagnoseprotokolle enthalten keine Gesundheitsdaten, Anweisungen, Antworten oder Zugangsdaten. Manuelle Erstellung benachrichtigt nicht. Geplante Benachrichtigungen enthalten nur sicheren Kurztext und öffnen die gespeicherte Antwort. Zugriff kann jederzeit in Health Connect widerrufen werden. Fehlende Werte werden weder geschätzt noch auf null gesetzt.</string>
+    <string name="persona_share_scope">Nur Name und Anweisungen als JSON teilen. Gemeinsame Anweisungen, Ziele, Verbindungen, Gesundheitsdaten und Verlauf sind ausgeschlossen.</string>
+    <string name="persona_export">Diese Persönlichkeit exportieren</string>
+    <string name="persona_import">Persönlichkeit importieren</string>
+    <string name="persona_import_preview">Importierte Persönlichkeit prüfen</string>
+    <string name="persona_import_notice">Vollständigen Namen und Anweisungen prüfen. Die Bestätigung fügt eine neue eigene Persönlichkeit hinzu, ohne gleichnamige zu ersetzen oder die Auswahl zu ändern. Kein Versand an KI.</string>
+    <string name="persona_import_confirm">Als eigene Persönlichkeit hinzufügen</string>
+    <string name="persona_import_cancel">Import abbrechen</string>
+    <string name="persona_file_busy">Datei wird verarbeitet…</string>
+    <string name="persona_export_done">JSON-Datei der Persönlichkeit gespeichert.</string>
+    <string name="persona_import_done">Eigene Persönlichkeit hinzugefügt. Auswahl unverändert.</string>
+    <string name="persona_file_cancelled">Abgebrochen. Persönlichkeitseinstellungen unverändert.</string>
+    <string name="persona_file_json_error">Keine gültige UTF-8-JSON-Datei. JSON-Syntax prüfen.</string>
+    <string name="persona_file_version_error">Nicht unterstützte Formatversion. Version 1 wird unterstützt.</string>
+    <string name="persona_file_missing_error">Pflichtfeld formatVersion, name oder prompt fehlt.</string>
+    <string name="persona_file_fields_error">Name und Anweisungen müssen nichtleere Texte sein, formatVersion die ganze Zahl 1. Keine zusätzlichen Felder.</string>
+    <string name="persona_file_size_error">Größenlimit überschritten: JSON bis 64 KiB, Name bis 120 Zeichen, Anweisungen bis 12000 Zeichen.</string>
+    <string name="persona_file_read_error">Datei nicht lesbar. Datei und Zugriffsrecht prüfen und erneut auswählen.</string>
+    <string name="persona_file_write_error">Datei konnte nicht gespeichert werden. Speicherort prüfen und erneut exportieren. Eine unvollständige Datei kann verbleiben.</string>
+    <string name="persona_file_save_error">Persönlichkeit konnte nicht gespeichert werden. Vorschau bleibt erhalten. Erneut versuchen.</string>
 </resources>

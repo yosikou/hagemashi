@@ -276,4 +276,23 @@
     <string name="output_language_rule">Write both short and full in the application language %1$s, even if custom persona instructions use another language. Keep JSON keys short and full unchanged.</string>
     <string name="maintain_prompt">The goal is maintenance after reaching the target. Do not assume further weight loss is desired; support manageable habits.</string>
     <string name="health_privacy_body">Health Connect supplies weight, body fat and steps with dates, periods and sources. This read-only screen sends nothing. Manual generation sends the reviewed goal, persona, shared instructions and available health data to OpenAI using your connected ChatGPT account only after confirmation. Enabled morning/evening generation sends the current settings and available data at scheduled times; without background read permission, health data is unavailable. Previous responses are never sent.\n\nResponses and the data used are encrypted on this device with Android Keystore protection and excluded from backup. Health data, prompts, responses and credentials are not included in diagnostic logs. Normal manual generation sends no notification. Scheduled notifications contain only safe short text and open the saved response. Revoke Health Connect access at any time in its permissions. Missing records are never guessed or replaced with zero.</string>
+    <string name="persona_share_scope">Share only a name and prompt as JSON. Shared instructions, goals, connections, health data and history are excluded.</string>
+    <string name="persona_export">Export this persona</string>
+    <string name="persona_import">Import a persona</string>
+    <string name="persona_import_preview">Review imported persona</string>
+    <string name="persona_import_notice">Review the full name and prompt. Confirmation adds a new custom persona without replacing same-name personas or changing the selected persona. Nothing is sent to AI.</string>
+    <string name="persona_import_confirm">Add as custom persona</string>
+    <string name="persona_import_cancel">Cancel import</string>
+    <string name="persona_file_busy">Processing file…</string>
+    <string name="persona_export_done">Persona JSON file saved.</string>
+    <string name="persona_import_done">Custom persona added. The selected persona is unchanged.</string>
+    <string name="persona_file_cancelled">Cancelled. Persona settings were not changed.</string>
+    <string name="persona_file_json_error">This is not valid UTF-8 JSON. Check the JSON syntax.</string>
+    <string name="persona_file_version_error">Unsupported format version. Version 1 is supported.</string>
+    <string name="persona_file_missing_error">Required formatVersion, name or prompt field is missing.</string>
+    <string name="persona_file_fields_error">Name and prompt must be nonblank strings, and formatVersion must be the integer 1. Extra fields are not accepted.</string>
+    <string name="persona_file_size_error">Size limit exceeded: JSON up to 64 KiB, name up to 120 characters, prompt up to 12000 characters.</string>
+    <string name="persona_file_read_error">Could not read the file. Check the file and access permission, then select it again.</string>
+    <string name="persona_file_write_error">Could not save the file. Check the destination and export again. An incomplete file may remain.</string>
+    <string name="persona_file_save_error">Could not save the persona on this device. The preview is retained. Try again.</string>
 </resources>
