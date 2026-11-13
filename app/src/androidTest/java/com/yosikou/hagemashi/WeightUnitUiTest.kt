@@ -16,9 +16,9 @@ class WeightUnitUiTest {
     @Test fun reviewedUnitIsFrozenEvenIfCurrentPreferenceDiffers() {
         val review=ReviewedGeneration("model","model","rules","input remains frozen",true,"persona",listOf(
             MeasurementRow(MeasureItem.WEIGHT,"68.0388555","kg","2026-11-01T00:00:00Z")),weightUnit=WeightUnit.LB)
-        rule.setContent { HagemashiTheme { CompositionLocalProvider(LocalWeightUnit provides WeightUnit.KG) {
+        rule.setContent { LanguageContent(AppLanguage.JA) { HagemashiTheme { CompositionLocalProvider(LocalWeightUnit provides WeightUnit.KG) {
             Column(Modifier.verticalScroll(rememberScrollState())) { SendReviewContent(review) }
-        } } }
+        } } } }
         rule.onNodeWithText("150 lb").performScrollTo().assertIsDisplayed()
         rule.onNodeWithText("68.04 kg").assertDoesNotExist()
         rule.onNodeWithText("送信データをすべて見る").performScrollTo().performClick()

@@ -1,17 +1,17 @@
 <resources>
     <string name="notification_fallback">今日も自分のペースを大切に。できたことを認めながら、無理なく続けるあなたを応援しています。</string>
     <string name="notification_title">hagemashiからの励まし</string>
-    <string name="notification_channel">励ましの検証通知</string>
-    <string name="notification_channel_description">生成済みの回答で「通知を試す」を押した場合だけ通知します。</string>
-    <string name="notification_test">通知を試す</string>
-    <string name="notification_test_notice">この回答を使って通知を試します。AIへの追加送信はありません。通常の手動生成では通知しません。通知に測定値は載せず、ロック画面の表示・音などはAndroidの通知設定に従います。</string>
+    <string name="notification_channel">励まし</string>
+    <string name="notification_channel_description">励ましと目標の再設定案内。Androidの通知設定に従います。</string>
+    <string name="notification_test" translatable="false">通知を試す</string>
+    <string name="notification_test_notice" translatable="false">この回答を使って通知を試します。AIへの追加送信はありません。通常の手動生成では通知しません。通知に測定値は載せず、ロック画面の表示・音などはAndroidの通知設定に従います。</string>
     <string name="notification_posted">この回答の通知を送信しました。通知をタップすると、保存したこの回答を開きます。</string>
     <string name="notification_denied">通知権限がありません。通知しませんでした。回答はこの画面で読めます。</string>
     <string name="notification_disabled">アプリまたは通知チャンネルの通知が無効です。回答はこの画面で読めます。</string>
     <string name="notification_failed">通知できませんでした。回答はこの画面で読めます。</string>
     <string name="notification_sending">通知を準備しています。</string>
     <string name="notification_settings">Androidの通知設定を開く</string>
-    <string name="detail_back">アプリへ戻る</string>
+    <string name="detail_back" translatable="false">アプリへ戻る</string>
     <string name="detail_title">励ましの詳細</string>
     <string name="detail_open">回答の詳細を開く</string>
     <string name="detail_generated_at">生成日時：%1$s</string>
@@ -20,21 +20,21 @@
     <string name="detail_load_failed">保存した回答を読み込めませんでした。別の回答には切り替えません。</string>
     <string name="detail_retry">保存した回答を再読み込み</string>
     <string name="detail_save_failed">回答を端末に保存できませんでした。この回答の通知・保存済み詳細は利用できませんが、全文は上に表示しています。</string>
-    <string name="manual_open">実データで手動生成</string>
-    <string name="manual_title">Health Connectの実データで手動生成</string>
+    <string name="manual_open" translatable="false">実データで手動生成</string>
+    <string name="manual_title" translatable="false">Health Connectの実データで手動生成</string>
     <string name="manual_notice">体重・体脂肪率は直近30日、歩数は今日を含む直近7日を読みます。送信前に項目・値・期間・プロンプトを確認できます。確認して送信するまでChatGPTへ健康データを送りません。過去の回答は送信しません。</string>
     <string name="manual_need_connection">送信にはChatGPT接続が必要です。手動接続画面に戻ってサインインしてください。</string>
-    <string name="manual_goal">目標体重（kg・この画面だけに保持）</string>
-    <string name="manual_goal_invalid">0より大きい目標体重を半角数字で入力してください（整数3桁まで、小数2桁まで）。</string>
+    <string name="manual_goal" translatable="false">目標体重（kg・この画面だけに保持）</string>
+    <string name="manual_goal_invalid" translatable="false">0より大きい目標体重を半角数字で入力してください（整数3桁まで、小数2桁まで）。</string>
     <string name="manual_prepare">健康データを取得して送信内容を確認</string>
     <string name="manual_prepare_failed">送信内容を準備できませんでした。もう一度取得してください。まだ送信していません。</string>
     <string name="manual_preview">ChatGPTへ送信する内容</string>
     <string name="manual_model">使用モデル：%1$s（%2$s）</string>
-    <string name="manual_unavailable">Health Connectの利用状況または権限を確認できなかったため、健康値は含めません。目標と人格だけでも生成できます。</string>
-    <string name="manual_preview_notice">下の人格・生成方針と入力データをそのまま送信します。取得後の新しい記録や入力の変更は自動で混ぜません。再試行も同じ内容を送信します。画面を離れるとプレビューは破棄します。生成済みの回答と使用データは、通知から詳細を開くため端末内に暗号化保存します。通常の生成では通知しません。</string>
+    <string name="manual_unavailable" translatable="false">Health Connectの利用状況または権限を確認できなかったため、健康値は含めません。目標と人格だけでも生成できます。</string>
+    <string name="manual_preview_notice" translatable="false">下の人格・生成方針と入力データをそのまま送信します。取得後の新しい記録や入力の変更は自動で混ぜません。再試行も同じ内容を送信します。画面を離れるとプレビューは破棄します。生成済みの回答と使用データは、通知から詳細を開くため端末内に暗号化保存します。通常の生成では通知しません。</string>
     <string name="manual_instructions">人格・生成方針</string>
     <string name="manual_input">入力データ</string>
-    <string name="manual_send">表示内容を確認してChatGPTへ送信</string>
+    <string name="manual_send" translatable="false">表示内容を確認してChatGPTへ送信</string>
     <string name="manual_retry">表示内容のまま再試行</string>
     <string name="manual_edit">内容を変更・再取得</string>
     <string name="manual_generation_rules">日本語で、キーがshortとfullのJSONオブジェクトだけを返してください。shortは通知用の励まし40〜60文字目安、fullは回答全文200〜300文字目安です。shortには体重・体脂肪率・歩数・目標などの具体的な数値や単位を含めず、数値はfullだけに記載してください。Markdownのコード囲みは不要です。過去の回答はありません。測定日時・対象期間を考慮し、古い値を現在値と扱わないでください。未取得・権限なし・取得失敗を0や推測値で補完しないでください。全項目が未取得なら目標と人格だけを使って励ましてください。</string>
@@ -54,9 +54,9 @@
     <string name="manual_partial">取得できた記録の一部のみです。全件取得済みとは扱わないでください。</string>
     <string name="manual_kg">kg</string>
     <string name="manual_percent" formatted="false">%</string>
-    <string name="health_open">Health Connect 読み取り検証</string>
-    <string name="health_title">Health Connect 読み取り検証</string>
-    <string name="health_notice">体重・体脂肪率は過去7日間の最新20件、歩数は端末時刻の今日0時から取得時刻までを読みます。日時は端末のタイムゾーンで表示します。この画面からは送信しません。別の「実データで手動生成」で内容を確認して送信した場合だけChatGPTへ送ります。生成済み回答の詳細用保存と、明示的な検証通知は専用画面で行います。</string>
+    <string name="health_open" translatable="false">Health Connect 読み取り検証</string>
+    <string name="health_title" translatable="false">Health Connect 読み取り検証</string>
+    <string name="health_notice" translatable="false">体重・体脂肪率は過去7日間の最新20件、歩数は端末時刻の今日0時から取得時刻までを読みます。日時は端末のタイムゾーンで表示します。この画面からは送信しません。別の「実データで手動生成」で内容を確認して送信した場合だけChatGPTへ送ります。生成済み回答の詳細用保存と、明示的な検証通知は専用画面で行います。</string>
     <string name="health_checking">Health Connectの利用状況を確認します。</string>
     <string name="health_available">Health Connectを利用できます。</string>
     <string name="health_update_required">Health Connectのインストールまたは更新が必要です。</string>
@@ -68,42 +68,42 @@
     <string name="health_open_settings">Health Connectを開く</string>
     <string name="health_open_store">Health Connectのインストール・更新</string>
     <string name="health_settings_failed">設定画面を開けませんでした。端末の設定からHealth Connectを開いてください。</string>
-    <string name="health_read_at">取得時刻：%1$s</string>
-    <string name="health_period">読み取り・集計期間：%1$s 〜 %2$s</string>
+    <string name="health_read_at" translatable="false">取得時刻：%1$s</string>
+    <string name="health_period" translatable="false">読み取り・集計期間：%1$s 〜 %2$s</string>
     <string name="health_weight">体重</string>
     <string name="health_body_fat">体脂肪率</string>
-    <string name="health_steps">歩数（今日）</string>
-    <string name="health_permission_required">読み取り権限がありません。記録なしとは区別しています。</string>
-    <string name="health_no_records">権限はありますが、この期間の記録はありません。0や推測値では補いません。</string>
+    <string name="health_steps" translatable="false">歩数（今日）</string>
+    <string name="health_permission_required" translatable="false">読み取り権限がありません。記録なしとは区別しています。</string>
+    <string name="health_no_records" translatable="false">権限はありますが、この期間の記録はありません。0や推測値では補いません。</string>
     <string name="health_has_records">記録を取得しました。</string>
-    <string name="health_access_denied">読み取りが拒否されました。権限と、アプリが表示中であることを確認してください。記録なしとは扱いません。</string>
+    <string name="health_access_denied" translatable="false">読み取りが拒否されました。権限と、アプリが表示中であることを確認してください。記録なしとは扱いません。</string>
     <string name="health_read_error">読み取りに失敗しました。記録なしとは扱いません。再取得してください。</string>
-    <string name="health_weight_value">%1$.2f kg</string>
-    <string name="health_body_fat_value">%1$.2f %%</string>
-    <string name="health_steps_value">%1$d 歩</string>
+    <string name="health_weight_value" translatable="false">%1$.2f kg</string>
+    <string name="health_body_fat_value" translatable="false">%1$.2f %%</string>
+    <string name="health_steps_value" translatable="false">%1$d 歩</string>
     <string name="health_measured_at">測定日時：%1$s</string>
-    <string name="health_origin">データ提供元（パッケージ名）：%1$s</string>
+    <string name="health_origin" translatable="false">データ提供元（パッケージ名）：%1$s</string>
     <string name="health_origin_unknown">不明（推測しません）</string>
-    <string name="health_has_more">古い記録はほかにもあります。この検証画面は最新20件まで表示します。</string>
-    <string name="health_steps_aggregation">Health Connectの集計値です。提供元間の重複調整はHealth Connectの設定に従います。</string>
+    <string name="health_has_more" translatable="false">古い記録はほかにもあります。この検証画面は最新20件まで表示します。</string>
+    <string name="health_steps_aggregation" translatable="false">Health Connectの集計値です。提供元間の重複調整はHealth Connectの設定に従います。</string>
     <string name="health_privacy">健康データの利用目的・プライバシー</string>
     <string name="health_privacy_back">アプリへ戻る</string>
-    <string name="health_privacy_body">Health Connectから体重・体脂肪率・歩数を読み取り、値、測定日時または集計期間、提供元を表示します。読み取り検証画面からは送信しません。\n\n「実データで手動生成」では、目標体重・人格プロンプト・取得した健康データを送信前に表示します。ユーザーが確認して送信を押した内容だけを、接続中のChatGPTアカウントでOpenAIへ送信します。全項目が未取得でも、目標と人格だけで生成できます。過去の回答は送信しません。\n\n書き込み・履歴拡張・バックグラウンド読み取り権限は要求しません。送信前の健康値とプレビューは画面用メモリに保持します。生成済みの回答、生成日時、使用した目標・健康データは、通知から詳細を開くため端末内にKeystoreで保護して暗号化保存し、端末バックアップには含めません。診断ログ・クリップボードには自動保存しません。認証情報は既存のKeystore保護で保持します。通常の手動生成では通知しません。詳細画面で「通知を試す」を押した場合だけ生成済みの短文を通知し、追加のAI送信はしません。自動生成はありません。\n\n権限はHealth Connectのアプリ権限からいつでも解除できます。提供元が書き込んでいない記録を推測で補いません。</string>
-    <string name="generation_diagnostic_title">直近の生成診断</string>
-    <string name="generation_diagnostic_notice">固定分類と有無だけを記録します。HTTP 200だけでは成功としません。完了イベントの検証と、画面の回答本文を確認してください。コピーにはトークン・プロンプト・回答本文・生の応答は含みません。</string>
-    <string name="copy_generation_diagnostic">生成の安全な診断をコピー</string>
-    <string name="build_identifier">ビルド：%1$s</string>
-    <string name="open_probes">通信診断（認証不要）</string>
-    <string name="probe_title">認証情報なしの通信診断</string>
-    <string name="probe_notice">固定ホスト auth.openai.com のDNS・HTTPS GET・空POSTを個別に実行します。HTTP 400・403・リダイレクトも応答受信として記録します。本文・IP・認証情報は取得表示せず、端末設定も変更しません。結果は画面のメモリ内だけに保持します。</string>
-    <string name="probe_dns">DNS名前解決を実行</string>
-    <string name="probe_get">HTTPS GETを実行</string>
-    <string name="probe_post">認証情報なしの空POSTを実行</string>
-    <string name="probe_copy">安全な診断結果をコピー</string>
+    <string name="health_privacy_body">Health Connectから体重・体脂肪率・歩数と日時・期間・提供元を読み取ります。この読み取り画面からは送信しません。手動生成は確認後に表示した目標・人格・補足・健康データを接続中のChatGPTアカウントでOpenAIへ送信します。有効にした朝夜の自動生成では設定時刻を目安に現在の設定と取得できたデータを送信します。背景読み取りを許可しない場合は健康データ未取得として生成します。過去の回答は送信しません。\n\n回答と使用データはAndroid Keystoreで保護し端末内に暗号化保存して、端末バックアップには含めません。健康データ・プロンプト・回答・認証情報を診断ログには含めません。通常の手動生成は通知せず、予約通知は安全な短文だけを表示し、保存済みの対応する回答を開きます。Health Connectの権限はいつでも解除できます。欠損は推測せず0で埋めません。</string>
+    <string name="generation_diagnostic_title" translatable="false">直近の生成診断</string>
+    <string name="generation_diagnostic_notice" translatable="false">固定分類と有無だけを記録します。HTTP 200だけでは成功としません。完了イベントの検証と、画面の回答本文を確認してください。コピーにはトークン・プロンプト・回答本文・生の応答は含みません。</string>
+    <string name="copy_generation_diagnostic" translatable="false">生成の安全な診断をコピー</string>
+    <string name="build_identifier" translatable="false">ビルド：%1$s</string>
+    <string name="open_probes" translatable="false">通信診断（認証不要）</string>
+    <string name="probe_title" translatable="false">認証情報なしの通信診断</string>
+    <string name="probe_notice" translatable="false">固定ホスト auth.openai.com のDNS・HTTPS GET・空POSTを個別に実行します。HTTP 400・403・リダイレクトも応答受信として記録します。本文・IP・認証情報は取得表示せず、端末設定も変更しません。結果は画面のメモリ内だけに保持します。</string>
+    <string name="probe_dns" translatable="false">DNS名前解決を実行</string>
+    <string name="probe_get" translatable="false">HTTPS GETを実行</string>
+    <string name="probe_post" translatable="false">認証情報なしの空POSTを実行</string>
+    <string name="probe_copy" translatable="false">安全な診断結果をコピー</string>
     <string name="probe_back">手動接続画面へ戻る</string>
     <string name="app_name">hagemashi</string>
-    <string name="screen_title">ChatGPT 手動接続の検証</string>
-    <string name="preview_notice">検証版：ブラウザから戻る認証とHealth Connectの読み取り検証です。実データのAI送信は専用画面で確認した手動送信だけです。予約生成はありません。生成済みの回答は詳細表示用に保存し、通知は「通知を試す」の操作だけです。</string>
+    <string name="screen_title" translatable="false">ChatGPT 手動接続の検証</string>
+    <string name="preview_notice" translatable="false">検証版：ブラウザから戻る認証とHealth Connectの読み取り検証です。実データのAI送信は専用画面で確認した手動送信だけです。予約生成はありません。生成済みの回答は詳細表示用に保存し、通知は「通知を試す」の操作だけです。</string>
     <string name="continue_chatgpt">Continue with ChatGPT</string>
     <string name="connected">接続済み</string>
     <string name="disconnected">未接続</string>
@@ -148,11 +148,11 @@
     <string name="error_policy">利用条件・アカウント・地域・モデル等の制限があります。設定と適用条件を確認してください。</string>
     <string name="error_server">サービス側で処理できませんでした。HTTP状態と保存状態を確認し、時間をおいて手動で再試行してください。</string>
     <string name="error_timeout">待機時間を超えました。認証または通信を手動でやり直してください。</string>
-    <string name="dummy_title">生成テスト：固定の架空データ</string>
-    <string name="dummy_prompt">これは架空の検証データです。目標体重68.0kg。2026-10-01の体重70.0kg・体脂肪率23.0％、2026-10-08の体重69.8kg。活動データは欠損です。欠損を補完せず、古い測定値には日付を添えてください。通知用短文40〜60文字と、全文200〜300文字程度を日本語で生成してください。過去の励ましはありません。</string>
+    <string name="dummy_title" translatable="false">生成テスト：固定の架空データ</string>
+    <string name="dummy_prompt" translatable="false">これは架空の検証データです。目標体重68.0kg。2026-10-01の体重70.0kg・体脂肪率23.0％、2026-10-08の体重69.8kg。活動データは欠損です。欠損を補完せず、古い測定値には日付を添えてください。通知用短文40〜60文字と、全文200〜300文字程度を日本語で生成してください。過去の励ましはありません。</string>
     <string name="persona_prompt">あなたは「友人のようなトレーナー」です。親しい友人として、柔らかい会話調で励ましてください。記録から確かめられる小さな取り組みや変化を一つ具体的に認め、一緒に喜ぶ言葉を添えます。数値が改善していなくても責めません。実際に記録されたことと、これからの提案を区別し、運動や食事など記録にない努力・理由・気持ちは作りません。助言は身近で無理のないものを一つに絞ります。朝は指定された前日までの記録から今日の行動を提案し、夜・手動は当日の記録を振り返る生成方針に従ってください。欠損は推測や0で埋めず、古い値には日時を添え、通知短文には具体的な測定値・目標値・単位を載せません。断定的な健康判断や無理な減量の勧めは避けてください。</string>
     <string name="fetch_models">モデル一覧を取得・更新</string>
-    <string name="generate">ダミーデータで生成</string>
+    <string name="generate" translatable="false">ダミーデータで生成</string>
     <string name="answer_title">今回の回答（端末へ履歴保存しません）</string>
     <string name="plan_welcome_title">ChatGPTプランを使用します</string>
     <string name="plan_welcome">このアプリの対象リクエストは、あなたのChatGPTプランまたは利用可能なクレジットを消費します。利用枠・アプリごとの制限はChatGPT設定で管理できます。MIT採用はサービス利用の承認を意味しません。</string>
@@ -161,62 +161,62 @@
     <string name="erase_warning">暗号化ファイル・鍵・保存した登録を削除します。サーバー側の失効は確認できないため、ChatGPT設定でもこのアプリの接続を解除してください。</string>
     <string name="erase">削除してやり直す</string>
     <string name="connection_unknown">接続情報の保存状態を確認できません</string>
-    <string name="saved_none">端末に接続用トークンは保存されていません。もう一度サインインしてください。</string>
-    <string name="saved_present">端末に保存済みの接続情報があります。通信での有効性は未確認です。</string>
-    <string name="saved_unknown">保存状態を読み取れず、接続情報があるか判断できません。</string>
-    <string name="diagnostic_stage">処理段階：%1$s（%2$s）</string>
-    <string name="diagnostic_completed">最後に完了した段階：%1$s</string>
-    <string name="diagnostic_network">通信分類：%1$s</string>
-    <string name="diagnostic_host">接続先ホスト：%1$s</string>
-    <string name="host_unconfirmed">未確定（通信以外の処理、または許可対象外）</string>
-    <string name="diagnostic_error_class">固定エラー分類：%1$s</string>
-    <string name="diagnostic_exceptions">例外クラス（外側→原因）：%1$s</string>
-    <string name="no_exception_classes">なし（固定分類のみ）</string>
-    <string name="dns_compare_sign_in">診断用：DNS比較付きでサインイン</string>
-    <string name="dns_comparison_notice">DNS比較先：auth.openai.com。名前解決の成否だけを表示し、IPは保存・利用しません。比較によりDNSキャッシュや処理タイミングが変わる可能性があります。</string>
-    <string name="dns_observation">%1$s／%2$s：%3$s</string>
-    <string name="dns_before_browser">認証前（ブラウザ起動前）</string>
-    <string name="dns_after_callback">callback検査後（コード交換前）</string>
-    <string name="dns_after_resume">アプリ復帰時</string>
-    <string name="dns_resolved">DNS_RESOLVED</string>
-    <string name="app_visible">画面表示中</string>
-    <string name="app_hidden">画面非表示中</string>
-    <string name="app_visibility_changed">比較中に画面状態が変化</string>
-    <string name="diagnostic_http">HTTP状態：%1$d</string>
-    <string name="diagnostic_no_http">HTTP状態：未取得</string>
-    <string name="diagnostic_away">画面非表示中に到達した段階：%1$s</string>
-    <string name="internet_granted">通信設定：INTERNET権限あり</string>
-    <string name="internet_missing">通信設定：INTERNET権限なし</string>
-    <string name="network_settings_unknown">通信設定を取得できませんでした</string>
-    <string name="https_only">通信設定：アプリの平文HTTP通信は禁止（外部ブラウザのloopbackは別）</string>
-    <string name="cleartext_allowed">通信設定：アプリの平文HTTP通信が許可されています</string>
-    <string name="phase_idle">待機</string>
-    <string name="phase_running">処理中</string>
-    <string name="phase_succeeded">完了</string>
-    <string name="phase_failed">失敗</string>
-    <string name="phase_cancelled">キャンセル</string>
-    <string name="network_http">HTTP応答あり</string>
-    <string name="network_dns">DNS名前解決に失敗</string>
-    <string name="network_tls">TLS接続・証明書検証に失敗</string>
-    <string name="network_timeout">タイムアウト</string>
-    <string name="network_connection">接続拒否・到達不能</string>
-    <string name="network_io">その他の通信I/Oエラー</string>
-    <string name="network_permission">通信権限・セキュリティ制限</string>
-    <string name="stage_none">なし</string>
-    <string name="stage_read_saved">保存状態の読み取り</string>
-    <string name="stage_prepare">認証準備</string>
-    <string name="stage_callback">callback受信・検査</string>
-    <string name="stage_registration">再認証用の登録情報保存</string>
-    <string name="stage_exchange">認可コード交換</string>
-    <string name="stage_discovery">認証設定の取得・確認</string>
-    <string name="stage_keys">署名検証用鍵の取得</string>
-    <string name="stage_identity">ID tokenの署名・本人検証</string>
-    <string name="stage_token_fields">接続情報の形式・権限確認</string>
-    <string name="stage_save">接続情報の暗号化保存</string>
-    <string name="stage_models">モデル一覧の取得</string>
-    <string name="stage_generation">回答生成</string>
-    <string name="stage_refresh">接続情報の更新</string>
-    <string name="stage_revocation">サーバー側の接続失効</string>
+    <string name="saved_none" translatable="false">端末に接続用トークンは保存されていません。もう一度サインインしてください。</string>
+    <string name="saved_present" translatable="false">端末に保存済みの接続情報があります。通信での有効性は未確認です。</string>
+    <string name="saved_unknown" translatable="false">保存状態を読み取れず、接続情報があるか判断できません。</string>
+    <string name="diagnostic_stage" translatable="false">処理段階：%1$s（%2$s）</string>
+    <string name="diagnostic_completed" translatable="false">最後に完了した段階：%1$s</string>
+    <string name="diagnostic_network" translatable="false">通信分類：%1$s</string>
+    <string name="diagnostic_host" translatable="false">接続先ホスト：%1$s</string>
+    <string name="host_unconfirmed" translatable="false">未確定（通信以外の処理、または許可対象外）</string>
+    <string name="diagnostic_error_class" translatable="false">固定エラー分類：%1$s</string>
+    <string name="diagnostic_exceptions" translatable="false">例外クラス（外側→原因）：%1$s</string>
+    <string name="no_exception_classes" translatable="false">なし（固定分類のみ）</string>
+    <string name="dns_compare_sign_in" translatable="false">診断用：DNS比較付きでサインイン</string>
+    <string name="dns_comparison_notice" translatable="false">DNS比較先：auth.openai.com。名前解決の成否だけを表示し、IPは保存・利用しません。比較によりDNSキャッシュや処理タイミングが変わる可能性があります。</string>
+    <string name="dns_observation" translatable="false">%1$s／%2$s：%3$s</string>
+    <string name="dns_before_browser" translatable="false">認証前（ブラウザ起動前）</string>
+    <string name="dns_after_callback" translatable="false">callback検査後（コード交換前）</string>
+    <string name="dns_after_resume" translatable="false">アプリ復帰時</string>
+    <string name="dns_resolved" translatable="false">DNS_RESOLVED</string>
+    <string name="app_visible" translatable="false">画面表示中</string>
+    <string name="app_hidden" translatable="false">画面非表示中</string>
+    <string name="app_visibility_changed" translatable="false">比較中に画面状態が変化</string>
+    <string name="diagnostic_http" translatable="false">HTTP状態：%1$d</string>
+    <string name="diagnostic_no_http" translatable="false">HTTP状態：未取得</string>
+    <string name="diagnostic_away" translatable="false">画面非表示中に到達した段階：%1$s</string>
+    <string name="internet_granted" translatable="false">通信設定：INTERNET権限あり</string>
+    <string name="internet_missing" translatable="false">通信設定：INTERNET権限なし</string>
+    <string name="network_settings_unknown" translatable="false">通信設定を取得できませんでした</string>
+    <string name="https_only" translatable="false">通信設定：アプリの平文HTTP通信は禁止（外部ブラウザのloopbackは別）</string>
+    <string name="cleartext_allowed" translatable="false">通信設定：アプリの平文HTTP通信が許可されています</string>
+    <string name="phase_idle" translatable="false">待機</string>
+    <string name="phase_running" translatable="false">処理中</string>
+    <string name="phase_succeeded" translatable="false">完了</string>
+    <string name="phase_failed" translatable="false">失敗</string>
+    <string name="phase_cancelled" translatable="false">キャンセル</string>
+    <string name="network_http" translatable="false">HTTP応答あり</string>
+    <string name="network_dns" translatable="false">DNS名前解決に失敗</string>
+    <string name="network_tls" translatable="false">TLS接続・証明書検証に失敗</string>
+    <string name="network_timeout" translatable="false">タイムアウト</string>
+    <string name="network_connection" translatable="false">接続拒否・到達不能</string>
+    <string name="network_io" translatable="false">その他の通信I/Oエラー</string>
+    <string name="network_permission" translatable="false">通信権限・セキュリティ制限</string>
+    <string name="stage_none" translatable="false">なし</string>
+    <string name="stage_read_saved" translatable="false">保存状態の読み取り</string>
+    <string name="stage_prepare" translatable="false">認証準備</string>
+    <string name="stage_callback" translatable="false">callback受信・検査</string>
+    <string name="stage_registration" translatable="false">再認証用の登録情報保存</string>
+    <string name="stage_exchange" translatable="false">認可コード交換</string>
+    <string name="stage_discovery" translatable="false">認証設定の取得・確認</string>
+    <string name="stage_keys" translatable="false">署名検証用鍵の取得</string>
+    <string name="stage_identity" translatable="false">ID tokenの署名・本人検証</string>
+    <string name="stage_token_fields" translatable="false">接続情報の形式・権限確認</string>
+    <string name="stage_save" translatable="false">接続情報の暗号化保存</string>
+    <string name="stage_models" translatable="false">モデル一覧の取得</string>
+    <string name="stage_generation" translatable="false">回答生成</string>
+    <string name="stage_refresh" translatable="false">接続情報の更新</string>
+    <string name="stage_revocation" translatable="false">サーバー側の接続失効</string>
     <string name="home_name">hagemashi</string>
     <string name="settings_title">設定</string>
     <string name="app_back">戻る</string>
@@ -224,7 +224,7 @@
     <string name="no_encouragement">まだ励ましがありません。目標を設定して始めましょう。</string>
     <string name="home_weight">最新の体重</string>
     <string name="home_weight_missing">直近30日の体重は未取得です。0ではありません。</string>
-    <string name="goal_difference">目標との差：%1$+.2f kg</string>
+    <string name="goal_difference" translatable="false">目標との差：%1$+.2f kg</string>
     <string name="goal_reached">目標体重に到達しています。これからの目標を選べます。</string>
     <string name="goal_maintain">この体重の維持を目指す</string>
     <string name="goal_review">新しい目標を設定する</string>
@@ -241,7 +241,7 @@
     <string name="health_settings">Health Connect</string>
     <string name="notification_settings_title">通知</string>
     <string name="goal_input">目標体重</string>
-    <string name="goal_date_input">目標日（任意・YYYY-MM-DD）</string>
+    <string name="goal_date_input" translatable="false">目標日（任意・YYYY-MM-DD）</string>
     <string name="goal_invalid">小数は6桁以内で入力してください。単位を付けず、数値として解釈できる正の目標体重を入力してください。長すぎる入力は保存できません。</string>
     <string name="save_settings">保存する</string>
     <string name="settings_error">設定の読み込み・保存に失敗しました。再読み込みして確認してください。</string>
@@ -269,7 +269,7 @@
     <string name="notification_enabled_setting">予約通知を有効にする設定</string>
     <string name="notification_time_setting">通知時刻：%1$s（端末の現地時刻）</string>
     <string name="reservation_unavailable">朝・夜の通知設定は保存されますが、このUI・履歴版では予約配信は未対応です。自動生成も無効です。</string>
-    <string name="no_automatic_ai">無操作のAI生成は未対応です。通常の手動生成では通知しません。</string>
+    <string name="no_automatic_ai" translatable="false">無操作のAI生成は未対応です。通常の手動生成では通知しません。</string>
     <string name="history_title">励まし履歴</string>
     <string name="history_empty">履歴はありません。</string>
     <string name="history_error">履歴を読み込めませんでした。削除や再試行の結果を確認してください。</string>
@@ -296,9 +296,9 @@
     <string name="goal_no_deadline">目標期限なし</string>
     <string name="goal_choose_deadline">カレンダーで期限を選ぶ・変更する</string>
     <string name="goal_clear_deadline">期限を解除</string>
-    <string name="preview_morning">朝の入力を確認（送信しない）</string>
-    <string name="preview_evening">夜の入力を確認（送信しない）</string>
-    <string name="preview_only_no_send">入力方針の比較用です。この画面からAIへ送信・生成・保存はしません。実際の手動生成は時刻に関係なく振り返り用です。</string>
+    <string name="preview_morning" translatable="false">朝の入力を確認（送信しない）</string>
+    <string name="preview_evening" translatable="false">夜の入力を確認（送信しない）</string>
+    <string name="preview_only_no_send" translatable="false">入力方針の比較用です。この画面からAIへ送信・生成・保存はしません。実際の手動生成は時刻に関係なく振り返り用です。</string>
     <string name="morning_rules">朝は端末の前日までの記録だけを使います。当日の記録は含めず、その日に取り組める目標や行動を一つ提案する入力です。</string>
     <string name="manual_reflection_rules">夜と手動は生成時点までの当日の記録を中心に振り返り、取り組みを励ましてください。過去の推移は補足で、過去の値を当日の実績として扱わないでください。当日の記録が少ない・一件もない場合も、目標・人格・補足だけで生成し、記録がない理由や実績を推測しないでください。手動生成は朝に操作しても振り返り用です。</string>
     <string name="goal_wait_manual_notice">目標期限の再設定待ちです。自動の励ましは停止しますが、手動生成は引き続き利用できます。</string>
@@ -306,27 +306,16 @@
     <string name="slot_time_invalid">両方を有効にする場合、朝の時刻を夜より前にしてください。</string>
     <string name="table_steps">歩数</string>
     <string name="reservation_off">朝・夜ともオフです。予約通知も自動生成も実行しません。</string>
-
     <string name="reservation_choose_answer">設定は保存済みですが、配信は未登録です。検証用の保存済み回答を指定してください。</string>
-
     <string name="reservation_permission">設定は保存済みですが、通知権限またはチャンネルが無効のため配信は停止しています。</string>
-
     <string name="reservation_missing_answer">検証対象の保存済み回答を読めません。配信は停止しています。</string>
-
     <string name="reservation_claimed">この予約は処理済みです。時刻を変更して再予約すると、同じ日でも再試験できます。</string>
-
     <string name="reservation_registered">予約APIへの登録要求が完了し、台帳を保存しました。OS内の予約の存続や通知到着は未確認です。端末の現地時刻を目安に保存済み回答だけを通知します。省電力などAndroidの制約で遅れる場合があります。</string>
-
     <string name="reservation_not_registered">設定は保存済みですが予約登録を確認できません。アプリを開き直して確認してください。</string>
-
-    <string name="reservation_target">検証対象の回答ID：%1$s</string>
-
-    <string name="reservation_use_latest">最新の保存済み回答を検証対象にする</string>
-
+    <string name="reservation_target" translatable="false">検証対象の回答ID：%1$s</string>
+    <string name="reservation_use_latest" translatable="false">最新の保存済み回答を検証対象にする</string>
     <string name="reservation_grant">通知権限を許可する</string>
-
-    <string name="reservation_test_only">予約通知は保存済み回答の朝夜2枠の検証です。自動AI生成は無効です。最新回答へ自動で置き換えたり、追加AI送信したりしません。</string>
-
+    <string name="reservation_test_only" translatable="false">予約通知は保存済み回答の朝夜2枠の検証です。自動AI生成は無効です。最新回答へ自動で置き換えたり、追加AI送信したりしません。</string>
     <string name="reservation_slot_off">この枠はオフです。</string>
     <string name="goal_guide_limit">再設定待ちです。案内処理は合計3回に達したため停止しています。目標を再設定すると通常の予約検証へ戻ります。</string>
     <string name="goal_guide_done">本日の再設定案内は処理済みです。朝夜を合わせて同日に再送しません。</string>
@@ -339,20 +328,20 @@
     <string name="home_latest">最新の励まし</string>
     <string name="settings_encouragement_group">励ましの設定</string>
     <string name="settings_connections_group">アカウント・健康データの連携</string>
-    <string name="settings_diagnostics_group">診断</string>
+    <string name="settings_diagnostics_group" translatable="false">診断</string>
     <string name="detail_saved_snapshot">この回答を生成した時点の保存済みデータです。</string>
     <string name="detail_expand_data">使用したデータをすべて見る</string>
     <string name="detail_collapse_data">使用したデータを折りたたむ</string>
     <string name="table_status_unknown">取得状況を確認できません</string>
-    <string name="notification_test_title">検証用の通知</string>
-    <string name="reservation_diagnostics">予約通知の診断</string>
-    <string name="reservation_diagnostic_refresh">診断表示を更新</string>
-    <string name="reservation_diagnostic_copy">予約診断をコピー</string>
-    <string name="reservation_diagnostic_explanation">再起動後も直近128件の到達点を確認できます。REGISTER_RETURNEDは予約APIの呼び出し完了、RECEIVER_ENTEREDはOSからの受信、NOTIFY_RETURNEDは通知発行APIの結果です。トークンの存在だけではOS内の予約存続を証明できず、通知APIの成功も画面への到着を保証しません。APP_OPEN／APP_VISIBLEより前の記録と比較してください。診断の表示・更新は予約やAI送信を実行しません。健康値・回答・認証情報は含みません。</string>
-    <string name="automatic_title">朝・夜のAI自動生成（検証）</string>
+    <string name="notification_test_title" translatable="false">検証用の通知</string>
+    <string name="reservation_diagnostics" translatable="false">予約通知の診断</string>
+    <string name="reservation_diagnostic_refresh" translatable="false">診断表示を更新</string>
+    <string name="reservation_diagnostic_copy" translatable="false">予約診断をコピー</string>
+    <string name="reservation_diagnostic_explanation" translatable="false">再起動後も直近128件の到達点を確認できます。REGISTER_RETURNEDは予約APIの呼び出し完了、RECEIVER_ENTEREDはOSからの受信、NOTIFY_RETURNEDは通知発行APIの結果です。トークンの存在だけではOS内の予約存続を証明できず、通知APIの成功も画面への到着を保証しません。APP_OPEN／APP_VISIBLEより前の記録と比較してください。診断の表示・更新は予約やAI送信を実行しません。健康値・回答・認証情報は含みません。</string>
+    <string name="automatic_title" translatable="false">朝・夜のAI自動生成（検証）</string>
     <string name="automatic_enabled">予約時に新しい励ましを生成する</string>
-    <string name="automatic_notice">有効にすると、朝・夜の有効枠で保存済みの目標・エージェント・人格・補足と取得できた健康データをChatGPTへ送信し、あなたのChatGPTプランを使います。Androidでの毎日の無操作利用に固有の条件は公式資料で未確認です。個人用の検証機能です。背景の健康データ読み取りを許可しない場合は、健康データ未取得として生成します。</string>
-    <string name="automatic_active">AI自動生成の検証が有効です。保存済みテスト回答の配信とは異なり、予約時にChatGPTへ送信します。配信時刻・スワイプ終了後の動作は実機で確認してください。</string>
+    <string name="automatic_notice" translatable="false">有効にすると、朝・夜の有効枠で保存済みの目標・エージェント・人格・補足と取得できた健康データをChatGPTへ送信し、あなたのChatGPTプランを使います。Androidでの毎日の無操作利用に固有の条件は公式資料で未確認です。個人用の検証機能です。背景の健康データ読み取りを許可しない場合は、健康データ未取得として生成します。</string>
+    <string name="automatic_active" translatable="false">AI自動生成の検証が有効です。保存済みテスト回答の配信とは異なり、予約時にChatGPTへ送信します。配信時刻・スワイプ終了後の動作は実機で確認してください。</string>
     <string name="automatic_registered">自動生成の予約設定です。実行と到着は予約診断で確認してください。再認証やモデル再選択が必要な日は、自動で別方式に切り替えません。</string>
     <string name="background_health_granted">背景の健康データ読み取り：許可済み</string>
     <string name="background_health_missing">背景の健康データ読み取り：未許可</string>
@@ -378,7 +367,7 @@
     <string name="review_empty">設定なし</string>
     <string name="review_generate">生成する</string>
     <string name="review_frozen">この確認内容で送信します。変更する場合は、内容を変更・再取得してください。</string>
-    <string name="diagnostic_generation">固定ダミーデータで生成</string>
+    <string name="diagnostic_generation" translatable="false">固定ダミーデータで生成</string>
     <string name="user_network_error">接続できませんでした。通信環境を確認し、時間をおいて再試行してください。</string>
     <string name="user_connection_error">ChatGPTの接続・利用許可を確認し、必要に応じて接続し直してください。</string>
     <string name="user_limit_error">ChatGPTの利用上限に達しました。利用状況を確認し、時間をおいて再試行してください。</string>
@@ -391,15 +380,15 @@
     <string name="product_slot_registered">設定時刻を目安に励ましを生成します。回答は履歴に保存します。</string>
     <string name="product_slot_action">生成できませんでした。ChatGPTの接続・利用状況とエージェントの設定を確認してください。設定を直して時刻を変更すると再予約できます。</string>
     <string name="product_health_notice">体重・体脂肪率・歩数の読み取り状況を確認できます。この画面からChatGPTへ送信しません。</string>
-    <string name="persona_prompt_v1">あなたは優しく励ます友人のようなトレーナーです。小さな取り組みを励まし、断定的な健康判断や無理な減量の勧めは避けてください。</string>
-    <string name="persona_numbers_prompt_v1">あなたは数字を読むコーチです。取得できた記録の推移を冷静に見て、次にできることを一つだけ提案してください。欠損を推測せず、断定的な健康判断や無理な減量を避けてください。</string>
-    <string name="persona_companion_prompt_v1">あなたは気楽な伴走者です。測れなかった日や停滞した日も、気負わず続けられるように声をかけてください。欠損を推測せず、断定的な健康判断や無理な減量を避けてください。</string>
-    <string name="persona_comparison_title">初期人格を同じ架空データで比較</string>
-    <string name="persona_comparison_notice">これは架空データだけを使う比較です。選択モデルと同じ入力で初期人格3人へ順番に送信し、ChatGPTプランを使います。編集済み人格・補足・実データは送りません。回答は履歴に保存せず、通知しません。</string>
-    <string name="persona_comparison_fictional">架空データです。基準日は2026-11-10、取得時刻は日本時間21時です。過去の励ましはありません。欠損を推測せず、朝は前日まで、夜・手動は当日の振り返りとしてください。</string>
-    <string name="persona_comparison_start">3人を同じ条件で比較する</string>
-    <string name="persona_comparison_stop">比較を中断</string>
-    <string name="persona_comparison_not_run">まだ生成していません</string>
+    <string name="persona_prompt_v1" translatable="false">あなたは優しく励ます友人のようなトレーナーです。小さな取り組みを励まし、断定的な健康判断や無理な減量の勧めは避けてください。</string>
+    <string name="persona_numbers_prompt_v1" translatable="false">あなたは数字を読むコーチです。取得できた記録の推移を冷静に見て、次にできることを一つだけ提案してください。欠損を推測せず、断定的な健康判断や無理な減量を避けてください。</string>
+    <string name="persona_companion_prompt_v1" translatable="false">あなたは気楽な伴走者です。測れなかった日や停滞した日も、気負わず続けられるように声をかけてください。欠損を推測せず、断定的な健康判断や無理な減量を避けてください。</string>
+    <string name="persona_comparison_title" translatable="false">初期人格を同じ架空データで比較</string>
+    <string name="persona_comparison_notice" translatable="false">これは架空データだけを使う比較です。選択モデルと同じ入力で初期人格3人へ順番に送信し、ChatGPTプランを使います。編集済み人格・補足・実データは送りません。回答は履歴に保存せず、通知しません。</string>
+    <string name="persona_comparison_fictional" translatable="false">架空データです。基準日は2026-11-10、取得時刻は日本時間21時です。過去の励ましはありません。欠損を推測せず、朝は前日まで、夜・手動は当日の振り返りとしてください。</string>
+    <string name="persona_comparison_start" translatable="false">3人を同じ条件で比較する</string>
+    <string name="persona_comparison_stop" translatable="false">比較を中断</string>
+    <string name="persona_comparison_not_run" translatable="false">まだ生成していません</string>
     <string name="weight_unit_title">体重の単位</string>
     <string name="weight_unit_help">表示と目標入力の単位を選びます。体重・目標はkgを基準に保存し、単位を変えても目標は変わりません。表示言語とは独立した設定です。</string>
     <string name="weight_value_unit">%1$s %2$s</string>
@@ -407,4 +396,15 @@
     <string name="goal_difference_unit">目標との差：%1$s %2$s</string>
     <string name="weight_generation_rule">体重と目標体重は%1$sに統一して入力しています。回答本文の体重の単位も%1$sを使ってください。通知短文には具体的な測定値を含めないでください。</string>
     <string name="weight_review_precision">送信する体重の単位：%1$s。概要は小数2桁まで、以下は送信する換算値（lbは小数12桁まで）です。元の測定記録は変更しません。</string>
+    <string name="language_title">言語</string>
+    <string name="language_system">端末の設定に従う</string>
+    <string name="language_help">画面と生成する回答の言語を選びます。体重の単位は別に保存します。</string>
+    <string name="step_unit">歩</string>
+    <string name="output_language_rule">通知短文shortと本文fullは、アプリの表示言語%1$sで書いてください。カスタム人格が別の言語でもこの出力言語を優先します。JSONのキーshortとfullは変更しないでください。</string>
+    <string name="language_name_ja" translatable="false">日本語</string>
+    <string name="language_name_en" translatable="false">English</string>
+    <string name="language_name_fr" translatable="false">Français</string>
+    <string name="language_name_de" translatable="false">Deutsch</string>
+    <string name="language_name_hi" translatable="false">हिन्दी</string>
+    <string name="language_name_zh" translatable="false">简体中文</string>
 </resources>

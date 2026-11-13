@@ -5,7 +5,7 @@ import java.time.LocalTime
 import org.json.JSONArray
 import org.json.JSONObject
 
-internal data class Persona(val id: String, val name: String, val prompt: String)
+internal data class Persona(val id: String, val name: String, val prompt: String, val defaultContent: Boolean? = null)
 internal val builtInPersonaIds = setOf("friend", "numbers", "companion")
 internal enum class NoticeSlot { MORNING, EVENING }
 internal data class SlotSetting(val enabled: Boolean, val time: LocalTime)
@@ -13,7 +13,7 @@ internal data class AppSettings(val goal: String? = null, val goalDate: LocalDat
     val modelId: String? = null, val personas: List<Persona>, val personaId: String = "friend", val supplement: String = "",
     val morning: SlotSetting = SlotSetting(false, LocalTime.of(9,0)), val evening: SlotSetting = SlotSetting(false, LocalTime.of(20,0)),
     val automaticGeneration: Boolean = false, val testAnswerId: String? = null, val reservationVersion: Long = 0,
-    val morningVersion: Long = 0, val eveningVersion: Long = 0, val goalCycle: Long = 0, val weightUnit: WeightUnit = WeightUnit.KG) {
+    val morningVersion: Long = 0, val eveningVersion: Long = 0, val goalCycle: Long = 0, val weightUnit: WeightUnit = WeightUnit.KG, val language: AppLanguage = AppLanguage.SYSTEM) {
     fun persona(): Persona = personas.single { it.id == personaId }
     fun slot(slot: NoticeSlot): SlotSetting = if(slot == NoticeSlot.MORNING) morning else evening
     fun version(slot: NoticeSlot): Long = if(slot == NoticeSlot.MORNING) morningVersion else eveningVersion
@@ -37,8 +37,8 @@ internal fun nextSettings(old: AppSettings, changed: AppSettings, today: LocalDa
 }
 internal fun encodeSettings(value: AppSettings): JSONObject = JSONObject().put("schema", 2)
     .put("goal", value.goal ?: JSONObject.NULL).put("goalDate", value.goalDate?.toString() ?: JSONObject.NULL)
-    .put("weightUnit", value.weightUnit.name).put("maintaining", value.maintaining).put("modelId", value.modelId ?: JSONObject.NULL)
-    .put("personas", JSONArray().also { a -> value.personas.forEach { a.put(JSONObject().put("id", it.id).put("name", it.name).put("prompt", it.prompt)) } })
+    .put("language", value.language.name).put("weightUnit", value.weightUnit.name).put("maintaining", value.maintaining).put("modelId", value.modelId ?: JSONObject.NULL)
+    .put("personas", JSONArray().also { a -> value.personas.forEach { a.put(JSONObject().put("id", it.id).put("name", it.name).put("prompt", it.prompt).put("defaultContent", it.defaultContent ?: JSONObject.NULL)) } })
     .put("personaId", value.personaId).put("supplement", value.supplement)
     .put("morningEnabled", value.morning.enabled).put("morningTime", value.morning.time.toString())
     .put("eveningEnabled", value.evening.enabled).put("eveningTime", value.evening.time.toString())
@@ -48,7 +48,7 @@ internal fun decodeSettings(json: JSONObject, defaults: List<Persona>): AppSetti
     if (!json.has("schema")) { require(json.keys().asSequence().toSet() == setOf("host")); return AppSettings(personas = defaults) }
     require(json.getInt("schema") in 1..2)
     val array = json.getJSONArray("personas")
-    val personas = (0 until array.length()).map { i -> array.getJSONObject(i).let { Persona(it.getString("id"), it.getString("name"), it.getString("prompt")) } }
+    val personas = (0 until array.length()).map { i -> array.getJSONObject(i).let { Persona(it.getString("id"), it.getString("name"), it.getString("prompt"), if(it.isNull("defaultContent"))null else it.getBoolean("defaultContent")) } }
     require(personas.map { it.id }.distinct().size == personas.size && personas.map { it.id }.containsAll(builtInPersonaIds))
     require(personas.all { it.name.isNotBlank() && it.prompt.isNotBlank() })
     val selected = json.getString("personaId"); require(personas.any { it.id == selected })
@@ -59,7 +59,7 @@ internal fun decodeSettings(json: JSONObject, defaults: List<Persona>): AppSetti
         else SlotSetting(json.getBoolean("morningEnabled"), LocalTime.parse(json.getString("morningTime")))
     val evening = if(legacy) SlotSetting(false, LocalTime.of(20,0))
         else SlotSetting(json.getBoolean("eveningEnabled"), LocalTime.parse(json.getString("eveningTime")))
-    return AppSettings(weightUnit=runCatching { WeightUnit.valueOf(json.optString("weightUnit", "KG")) }.getOrDefault(WeightUnit.KG), goal=goal, goalDate=json.optString("goalDate").takeUnless { json.isNull("goalDate") || it.isEmpty() }?.let(LocalDate::parse),
+    return AppSettings(language=runCatching { AppLanguage.valueOf(json.optString("language", "SYSTEM")) }.getOrDefault(AppLanguage.SYSTEM), weightUnit=runCatching { WeightUnit.valueOf(json.optString("weightUnit", "KG")) }.getOrDefault(WeightUnit.KG), goal=goal, goalDate=json.optString("goalDate").takeUnless { json.isNull("goalDate") || it.isEmpty() }?.let(LocalDate::parse),
         maintaining=json.optBoolean("maintaining"), modelId=json.optString("modelId").takeUnless { json.isNull("modelId") || it.isEmpty() },
         personas=personas, personaId=selected, supplement=json.optString("supplement"), morning=morning, evening=evening,
         automaticGeneration=json.optBoolean("automaticGeneration"), testAnswerId=json.optString("testAnswerId").takeUnless { json.isNull("testAnswerId") || it.isEmpty() }?.also { require(isAnswerId(it)) },

@@ -78,7 +78,7 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
         returnSampleQueued = false
         ui = ui.copy(dnsObservations = emptyList())
         run(R.string.signing_in, 300000) { op ->
-            val app = getApplication<Application>()
+            val app = languageContext(getApplication<Application>())
             val attempt = op.step(Stage.PREPARE_LOGIN) {
                 if (networkFacts?.internetGranted == false) throw Problem(Failure.PERMISSION, network = NetworkFailure.PERMISSION)
                 repository.prepareLogin(selected, app.getString(R.string.app_name), op, forceNew)
@@ -120,7 +120,7 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
     fun generate() {
         val model = ui.model ?: return
         if (ui.busy || !ui.permitted) return
-        val app = getApplication<Application>()
+        val app = languageContext(getApplication<Application>())
         generatePrompt(model, app.getString(R.string.persona_prompt), app.getString(R.string.dummy_prompt), AnswerContext.DUMMY)
     }
 
@@ -140,7 +140,7 @@ internal class ConnectionViewModel(application: Application) : AndroidViewModel(
             val raw = repository.generate(model, instructions, input, op)
             if (review == null) Result(R.string.generation_success, answer = raw)
             else {
-                val text = encouragementText(raw, getApplication<Application>().getString(R.string.notification_fallback))
+                val text = encouragementText(raw, review.notificationFallback.ifBlank { languageContext(getApplication<Application>()).getString(R.string.notification_fallback) })
                 val saved = newSavedEncouragement(text, review, java.time.Instant.now())
                 val persisted = try { op.commit { answers.save(saved) }; true }
                     catch (e: Problem) { if (e.kind != Failure.STORAGE) throw e; false }

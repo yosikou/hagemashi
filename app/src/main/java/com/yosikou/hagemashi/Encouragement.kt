@@ -10,18 +10,20 @@ internal class SavedEncouragement(val id: String, val generatedAt: Instant, val 
     val full: String, val usedData: String, val hasHealthData: Boolean, val personaName: String? = null, val rows: List<MeasurementRow> = emptyList(), val kind: GenerationKind = GenerationKind.MANUAL)
 internal fun isAnswerId(value: String): Boolean = value.matches(Regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"))
 
-// Deliberately conservative: reject numeric glyphs, kanji numbers, Latin text, units and health labels.
+// Deliberately conservative: reject numeric glyphs, kanji numbers, measurement terms, numeric words, units and health labels across supported languages.
 // A rejected short never enters Notification extras; the full answer is never used as a substitute.
 internal fun notificationShort(candidate: String?, fallback: String): String {
     val text = candidate?.trim().orEmpty()
     val length = text.codePointCount(0, text.length)
     val kanjiNumbers = "〇零一二三四五六七八九十百千万億兆壱弐参拾廿卅丗两兩貳參肆伍陸柒捌玖佰仟萬点點"
     val inspected = java.text.Normalizer.normalize(text, java.text.Normalizer.Form.NFKC)
-    val risky = Regex("[A-Za-z]|体重|体脂肪|歩数|キロ|きろ|グラム|ぐらむ|パーセント|ぱーせんと|センチ|せんち|メートル|めーとる|％|%|ぜろ|れい|いち|しち|ろく|なな|はち|きゅう|じゅう|ひゃく|びゃく|ぴゃく|せん|まん")
-    val invalid = inspected.codePoints().anyMatch { cp -> Character.isDigit(cp) ||
+    val risky = Regex("体重|体脂肪|歩数|キロ|きろ|グラム|ぐらむ|パーセント|ぱーせんと|センチ|せんち|メートル|めーとる|％|%|ぜろ|れい|いち|しち|ろく|なな|はち|きゅう|じゅう|ひゃく|びゃく|ぴゃく|せん|まん")
+    val international = Regex("(?iu)(?:(?<!\\p{IsLatin})(?:kg|lbs?|kilograms?|kilogrammes?|kilogramm|kilos?|pounds?|livres?|pfund|weight|body[ -]?fat|percent|prozent|steps?|target|poids|graisse|pas|objectif|gewich?t|körperfett|schritte?|ziel|zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|zéro|un|une|onze|douze|treize|quatorze|quinze|seize|deux|trois|quatre|cinq|sept|huit|neuf|dix|vingt|trente|quarante|cinquante|soixante|cent|mille|null|ein|eine|einen|einem|eins|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|elf|zwölf|dreizehn|vierzehn|fünfzehn|sechzehn|siebzehn|achtzehn|neunzehn|vierzig|fünfzig|sechzig|siebzig|achtzig|neunzig|zwanzig|dreißig|hundert|tausend)(?!\\p{IsLatin})|वज़न|वजन|चर्बी|कदम|लक्ष्य|किलो|पाउंड|पौंड|प्रतिशत|फीसदी|डेढ़|ढाई|शून्य|एक|दो|तीन|चार|पाँच|पांच|छह|सात|आठ|नौ|दस|बीस|तीस|चालीस|पचास|साठ|सत्तर|अस्सी|नब्बे|सौ|हज़ार|千克|公斤|半|磅|体脂|目标|步数)")
+    val originalNumber = text.codePoints().anyMatch { Character.isDigit(it) || Character.getType(it) in setOf(Character.LETTER_NUMBER.toInt(),Character.OTHER_NUMBER.toInt()) }
+    val invalid = originalNumber || inspected.codePoints().anyMatch { cp -> Character.isDigit(cp) ||
         Character.getType(cp) in setOf(Character.DECIMAL_DIGIT_NUMBER.toInt(), Character.LETTER_NUMBER.toInt(), Character.OTHER_NUMBER.toInt(), Character.OTHER_SYMBOL.toInt(), Character.MATH_SYMBOL.toInt(), Character.CURRENCY_SYMBOL.toInt(), Character.MODIFIER_SYMBOL.toInt()) ||
         (cp <= Char.MAX_VALUE.code && cp.toChar() in kanjiNumbers) || Character.isISOControl(cp) || Character.getType(cp) == Character.FORMAT.toInt() }
-    return if (length in 40..60 && !invalid && !risky.containsMatchIn(inspected)) text else fallback
+    return if (length in 40..60 && !invalid && !risky.containsMatchIn(inspected) && !international.containsMatchIn(inspected)) text else fallback
 }
 internal fun encouragementText(answer: String, fallback: String): EncouragementText {
     val raw = answer.trim()

@@ -12,7 +12,8 @@ import android.net.Uri
 import android.os.Build
 
 internal enum class NoticeState { IDLE, SENDING, POSTED, PERMISSION_DENIED, DISABLED, FAILED }
-internal class AnswerNotifications(private val context: Context) {
+internal class AnswerNotifications(source: Context) {
+    private val context=languageContext(source)
     private val manager = requireNotNull(context.getSystemService(NotificationManager::class.java))
     private val channelId = "encouragement.test.v1"
     internal fun build(answer: SavedEncouragement): Notification {
@@ -29,6 +30,13 @@ internal class AnswerNotifications(private val context: Context) {
             .setContentText(short).setStyle(Notification.BigTextStyle().bigText(short))
             .setContentIntent(pending).setAutoCancel(true).setOnlyAlertOnce(true)
             .setVisibility(Notification.VISIBILITY_PRIVATE).build()
+    }
+    fun refreshChannel() {
+        manager.getNotificationChannel(channelId)?.let { channel ->
+            channel.name=context.getString(R.string.notification_channel)
+            channel.description=context.getString(R.string.notification_channel_description)
+            manager.createNotificationChannel(channel)
+        }
     }
     fun allowed(): Boolean = (Build.VERSION.SDK_INT < 33 || context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) &&
         manager.areNotificationsEnabled() && manager.getNotificationChannel(channelId)?.importance != NotificationManager.IMPORTANCE_NONE

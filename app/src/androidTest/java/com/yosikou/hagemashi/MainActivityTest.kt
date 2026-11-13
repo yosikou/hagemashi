@@ -22,34 +22,36 @@ class MainActivityTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
 
+    private fun text(id:Int)=languageContext(composeRule.activity).getString(id)
+
     @Test fun homeShowsSettingsAndRoutesToGoalWithoutAutomaticallySending() {
-        composeRule.onNodeWithText("hagemashi").assertIsDisplayed()
-        composeRule.onNodeWithText("まだ励ましがありません。目標を設定して始めましょう。").assertIsDisplayed()
-        composeRule.onNodeWithText("表示内容を確認してChatGPTへ送信").assertDoesNotExist()
-        composeRule.onNode(androidx.compose.ui.test.hasContentDescription("設定")).performClick()
-        composeRule.onNodeWithText("人格").performScrollTo().performClick()
-        composeRule.onNodeWithText("友人のようなトレーナー").assertIsDisplayed()
-        composeRule.onNodeWithText("＋ 人格を追加").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.home_name)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.no_encouragement)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.manual_send)).assertDoesNotExist()
+        composeRule.onNode(androidx.compose.ui.test.hasContentDescription(text(R.string.settings_title))).performClick()
+        composeRule.onNodeWithText(text(R.string.persona_settings)).performScrollTo().performClick()
+        composeRule.onNodeWithText(text(R.string.persona_friend)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.add_persona)).performScrollTo().assertIsDisplayed()
     }
 
     @Test fun diagnosticsRemainUnderSettingsWithoutAutomaticNetworkRequests() {
-        composeRule.onNode(androidx.compose.ui.test.hasContentDescription("設定")).performClick()
+        composeRule.onNode(androidx.compose.ui.test.hasContentDescription(text(R.string.settings_title))).performClick()
         if(!diagnosticUi()) {
-            composeRule.onNodeWithText("通信診断（認証不要）").assertDoesNotExist()
-            composeRule.onNodeWithText("固定ダミーデータで生成").assertDoesNotExist()
+            composeRule.onNodeWithText(text(R.string.open_probes)).assertDoesNotExist()
+            composeRule.onNodeWithText(text(R.string.diagnostic_generation)).assertDoesNotExist()
             return
         }
-        composeRule.onNodeWithText("通信診断（認証不要）").performScrollTo().performClick()
-        composeRule.onNodeWithText("認証情報なしの通信診断").assertIsDisplayed()
-        composeRule.onNodeWithText("安全な診断結果をコピー").performScrollTo().assertIsNotEnabled()
+        composeRule.onNodeWithText(text(R.string.open_probes)).performScrollTo().performClick()
+        composeRule.onNodeWithText(text(R.string.probe_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.probe_copy)).performScrollTo().assertIsNotEnabled()
     }
 
     @Test fun reservationDiagnosticScreenShowsSafePersistedReportWithoutSchedulingOrAI() {
-        composeRule.onNode(androidx.compose.ui.test.hasContentDescription("設定")).performClick()
-        if(!diagnosticUi()) {composeRule.onNodeWithText("予約通知の診断").assertDoesNotExist();return}
-        composeRule.onNodeWithText("予約通知の診断").performScrollTo().performClick()
+        composeRule.onNode(androidx.compose.ui.test.hasContentDescription(text(R.string.settings_title))).performClick()
+        if(!diagnosticUi()) {composeRule.onNodeWithText(text(R.string.reservation_diagnostics)).assertDoesNotExist();return}
+        composeRule.onNodeWithText(text(R.string.reservation_diagnostics)).performScrollTo().performClick()
         composeRule.waitUntil(5000) { composeRule.onAllNodes(androidx.compose.ui.test.hasText("schema=HAGEMASHI_RESERVATION_V1",substring=true)).fetchSemanticsNodes().isNotEmpty() }
-        composeRule.onNodeWithText("予約診断をコピー").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.reservation_diagnostic_copy)).performScrollTo().assertIsDisplayed()
     }
 
     @Test fun installedAppHasInternetAndDisallowsCleartext() {

@@ -47,7 +47,7 @@ internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection
         Text(stringResource(R.string.manual_notice))
         if (!ui.permitted) Text(stringResource(R.string.manual_need_connection))
         if (settings == null) Text(stringResource(R.string.settings_error))
-        else Text(stringResource(R.string.goal_value_unit, settings.goal?.let { settings.weightUnit.display(it) }.orEmpty(), settings.weightUnit.symbol))
+        else Text(stringResource(R.string.goal_value_unit, settings.goal?.let { localizedNumber(settings.weightUnit.display(it),LocalAppLocale.current,2) }.orEmpty(), settings.weightUnit.symbol))
         if (review == null) {
             if (settings?.modelId != null && (ui.unavailableModel == settings.modelId || (ui.modelsLoaded && ui.models.none { it.slug == settings.modelId }))) Text(stringResource(R.string.agent_unavailable))
             OutlinedButton(onClick = {

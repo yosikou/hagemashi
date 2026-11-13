@@ -75,11 +75,11 @@ internal fun HomeScreen(app: AppViewModel, connection: ConnectionViewModel, sett
                 Text(stringResource(R.string.home_weight), style = MaterialTheme.typography.titleMedium)
                 val weight = app.weight
                 if (weight == null) Text(stringResource(R.string.home_weight_missing)) else {
-                    Text(stringResource(R.string.weight_value_unit, cfg.weightUnit.display(weight.value.toString()), cfg.weightUnit.symbol), style = MaterialTheme.typography.headlineMedium)
-                    Text(stringResource(R.string.health_measured_at, measurementDisplayTime(weight.measuredAt.toString(), ZoneId.systemDefault()).orEmpty()), style = MaterialTheme.typography.bodyMedium)
-                    cfg.goal?.toDoubleOrNull()?.let { target -> Text(stringResource(R.string.goal_difference_unit, cfg.weightUnit.display(java.math.BigDecimal.valueOf(weight.value).subtract(java.math.BigDecimal.valueOf(target)).toPlainString()), cfg.weightUnit.symbol)) }
+                    Text(stringResource(R.string.weight_value_unit, localizedNumber(cfg.weightUnit.display(weight.value.toString()),LocalAppLocale.current,2), cfg.weightUnit.symbol), style = MaterialTheme.typography.headlineMedium)
+                    Text(stringResource(R.string.health_measured_at, measurementDisplayTime(weight.measuredAt.toString(), ZoneId.systemDefault(),LocalAppLocale.current).orEmpty()), style = MaterialTheme.typography.bodyMedium)
+                    cfg.goal?.toDoubleOrNull()?.let { target -> Text(stringResource(R.string.goal_difference_unit, localizedNumber(cfg.weightUnit.display(java.math.BigDecimal.valueOf(weight.value).subtract(java.math.BigDecimal.valueOf(target)).toPlainString()),LocalAppLocale.current,2), cfg.weightUnit.symbol)) }
                 }
-                cfg.goal?.let { Text(stringResource(R.string.goal_value_unit, cfg.weightUnit.display(it), cfg.weightUnit.symbol)) }
+                cfg.goal?.let { Text(stringResource(R.string.goal_value_unit, localizedNumber(cfg.weightUnit.display(it),LocalAppLocale.current,2), cfg.weightUnit.symbol)) }
                 TextButton(onClick = { settings("health") }) { Text(stringResource(R.string.health_settings)) }
             }
             if (!cfg.maintaining && cfg.goal != null && app.weight?.let { it.value <= cfg.goal.toDouble() } == true) {
@@ -101,7 +101,7 @@ internal fun HomeScreen(app: AppViewModel, connection: ConnectionViewModel, sett
 internal fun SettingsMenu(open: (String) -> Unit, back: () -> Unit) {
     Page(R.string.settings_title, back) {
         listOf(
-            R.string.settings_encouragement_group to listOf("goal" to R.string.goal_settings, "units" to R.string.weight_unit_title, "agent" to R.string.agent_settings, "personas" to R.string.persona_settings),
+            R.string.settings_encouragement_group to listOf("goal" to R.string.goal_settings, "units" to R.string.weight_unit_title, "language" to R.string.language_title, "agent" to R.string.agent_settings, "personas" to R.string.persona_settings),
             R.string.settings_connections_group to listOf("connection" to R.string.chatgpt_settings, "health" to R.string.health_settings),
             R.string.notification_settings_title to listOf("notice" to R.string.notification_settings_title),
             R.string.settings_diagnostics_group to listOf("probes" to R.string.open_probes, "reservation-diagnostics" to R.string.reservation_diagnostics, "dummy-generation" to R.string.diagnostic_generation)
@@ -117,8 +117,9 @@ internal fun SettingsMenu(open: (String) -> Unit, back: () -> Unit) {
 }
 @Composable
 internal fun GoalSettings(app: AppViewModel, cfg: AppSettings, back: () -> Unit) {
-    val initial = remember(cfg.goal, cfg.weightUnit) { cfg.goal?.let(cfg.weightUnit::input).orEmpty() }
-    var goal by remember(cfg.goal, cfg.weightUnit) { mutableStateOf(initial) }
+    val locale=LocalAppLocale.current
+    val initial = remember(cfg.goal, cfg.weightUnit, locale) { cfg.goal?.let { localizedNumber(cfg.weightUnit.input(it),locale,6) }.orEmpty() }
+    var goal by remember(cfg.goal, cfg.weightUnit, locale) { mutableStateOf(initial) }
     var date by remember(cfg.goalDate) { mutableStateOf(cfg.goalDate) }
     var invalid by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -129,7 +130,7 @@ internal fun GoalSettings(app: AppViewModel, cfg: AppSettings, back: () -> Unit)
                     singleLine=true, isError=invalid, keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=androidx.compose.ui.text.input.KeyboardType.Decimal))
                 Text(cfg.weightUnit.symbol)
             }
-            Text(date?.toString() ?: stringResource(R.string.goal_no_deadline))
+            Text(date?.let { localizedDay(it,locale) } ?: stringResource(R.string.goal_no_deadline))
             OutlinedButton(onClick = {
                 val selected=date ?: LocalDate.now()
                 android.app.DatePickerDialog(context, { _, y, m, d -> date=LocalDate.of(y,m+1,d) }, selected.year,selected.monthValue-1,selected.dayOfMonth).show()
@@ -137,7 +138,7 @@ internal fun GoalSettings(app: AppViewModel, cfg: AppSettings, back: () -> Unit)
             if(date!=null) TextButton(onClick={date=null}){Text(stringResource(R.string.goal_clear_deadline))}
             if (invalid) Text(stringResource(R.string.goal_invalid))
             Button(onClick = {
-                val value=goalDraftKg(goal, initial, cfg.goal, cfg.weightUnit); invalid=value==null
+                val value=if(goal==initial && cfg.goal!=null)cfg.goal else localizedWeightInput(goal,cfg.weightUnit,locale); invalid=value==null
                 if(value!=null) app.change { it.copy(goal=value, goalDate=date, maintaining=false) }
             }, enabled = !app.saving) { Text(stringResource(R.string.save_settings)) }
             SettingsStatus(app)
@@ -188,7 +189,7 @@ internal fun PersonaSettings(app: AppViewModel, cfg: AppSettings, compare:()->Un
             OutlinedTextField(prompt, { prompt = it }, label = { Text(stringResource(R.string.persona_prompt_input)) }, minLines = 3)
             Button(onClick = {
                 val id = editing!!
-                val persona = Persona(if (id == "new") UUID.randomUUID().toString() else id, name.trim(), prompt.trim())
+                val persona = Persona(if (id == "new") UUID.randomUUID().toString() else id, name.trim(), prompt.trim(),false)
                 app.change { it.copy(personas = if (id == "new") it.personas + persona else it.personas.map { old -> if (old.id == id) persona else old }) }
                 editing = null
             }, enabled = !app.saving && name.isNotBlank() && prompt.isNotBlank()) { Text(stringResource(R.string.save_settings)) }
@@ -234,7 +235,7 @@ internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () 
                     Text(stringResource(R.string.notification_enabled_setting))
                 }
                 OutlinedButton(onClick={TimePickerDialog(context,{_,h,m->update(value.copy(time=LocalTime.of(h,m)))},value.time.hour,value.time.minute,true).show()},enabled=!app.saving){
-                    Text(stringResource(R.string.notification_time_setting,value.time.toString()))
+                    Text(stringResource(R.string.notification_time_setting,java.time.format.DateTimeFormatter.ofLocalizedTime(java.time.format.FormatStyle.SHORT).withLocale(LocalAppLocale.current).format(value.time)))
                 }
             }
         }
@@ -284,5 +285,22 @@ internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () 
             }
             SettingsStatus(app)
         }
+    }
+}
+
+@Composable internal fun LanguageSettings(app:AppViewModel,cfg:AppSettings,back:()->Unit) {
+    Page(R.string.language_title,back) {
+        Text(stringResource(R.string.language_help))
+        AppLanguage.entries.forEach { language ->
+            Row(Modifier.fillMaxWidth(),verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
+                RadioButton(selected=cfg.language==language,onClick={app.change{it.copy(language=language)}},enabled=!app.saving)
+                Text(stringResource(when(language) {
+                    AppLanguage.SYSTEM->R.string.language_system;AppLanguage.JA->R.string.language_name_ja
+                    AppLanguage.EN->R.string.language_name_en;AppLanguage.FR->R.string.language_name_fr
+                    AppLanguage.DE->R.string.language_name_de;AppLanguage.HI->R.string.language_name_hi;AppLanguage.ZH->R.string.language_name_zh
+                }),Modifier.weight(1f))
+            }
+        }
+        SettingsStatus(app)
     }
 }

@@ -10,8 +10,9 @@ import java.time.ZoneId
 import kotlinx.coroutines.CancellationException
 
 internal data class PreparedGeneration(val review:ReviewedGeneration,val health:ReservationEvent)
-internal suspend fun prepareGeneration(app:Context,settings:AppSettings,model:Model,kind:GenerationKind,
+internal suspend fun prepareGeneration(context:Context,settings:AppSettings,model:Model,kind:GenerationKind,
     now:Instant=Instant.now(),background:Boolean=false):PreparedGeneration {
+    val app=languageContext(context,settings.language)
     val target=settings.goal?.let(::canonicalGoal) ?: throw Problem(Failure.POLICY)
     val zone=ZoneId.systemDefault()
     var status=ReservationEvent.HEALTH_READ
@@ -52,15 +53,16 @@ internal suspend fun prepareGeneration(app:Context,settings:AppSettings,model:Mo
             HealthReadStatus.ACCESS_DENIED to string(R.string.manual_missing_denied),
             HealthReadStatus.ERROR to string(R.string.manual_missing_error),
             HealthReadStatus.HAS_RECORDS to string(R.string.health_has_records)))
-    val persona = settings.persona()
+    val selectedPersona = settings.persona()
+    val persona = if(selectedPersona.defaultContent==true)defaultPersonas(app).single{it.id==selectedPersona.id} else selectedPersona
     val instructions = listOf(persona.prompt, settings.supplement,
-        if (settings.maintaining) string(R.string.maintain_prompt) else "", string(R.string.manual_generation_rules), app.getString(R.string.weight_generation_rule, settings.weightUnit.symbol), string(if(kind==GenerationKind.MORNING)R.string.morning_rules else R.string.manual_reflection_rules))
+        if (settings.maintaining) string(R.string.maintain_prompt) else "", string(R.string.manual_generation_rules), app.getString(R.string.output_language_rule,app.resources.configuration.locales[0].toLanguageTag()), app.getString(R.string.weight_generation_rule, settings.weightUnit.symbol), string(if(kind==GenerationKind.MORNING)R.string.morning_rules else R.string.manual_reflection_rules))
         .filter { it.isNotBlank() }.joinToString("\n")
     val input = healthGenerationInput(target, snapshot, zone, labels, settings.weightUnit) +
         (settings.goalDate?.let { "\n" + app.getString(R.string.goal_date_format, it.toString()) } ?: "")
     val frozen = ReviewedGeneration(model.slug, model.name, instructions, input,
         snapshot.results.any { it.samples.isNotEmpty() || it.steps != null || it.days.any { day -> day.value != null } }, persona.name,
-        measurementRows(snapshot, target, settings.goalDate?.toString(), zone), kind, persona.prompt, settings.supplement, settings.weightUnit)
+        measurementRows(snapshot, target, settings.goalDate?.toString(), zone), kind, persona.prompt, settings.supplement, settings.weightUnit, string(R.string.notification_fallback))
     if(status==ReservationEvent.HEALTH_READ)status=when {
         frozen.hasHealthData->ReservationEvent.HEALTH_READ
         snapshot.results.any{it.status==HealthReadStatus.ERROR}->ReservationEvent.HEALTH_FAILED
