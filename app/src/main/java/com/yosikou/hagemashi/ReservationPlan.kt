@@ -43,7 +43,7 @@ internal fun claimSlot(raw:JSONObject,day:LocalDate,slot:NoticeSlot,reminderCycl
 internal fun slotDeadline(day:LocalDate,slot:NoticeSlot,cfg:AppSettings,zone:ZoneId):Instant =
     if(slot==NoticeSlot.MORNING && cfg.evening.enabled) reservationAt(day,cfg.evening.time,zone) else day.plusDays(1).atStartOfDay(zone).toInstant()
 internal fun nextReservation(now:Instant,zone:ZoneId,cfg:AppSettings,slot:NoticeSlot,raw:JSONObject):ReservationPlan? {
-    if(!cfg.slot(slot).enabled) return null
+    if(cfg.resumeRequired || !cfg.slot(slot).enabled) return null
     val json=reservationLedger(raw);val claimed=claimedSlots(json)
     val waiting=goalNeedsReset(cfg,now.atZone(zone).toLocalDate())
     val reminders=allReminderDays(json)
@@ -58,7 +58,7 @@ internal fun nextReservation(now:Instant,zone:ZoneId,cfg:AppSettings,slot:Notice
 }
 internal fun reservationDue(version:Long,day:LocalDate,slot:NoticeSlot,cfg:AppSettings,now:Instant,zone:ZoneId,raw:JSONObject):Boolean {
     val json=reservationLedger(raw)
-    if(!cfg.slot(slot).enabled || version!=cfg.version(slot) || day!=now.atZone(zone).toLocalDate() ||
+    if(cfg.resumeRequired || !cfg.slot(slot).enabled || version!=cfg.version(slot) || day!=now.atZone(zone).toLocalDate() ||
         now<reservationAt(day,cfg.slot(slot).time,zone) || now>=slotDeadline(day,slot,cfg,zone) || runClaimed(json,day,slot,cfg)) return false
     return if(goalNeedsReset(cfg,day)) reminderDays(json,cfg.goalCycle).let{it.size<3 && day.toString() !in allReminderDays(json)} else cfg.automaticGeneration || cfg.testAnswerId!=null
 }

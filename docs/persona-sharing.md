@@ -2,7 +2,7 @@
 
 ## 依存関係
 
-多言語PR #15が未マージのため、その最新先端 `2cb404e3349994f032745ec92985c47acba7188e`（`feat/app-languages`）を基点に、`feat/persona-sharing`で作業します。PRのbaseも `feat/app-languages` とし、人格共有だけの差分を表示します。#15を先に取り込む必要があります。親PRをマージした後はbaseをmainへ変更して差分・CIを再確認してください。このPRから親PRやmainをマージしません。
+作成時は多言語PR #15に依存していました。現在は#15と本機能の#16がmainへ統合済みです。統合後mainは `dd941ddc385552463bdda3fcdb1397e155bd7ed4`。[統合時のCI・APK](backup-restore.md#既存prの統合結果)を参照してください。
 
 ## JSON形式・制限
 

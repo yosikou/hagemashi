@@ -62,7 +62,7 @@ class ScheduledGenerationService:JobService() {
 
 private fun automaticDue(context:Context,slot:NoticeSlot,version:Long,day:LocalDate):Boolean=synchronized(ReservationSupport.lock) {
     val cfg=SettingsStore(context).read()
-    cfg.automaticGeneration && cfg.goal!=null && cfg.modelId!=null && !goalNeedsReset(cfg,LocalDate.now()) &&
+    !cfg.resumeRequired && cfg.automaticGeneration && cfg.goal!=null && cfg.modelId!=null && !goalNeedsReset(cfg,LocalDate.now()) &&
         reservationDue(version,day,slot,cfg,Instant.now(),ZoneId.systemDefault(),ReservationSupport.automaticState(context))
 }
 // Return true only to retry within the still-valid local slot. Re-entry always checks the window again.

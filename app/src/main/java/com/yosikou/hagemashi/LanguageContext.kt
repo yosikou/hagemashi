@@ -36,3 +36,9 @@ internal val LocalAppLocale=staticCompositionLocalOf { Locale.ENGLISH }
         LocalAppLocale provides localized.resources.configuration.locales[0],
         androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Ltr,content=content)
 }
+
+internal fun languageLabelResource(language:AppLanguage):Int=when(language) {
+    AppLanguage.SYSTEM->R.string.language_system;AppLanguage.JA->R.string.language_name_ja
+    AppLanguage.EN->R.string.language_name_en;AppLanguage.FR->R.string.language_name_fr
+    AppLanguage.DE->R.string.language_name_de;AppLanguage.HI->R.string.language_name_hi;AppLanguage.ZH->R.string.language_name_zh
+}

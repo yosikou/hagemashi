@@ -3,6 +3,10 @@
 Kotlin / Jetpack Compose の単一Activityアプリです。このブランチは実データでの手動生成に、生成済み回答の検証通知と保存済み詳細画面を追加した検証版です。
 Android 8.0（API 26）以上に対応し、Android Studioは不要です。
 
+## 機種変更用バックアップ
+
+[暗号化形式・原子的な復元・Google DriveでのAndroid試験](docs/backup-restore.md)。設定→バックアップと復元で、設定と任意の履歴をパスフレーズで暗号化して移せます。認証・OS権限・実行待ち予約は移さず、復元後は明示的に再開するまで朝夜予約を停止します。
+
 ## 人格1人の共有
 
 [JSONの形式・制限・Android試験](docs/persona-sharing.md)。設定→人格から1人の名前とプロンプトを標準ファイル選択画面で保存・読み込みできます。取り込みは全文確認後に新しいカスタム人格として追加し、選択や既存人格を上書きしません。
@@ -99,6 +103,8 @@ CIはUbuntu 24.04ランナーに導入済みのAndroid SDKを利用します。
 CIで配布するAPKは所有者が登録するActions Secretの同じ診断署名鍵を継続利用します。配布用のリリース鍵ではありません。過去の自動生成鍵で署名した通常版へは上書きできないため、既存版を削除せず、別applicationIdの診断版を併存させてください。鍵の再生成は更新不能につながるため行わず、[鍵の準備と試験手順](docs/network-probe-test.md)を参照してください。
 
 ## 採用バージョンと互換性
+
+バックアップにはAPI26以上の [PBKDF2WithHmacSHA256](https://developer.android.com/reference/javax/crypto/SecretKeyFactory) とAES/GCM、[Files.moveのATOMIC_MOVE](https://developer.android.com/reference/java/nio/file/Files#move(java.nio.file.Path,%20java.nio.file.Path,%20java.nio.file.CopyOption...)) を使用します。Android標準のStorage Access FrameworkからDrive等を選び、Google SDKや追加の権限・依存・ツールチェーン更新はありません。
 
 通知はAPI26以上の標準NotificationChannelと、API33以上のPOST_NOTIFICATIONSを使用します。通知・暗号化保存のための新しいライブラリ依存やツールチェーン更新はありません。
 
