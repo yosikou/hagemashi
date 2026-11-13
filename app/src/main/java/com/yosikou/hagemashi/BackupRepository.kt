@@ -24,7 +24,7 @@ internal class BackupRepository(private val context:Context) {
                 val old=SettingsStore(context).read()
                 val restored=restoredSettings(contents.settings,old)
                 val generations=GenerationStore(context.noBackupFilesDir){directory->
-                    val fd=android.system.Os.open(directory.path,android.system.OsConstants.O_RDONLY or android.system.OsConstants.O_DIRECTORY,0)
+                    val fd=android.system.Os.open(directory.path,android.system.OsConstants.O_RDONLY,0)
                     try{android.system.Os.fsync(fd)}finally{android.system.Os.close(fd)}
                 }
                 try {
