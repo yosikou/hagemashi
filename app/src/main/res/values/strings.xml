@@ -427,4 +427,47 @@
     <string name="persona_file_write_error">ファイルを保存できませんでした。保存先を確認して再度エクスポートしてください。不完全なファイルが残る場合があります。</string>
     <string name="persona_file_save_error">人格を端末に保存できませんでした。確認内容を保持しています。再試行してください。</string>
     <string name="persona_share_filename" translatable="false">hagemashi-persona.json</string>
+    <string name="backup_title">バックアップと復元</string>
+    <string name="backup_scope">機種変更用に設定を暗号化して保存します。履歴は任意です。ChatGPTの接続情報・端末の鍵・権限・実行待ち予約は含めません。人格1人の共有には人格画面を使ってください。</string>
+    <string name="backup_create">バックアップを作成</string>
+    <string name="backup_include_history">励ましの履歴と使用データを含める</string>
+    <string name="backup_passphrase">パスフレーズ</string>
+    <string name="backup_passphrase_confirm">パスフレーズを再入力</string>
+    <string name="backup_passphrase_help">12〜256文字で指定してください。パスフレーズは保存しません。別端末での復元にも同じものが必要です。</string>
+    <string name="backup_restore">バックアップから復元</string>
+    <string name="backup_choose">バックアップを選ぶ</string>
+    <string name="backup_decrypt">復号して内容を確認</string>
+    <string name="backup_preview">復元内容の確認</string>
+    <string name="backup_replace_notice">確定すると設定を置き換え、履歴は同じIDを重複させず追加します。朝夜の予約は再開を確定するまで停止します。キャンセルでは変更しません。</string>
+    <string name="backup_history_count">履歴：%1$d件</string>
+    <string name="backup_persona_count">人格：%1$d人（初期・カスタム）</string>
+    <string name="backup_language">言語：%1$s</string>
+    <string name="backup_slot_summary">%1$s：%2$s（%3$s）</string>
+    <string name="backup_on">有効にする設定</string>
+    <string name="backup_off">オフの設定</string>
+    <string name="backup_shared_included">共通補足と人格の編集内容も復元します。認証情報・権限は復元しません。</string>
+    <string name="backup_apply">設定を置き換えて復元する</string>
+    <string name="backup_busy">暗号化・ファイル・保存処理を実行中です…</string>
+    <string name="backup_exported">暗号化バックアップを保存しました。</string>
+    <string name="backup_restored">復元しました。履歴は重複を除いて追加しました。朝夜の予約はまだ有効になっていません。</string>
+    <string name="backup_cancelled">キャンセルしました。現在の設定と履歴は変更していません。</string>
+    <string name="backup_resume_title">復元後の予約は停止中です</string>
+    <string name="backup_setup_guide">朝夜の時刻を確認してください。新端末ではChatGPTへの再接続、モデル、Health Connectと通知の権限を確認し、この画面で再開を確定してください。健康データがなくても生成は可能です。</string>
+    <string name="backup_resume_checked">接続・モデル・権限と時刻を確認しました</string>
+    <string name="backup_resume">朝夜の予約を再開する</string>
+    <string name="backup_resume_needs_setup">再開前に通知を許可し、自動生成を使う場合はChatGPT・目標・モデルを設定してください。</string>
+    <string name="backup_error_passphrase">12〜256文字のパスフレーズを入力してください。作成時は同じものを2回入力してください。</string>
+    <string name="backup_error_auth">パスフレーズが違うか、ファイルが破損・改変されています。現在のデータは変更していません。</string>
+    <string name="backup_error_version">このバックアップのバージョンには対応していません。現在のデータは変更していません。</string>
+    <string name="backup_error_format">バックアップの形式が不正です。現在のデータは変更していません。</string>
+    <string name="backup_error_large">バックアップ上限（16MiB・履歴5000件）を超えています。履歴なしで作成するか、履歴を整理してください。</string>
+    <string name="backup_error_read">バックアップを読み取れませんでした。保存先とアクセス権を確認してください。</string>
+    <string name="backup_error_write">バックアップを保存できませんでした。保存先を確認して再作成してください。不完全なファイルが残る場合があります。</string>
+    <string name="backup_error_save">復元データを保存できませんでした。元の設定と履歴を引き続き使用します。空き容量などを確認して再試行してください。</string>
+    <string name="backup_filename" translatable="false">hagemashi-backup.hgbak</string>
+    <string name="backup_resume_mode">再開後の自動生成：%1$s</string>
+    <string name="backup_fault_title">診断：保存失敗を注入して現在の設定・履歴が変わらないことを検証します。</string>
+    <string name="backup_fault_settings">設定の準備後に失敗させる</string>
+    <string name="backup_fault_history">履歴の準備後に失敗させる</string>
+    <string name="backup_fault_commit">確定直前に失敗させる</string>
 </resources>

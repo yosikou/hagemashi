@@ -55,6 +55,7 @@ internal fun HomeScreen(app: AppViewModel, connection: ConnectionViewModel, sett
             OutlinedButton(onClick = app::refresh) { Text(stringResource(R.string.detail_retry)) }
         }
         if (cfg != null) {
+            if(cfg.resumeRequired)OutlinedButton(onClick={settings("backup")}){Text(stringResource(R.string.backup_resume_title))}
             val action = homeAction(cfg, connection.ui.permitted,
                 (cfg.modelId != null && connection.ui.unavailableModel == cfg.modelId) || (connection.ui.modelsLoaded && connection.ui.models.none { it.slug == cfg.modelId }), LocalDate.now())
             Button(onClick = { when (action) {
@@ -101,7 +102,7 @@ internal fun HomeScreen(app: AppViewModel, connection: ConnectionViewModel, sett
 internal fun SettingsMenu(open: (String) -> Unit, back: () -> Unit) {
     Page(R.string.settings_title, back) {
         listOf(
-            R.string.settings_encouragement_group to listOf("goal" to R.string.goal_settings, "units" to R.string.weight_unit_title, "language" to R.string.language_title, "agent" to R.string.agent_settings, "personas" to R.string.persona_settings),
+            R.string.settings_encouragement_group to listOf("goal" to R.string.goal_settings, "units" to R.string.weight_unit_title, "language" to R.string.language_title, "backup" to R.string.backup_title, "agent" to R.string.agent_settings, "personas" to R.string.persona_settings),
             R.string.settings_connections_group to listOf("connection" to R.string.chatgpt_settings, "health" to R.string.health_settings),
             R.string.notification_settings_title to listOf("notice" to R.string.notification_settings_title),
             R.string.settings_diagnostics_group to listOf("probes" to R.string.open_probes, "reservation-diagnostics" to R.string.reservation_diagnostics, "dummy-generation" to R.string.diagnostic_generation)
@@ -229,11 +230,12 @@ internal fun PersonaSettings(app: AppViewModel, cfg: AppSettings, share:PersonaS
 internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () -> Unit) {
     val context = LocalContext.current
     Page(R.string.notification_settings_title, back) {
+        if(cfg.resumeRequired)Text(stringResource(R.string.backup_setup_guide))
         SectionCard {
             Text(stringResource(if(diagnosticUi())R.string.automatic_title else R.string.product_automatic_title),style=MaterialTheme.typography.titleMedium)
             Text(stringResource(if(diagnosticUi())R.string.automatic_notice else R.string.product_automatic_notice))
             Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
-                Switch(cfg.automaticGeneration,onCheckedChange={enabled->app.change{it.copy(automaticGeneration=enabled)}},enabled=!app.saving)
+                Switch(cfg.automaticGeneration,onCheckedChange={enabled->app.change{it.copy(automaticGeneration=enabled)}},enabled=!app.saving && !cfg.resumeRequired)
                 Text(stringResource(R.string.automatic_enabled))
             }
             BackgroundHealthPermissionControl()
@@ -250,10 +252,10 @@ internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () 
                     if(!invalid) app.change { it.withSlot(slot,changed) }
                 }
                 Row {
-                    Switch(value.enabled,onCheckedChange={update(value.copy(enabled=it))},enabled=!app.saving)
+                    Switch(value.enabled,onCheckedChange={update(value.copy(enabled=it))},enabled=!app.saving && !cfg.resumeRequired)
                     Text(stringResource(R.string.notification_enabled_setting))
                 }
-                OutlinedButton(onClick={TimePickerDialog(context,{_,h,m->update(value.copy(time=LocalTime.of(h,m)))},value.time.hour,value.time.minute,true).show()},enabled=!app.saving){
+                OutlinedButton(onClick={TimePickerDialog(context,{_,h,m->update(value.copy(time=LocalTime.of(h,m)))},value.time.hour,value.time.minute,true).show()},enabled=!app.saving && !cfg.resumeRequired){
                     Text(stringResource(R.string.notification_time_setting,java.time.format.DateTimeFormatter.ofLocalizedTime(java.time.format.FormatStyle.SHORT).withLocale(LocalAppLocale.current).format(value.time)))
                 }
             }

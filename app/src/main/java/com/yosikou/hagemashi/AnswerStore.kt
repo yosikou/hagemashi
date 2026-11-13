@@ -4,8 +4,9 @@ import android.content.Context
 import android.util.AtomicFile
 import java.io.File
 
-internal class AnswerStore(private val context: Context, private val directory: String = "encouragements",
+internal class AnswerStore(private val source: Context, private val directory: String = "encouragements",
     private val alias: String = "hagemashi.encouragement.v1") {
+    private var context:Context=source
     private fun vault(id: String): CredentialVault {
         if (!isAnswerId(id)) throw Problem(Failure.STORAGE)
         return CredentialVault(context, "$directory/$id.v1", alias)
@@ -15,7 +16,13 @@ internal class AnswerStore(private val context: Context, private val directory: 
         .distinctBy { it.path }.filter { it.name.endsWith(".v1") && isAnswerId(it.name.removeSuffix(".v1")) }
     private fun raw(id: String) = decodeEncouragement(id, vault(id).read())
     private fun index() = HistoryIndex(context, directory, ::files, ::raw)
-    private fun <T> protect(block: () -> T): T = try { synchronized(HistoryAccess.lock) { block() } }
+    private fun <T> protect(block: () -> T): T = try {
+        fun run(active:Context):T = synchronized(HistoryAccess.lock) {
+            val previous=context;context=active
+            try{block()}finally{context=previous}
+        }
+        if(directory=="encouragements")AppDataRoot.access(source,::run) else synchronized(AppDataRoot.lock){run(source)}
+    }
         catch (e: AnswerDeleted) { throw e } catch (_: Exception) { throw Problem(Failure.STORAGE) }
     fun save(value: SavedEncouragement) = protect {
         index().use { db ->
@@ -48,6 +55,25 @@ internal class AnswerStore(private val context: Context, private val directory: 
             val file=File(context.noBackupFilesDir,"$directory/$id.v1")
             if(!file.exists() && !File(file.path+".bak").exists())null
             else raw(id).also{idx.insert(db,it)}
+        }
+    }
+    fun backupAll():List<SavedEncouragement> = protect {
+        index().use { db ->
+            val idx=index();idx.migrate(db)
+            (idx.allIds(db)+files().map{it.name.removeSuffix(".v1")}).distinct().filterNot{idx.deleted(db,it)}.take(BACKUP_MAX_ANSWERS+1).map(::raw)
+        }
+    }
+    fun mergeRestored(values:List<SavedEncouragement>) = protect {
+        index().use { db ->
+            val idx=index();idx.migrate(db)
+            val present=files().map{it.name.removeSuffix(".v1")}.filterNot{idx.deleted(db,it)}.toSet()
+            newBackupAnswers(present,values).forEach { value ->
+                vault(value.id).write(encodeEncouragement(value))
+                db.delete("deleted","id=?",arrayOf(value.id))
+                db.delete("answers","id=?",arrayOf(value.id))
+                idx.insert(db,value)
+            }
+            values.filter{it.id in present}.forEach{value->val existing=raw(value.id);idx.insert(db,existing)}
         }
     }
     fun delete(id: String) = protect {

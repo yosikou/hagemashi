@@ -72,7 +72,7 @@ internal object ReservationSupport {
         val oldVersion=registered?.optLong("version",-1) ?: -1
         if(oldVersion>=0 && oldVersion!=cfg.version(slot))cancel(context,slot,oldVersion,ReservationReason.VERSION_CHANGED)
         val today=LocalDate.now();val waiting=goalNeedsReset(cfg,today)
-        val valid=cfg.slot(slot).enabled && (cfg.automaticGeneration || AnswerNotifications(context).allowed()) &&
+        val valid=!cfg.resumeRequired && cfg.slot(slot).enabled && (cfg.automaticGeneration || AnswerNotifications(context).allowed()) &&
             (if(waiting) reminderDays(json,cfg.goalCycle).size<3 else if(cfg.automaticGeneration)cfg.goal!=null && cfg.modelId!=null else diagnosticUi() && cfg.testAnswerId?.let{runCatching{AnswerStore(context).load(it)}.isSuccess}==true)
         if(!valid) {
             ReservationDiagnostics.record(context,ReservationEvent.REGISTER_SKIPPED,slot,cfg.version(slot),reason=when {
@@ -102,7 +102,7 @@ internal object ReservationSupport {
         ReservationDiagnostics.record(context,ReservationEvent.DELIVERY_STARTED,slot,version)
         val cfg=SettingsStore(context).read()
         ReservationDiagnostics.record(context,ReservationEvent.SETTINGS_LOADED,slot,version)
-        if(!cfg.slot(slot).enabled || version!=cfg.version(slot)) {
+        if(cfg.resumeRequired || !cfg.slot(slot).enabled || version!=cfg.version(slot)) {
             ReservationDiagnostics.record(context,ReservationEvent.DELIVERY_SKIPPED,slot,version,reason=if(!cfg.slot(slot).enabled)ReservationReason.SLOT_DISABLED else ReservationReason.VERSION_MISMATCH)
             return@synchronized
         }

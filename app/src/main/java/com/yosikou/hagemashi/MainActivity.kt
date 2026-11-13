@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : ComponentActivity() {
+    private lateinit var backup: BackupViewModel
     private lateinit var personaShare: PersonaShareViewModel
     private lateinit var history: HistoryViewModel
     private lateinit var modePreview: ModePreviewViewModel
@@ -54,6 +55,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ReservationDiagnostics.record(this,ReservationEvent.APP_OPEN)
+        backup = ViewModelProvider(this)[BackupViewModel::class.java]
         personaShare = ViewModelProvider(this)[PersonaShareViewModel::class.java]
         history = ViewModelProvider(this)[HistoryViewModel::class.java]
         modePreview = ViewModelProvider(this)[ModePreviewViewModel::class.java]
@@ -91,6 +93,7 @@ class MainActivity : ComponentActivity() {
                     else if (healthPrivacy) HealthPrivacyScreen { healthPrivacy = false }
                     else when (route) {
                         "home" -> HomeScreen(app, model, { route = it }, { route = "manual" }, { detailId = it })
+                        "backup" -> BackupScreen(backup,app,model,{route=it}) { route="settings" }
                         "settings" -> SettingsMenu({ route = it }) { route = "home" }
                         "connection" -> ConnectionScreen(model, { route = "settings" }) {
                             runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://chatgpt.com/settings/usage"))) }
