@@ -99,9 +99,10 @@ class BackupTest {
     @Test fun malformedDataAndOverLimitsAreRejectedBeforeAnyApply() {
         assertEquals(BackupError.VERSION,assertThrows(BackupProblem::class.java){decodeBackup("{}".toByteArray())}.reason)
         val json=JSONObject(String(encodeBackup(BackupContents(cfg,listOf(answer()),true)),Charsets.UTF_8))
-        for(version in listOf<Any>(2,4294967297L,1.0,"1")) {
-            val wrong=JSONObject(json.toString()).put("formatVersion",version)
-            assertEquals(BackupError.VERSION,assertThrows(BackupProblem::class.java){decodeBackup(wrong.toString().toByteArray())}.reason)
+        for(version in listOf("2","4294967297","1.0","\"1\"")) {
+            // Keep the input spelling: JSONObject serialization normalizes 1.0 to 1.
+            val wrong=json.toString().replace("\"formatVersion\":1","\"formatVersion\":"+version)
+            assertEquals(BackupError.VERSION,assertThrows(BackupProblem::class.java){decodeBackup(wrong.toByteArray())}.reason)
         }
         json.getJSONArray("history").put(encodeEncouragement(answer()))
         assertEquals(BackupError.FORMAT,assertThrows(BackupProblem::class.java){decodeBackup(json.toString().toByteArray())}.reason)
