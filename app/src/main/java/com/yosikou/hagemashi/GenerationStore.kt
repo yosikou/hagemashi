@@ -7,7 +7,10 @@ import java.nio.file.StandardCopyOption
 import java.util.UUID
 
 // The pointer is the sole commit point. Staging failures cannot mutate the active generation.
-internal class GenerationStore(private val root:File) {
+internal class GenerationStore(private val root:File,private val syncDirectory:(File)->Unit={directory->
+    java.nio.channels.FileChannel.open(directory.toPath(),java.nio.file.StandardOpenOption.READ).use{it.force(true)}
+}) {
+    var committedDurably=false;private set
     private val pointer=File(root,"data-generation.v1")
     private val generations=File(root,"data-generations")
     fun active():File {
@@ -18,12 +21,22 @@ internal class GenerationStore(private val root:File) {
     fun stage():File=File(generations,UUID.randomUUID().toString()).also{check(it.mkdirs())}
     fun publish(stage:File,beforeMove:()->Unit={}) {
         require(stage.parentFile.canonicalFile==generations.canonicalFile && isAnswerId(stage.name) && stage.isDirectory)
+        committedDurably=false
+        // Flush data and directory entries before making this generation reachable.
+        stage.walkBottomUp().forEach{entry->
+            if(entry.isFile)FileOutputStream(entry,true).use{it.fd.sync()} else if(entry.isDirectory)syncDirectory(entry)
+        }
+        syncDirectory(generations)
         val next=File(root,"data-generation.next")
         FileOutputStream(next).use{it.write(stage.name.toByteArray(Charsets.US_ASCII));it.fd.sync()}
+        syncDirectory(root)
         beforeMove() // Test fault point; no data is visible before the atomic move.
         Files.move(next.toPath(),pointer.toPath(),StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING)
+        syncDirectory(root)
+        committedDurably=true
     }
     fun prune() {
+        if(!committedDurably)return
         val current=active().canonicalFile
         generations.listFiles().orEmpty().filter{it.isDirectory && it.canonicalFile!=current}.forEach{it.deleteRecursively()}
     }

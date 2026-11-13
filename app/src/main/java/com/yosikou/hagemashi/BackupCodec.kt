@@ -53,7 +53,7 @@ internal fun decodeBackup(bytes:ByteArray):BackupContents {
     try {
         val text=Charsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(bytes)).toString()
         val json=JSONObject(text)
-        if(json.optInt("formatVersion",-1)!=1)throw BackupProblem(BackupError.VERSION)
+        if(json.opt("formatVersion") !is Number || json.get("formatVersion").toString()!="1")throw BackupProblem(BackupError.VERSION)
         require(json.keys().asSequence().toSet()==setOf("formatVersion","settings","historyIncluded","history"))
         val cfg=json.getJSONObject("settings");require(cfg.keys().asSequence().toSet()==portableKeys)
         require(cfg.get("language") is String && cfg.get("weightUnit") is String)

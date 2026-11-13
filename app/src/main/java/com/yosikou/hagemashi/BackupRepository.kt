@@ -23,7 +23,10 @@ internal class BackupRepository(private val context:Context) {
             return AiExecution.lock.withLock { synchronized(ReservationSupport.lock) { synchronized(AppDataRoot.lock) {
                 val old=SettingsStore(context).read()
                 val restored=restoredSettings(contents.settings,old)
-                val generations=GenerationStore(context.noBackupFilesDir)
+                val generations=GenerationStore(context.noBackupFilesDir){directory->
+                    val fd=android.system.Os.open(directory.path,android.system.OsConstants.O_RDONLY or android.system.OsConstants.O_DIRECTORY,0)
+                    try{android.system.Os.fsync(fd)}finally{android.system.Os.close(fd)}
+                }
                 try {
                     generations.transaction(prepare={source,stage->
                         copyData(source,stage)
@@ -43,7 +46,7 @@ internal class BackupRepository(private val context:Context) {
                 // delivery: resumeRequired is checked on every reservation entry point.
                 runCatching{generations.prune()}
                 // Retire only legacy settings/history, never authentication or reservation files.
-                runCatching{dataEntries(context.noBackupFilesDir).forEach{it.deleteRecursively()}}
+                if(generations.committedDurably)runCatching{dataEntries(context.noBackupFilesDir).forEach{it.deleteRecursively()}}
                 runCatching{saveLanguage(context,restored.language)}
                 if(syncReservations)runCatching{ReservationSupport.changed(context,old,restored)}
                 restored

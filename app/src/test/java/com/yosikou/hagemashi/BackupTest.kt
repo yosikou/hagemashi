@@ -99,6 +99,10 @@ class BackupTest {
     @Test fun malformedDataAndOverLimitsAreRejectedBeforeAnyApply() {
         assertEquals(BackupError.VERSION,assertThrows(BackupProblem::class.java){decodeBackup("{}".toByteArray())}.reason)
         val json=JSONObject(String(encodeBackup(BackupContents(cfg,listOf(answer()),true)),Charsets.UTF_8))
+        for(version in listOf<Any>(2,4294967297L,1.0,"1")) {
+            val wrong=JSONObject(json.toString()).put("formatVersion",version)
+            assertEquals(BackupError.VERSION,assertThrows(BackupProblem::class.java){decodeBackup(wrong.toString().toByteArray())}.reason)
+        }
         json.getJSONArray("history").put(encodeEncouragement(answer()))
         assertEquals(BackupError.FORMAT,assertThrows(BackupProblem::class.java){decodeBackup(json.toString().toByteArray())}.reason)
         assertEquals(BackupError.TOO_LARGE,assertThrows(BackupProblem::class.java){decodeBackup(ByteArray(BACKUP_MAX_BYTES+1))}.reason)
@@ -112,5 +116,25 @@ class BackupTest {
         assertEquals(listOf(remote),first)
         assertTrue(newBackupAnswers((listOf(local)+first).map{it.id}.toSet(),listOf(sameId,remote)).isEmpty())
         assertEquals("original full",local.full)
+    }
+    @Test fun decryptsAnIndependentPythonHashlibAndAesGcmFixture() {
+        // Public synthetic vector: hashlib.pbkdf2_hmac SHA-256 + cryptography AESGCM.
+        val fixture="SEdNQkFDSyEAAAABAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaG0p/Q5gOKXKSlF4HWnuRF/4HvO6qHcvIGdnX9WEwSxaC58ot2R9ZR/kWyJC097Jj5ISiMzVTsQ=="
+        val plaintext=BackupCrypto.decrypt(java.util.Base64.getDecoder().decode(fixture),"public 日本語 fixture passphrase".toCharArray())
+        assertEquals("cross-provider backup test / 日本語",String(plaintext,Charsets.UTF_8))
+    }
+
+    @Test fun postMoveSyncFailureKeepsBothCompleteGenerationsWithoutReportingAPartialApply() {
+        val root=Files.createTempDirectory("hagemashi-sync").toFile()
+        try {
+            File(root,"settings").writeText("old");File(root,"history").writeText("old")
+            var rootSyncs=0
+            val store=GenerationStore(root){directory->if(directory.canonicalFile==root.canonicalFile && ++rootSyncs==2)throw java.io.IOException()}
+            store.transaction(prepare={_,stage->File(stage,"settings").writeText("new");File(stage,"history").writeText("new")},verify={})
+            assertFalse(store.committedDurably)
+            assertEquals("new",File(store.active(),"settings").readText());assertEquals("new",File(store.active(),"history").readText())
+            store.prune()
+            assertEquals("old",File(root,"settings").readText());assertEquals("old",File(root,"history").readText())
+        }finally{root.deleteRecursively()}
     }
 }
