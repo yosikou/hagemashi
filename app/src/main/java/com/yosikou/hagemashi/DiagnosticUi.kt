@@ -2,6 +2,7 @@ package com.yosikou.hagemashi
 
 internal fun diagnosticUi():Boolean = BuildConfig.BUILD_TYPE == "diagnostic"
 internal fun userFailureText(failure:Failure):Int = when(failure) {
+    Failure.CONSENT->R.string.consent_required
     Failure.NETWORK,Failure.TIMEOUT,Failure.SERVER -> R.string.user_network_error
     Failure.EXPIRED,Failure.PERMISSION,Failure.DENIED,Failure.IDENTITY -> R.string.user_connection_error
     Failure.POLICY -> R.string.agent_unavailable

@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
 import org.junit.Test
+import org.junit.Before
 import org.junit.runner.RunWith
 import org.junit.Assert.*
 import androidx.lifecycle.Lifecycle
@@ -22,20 +23,43 @@ class MainActivityTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<MainActivity>()
 
+    @Before fun resetLocalConsentForThisTest() {
+        composeRule.activityRule.scenario.onActivity { activity ->
+            val store=SettingsStore(activity)
+            store.write(store.read().copy(consentControlsVersion=DATA_CONSENT_VERSION,consentShownVersion=0,consentAcceptedVersion=0,automaticGeneration=false))
+            ViewModelProvider(activity)[AppViewModel::class.java].refresh()
+        }
+        composeRule.waitUntil(5000) { ViewModelProvider(composeRule.activity)[AppViewModel::class.java].settings?.consentShownVersion==0 }
+    }
+    private fun openSettingsAndDecline() {
+        composeRule.onNode(androidx.compose.ui.test.hasContentDescription(text(R.string.settings_title))).performClick()
+        composeRule.waitUntil(5000) { !ViewModelProvider(composeRule.activity)[AppViewModel::class.java].saving }
+        composeRule.onNodeWithText(text(R.string.consent_later)).performScrollTo().performClick()
+        composeRule.waitUntil(5000) { !ViewModelProvider(composeRule.activity)[AppViewModel::class.java].saving }
+    }
+    @Test fun consentOnlyAppearsInSettingsAndDecliningKeepsSettingsUsable() {
+        composeRule.onNodeWithText(text(R.string.consent_accept)).assertDoesNotExist()
+        openSettingsAndDecline()
+        composeRule.onNodeWithText(text(R.string.persona_settings)).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(text(R.string.consent_title)).performScrollTo().performClick()
+        composeRule.onNodeWithText(text(R.string.consent_accept)).performScrollTo().assertIsDisplayed()
+        assertFalse(hasDataConsent(SettingsStore(composeRule.activity).read()))
+    }
+
     private fun text(id:Int)=languageContext(composeRule.activity).getString(id)
 
     @Test fun homeShowsSettingsAndRoutesToGoalWithoutAutomaticallySending() {
         composeRule.onNodeWithText(text(R.string.home_name)).assertIsDisplayed()
         composeRule.onNodeWithText(text(R.string.no_encouragement)).assertIsDisplayed()
         composeRule.onNodeWithText(text(R.string.manual_send)).assertDoesNotExist()
-        composeRule.onNode(androidx.compose.ui.test.hasContentDescription(text(R.string.settings_title))).performClick()
+        openSettingsAndDecline()
         composeRule.onNodeWithText(text(R.string.persona_settings)).performScrollTo().performClick()
         composeRule.onNodeWithText(text(R.string.persona_friend)).assertIsDisplayed()
         composeRule.onNodeWithText(text(R.string.add_persona)).performScrollTo().assertIsDisplayed()
     }
 
     @Test fun diagnosticsRemainUnderSettingsWithoutAutomaticNetworkRequests() {
-        composeRule.onNode(androidx.compose.ui.test.hasContentDescription(text(R.string.settings_title))).performClick()
+        openSettingsAndDecline()
         if(!diagnosticUi()) {
             composeRule.onNodeWithText(text(R.string.open_probes)).assertDoesNotExist()
             composeRule.onNodeWithText(text(R.string.diagnostic_generation)).assertDoesNotExist()
@@ -47,7 +71,7 @@ class MainActivityTest {
     }
 
     @Test fun reservationDiagnosticScreenShowsSafePersistedReportWithoutSchedulingOrAI() {
-        composeRule.onNode(androidx.compose.ui.test.hasContentDescription(text(R.string.settings_title))).performClick()
+        openSettingsAndDecline()
         if(!diagnosticUi()) {composeRule.onNodeWithText(text(R.string.reservation_diagnostics)).assertDoesNotExist();return}
         composeRule.onNodeWithText(text(R.string.reservation_diagnostics)).performScrollTo().performClick()
         composeRule.waitUntil(5000) { composeRule.onAllNodes(androidx.compose.ui.test.hasText("schema=HAGEMASHI_RESERVATION_V1",substring=true)).fetchSemanticsNodes().isNotEmpty() }

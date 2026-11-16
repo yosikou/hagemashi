@@ -23,6 +23,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
     val locked=model.busy || app.saving
     Page(R.string.backup_title,{if(!model.applying && !app.saving){model.reset();back()}}) {
         Text(stringResource(R.string.backup_scope))
+        Text(stringResource(R.string.consent_backup_notice))
         if(model.busy)Text(stringResource(R.string.backup_busy))
         if(model.busy && !model.applying)OutlinedButton(onClick=model::cancel){Text(stringResource(R.string.cancel))}
         model.failure?.let{Text(stringResource(backupErrorText(it)),color=MaterialTheme.colorScheme.error)}

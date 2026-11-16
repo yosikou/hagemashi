@@ -23,6 +23,8 @@ class GenerationTest {
     private fun sse(vararg items: JSONObject) = items.joinToString("") { "data: $it\n\n" }
     private class Connection(val input: InputStream, private val media: String? = "text/event-stream", private val status: Int = 200) : HttpsURLConnection(URL("https://api.openai.com/v1/responses")) {
         val output = ByteArrayOutputStream()
+        var streamingLength:Int?=null
+        override fun setFixedLengthStreamingMode(length:Int){super.setFixedLengthStreamingMode(length);streamingLength=length}
         override fun connect() = Unit
         override fun disconnect() = Unit
         override fun usingProxy() = false
@@ -54,6 +56,7 @@ class GenerationTest {
         val op = Operation()
         assertEquals(secret, generate(connection, op))
         assertEquals("POST", connection.requestMethod)
+        assertEquals(connection.output.size(),connection.streamingLength)
         assertEquals("application/json", connection.getRequestProperty("Content-Type"))
         assertEquals("text/event-stream", connection.getRequestProperty("Accept"))
         assertEquals("Bearer $secret", connection.getRequestProperty("Authorization"))
@@ -68,6 +71,20 @@ class GenerationTest {
         assertEquals("user", input.getJSONObject(0).getString("role"))
         assertEquals(secret, input.getJSONObject(0).getString("content"))
         assertFalse(op.generationDiagnostic.toString().contains(secret))
+    }
+
+    @Test fun finalHttpWriterDoesNotSendAnyBodyAfterConsentWasWithdrawnDuringConnectionSetup() {
+        val personas=listOf(Persona("friend","friend","prompt"),Persona("numbers","coach","prompt"),Persona("companion","companion","prompt"))
+        var cfg=consentDecision(AppSettings(personas=personas),true)
+        val gate=GenerationSendGate(Any()){cfg}
+        gate.check(GenerationKind.MANUAL) // The repository start check succeeded.
+        val connection=connection(sse(completed()))
+        val http=Http { cfg=consentDecision(cfg,false);connection }
+        val problem=assertThrows(Problem::class.java){
+            http.generate(generationRequest("synthetic",secret,secret),secret,Operation()){write->gate.write(GenerationKind.MANUAL,write=write)}
+        }
+        assertEquals(Failure.CONSENT,problem.kind)
+        assertEquals(0,connection.output.size())
     }
 
     @Test fun completionIsValidatedBeforeAnAnswerCanBeAssignedToTheUi() {

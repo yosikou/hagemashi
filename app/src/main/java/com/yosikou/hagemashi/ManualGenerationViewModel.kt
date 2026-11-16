@@ -34,7 +34,7 @@ internal class ManualGenerationViewModel(application: Application) : AndroidView
 
     fun editGoal(value: String) { if (!reading && review == null) { goal = value; goalInvalid = false } }
     fun reset() { ++epoch; job?.cancel(); reading = false; review = null; readUnavailable = false; prepareFailed = false }
-    fun prepare(model: Model, settings: AppSettings) {
+    fun prepare(model: Model, settings: AppSettings, ready:((ReviewedGeneration)->Unit)?=null) {
         if (reading || review != null) return
         val target = settings.goal?.let(::canonicalGoal)
         goalInvalid = target == null
@@ -45,7 +45,7 @@ internal class ManualGenerationViewModel(application: Application) : AndroidView
         job = viewModelScope.launch {
             try {
                 val prepared=withContext(Dispatchers.IO){prepareGeneration(getApplication<Application>(),settings,model,GenerationKind.MANUAL)}
-                if(generation==epoch){review=prepared.review;readUnavailable=prepared.health in setOf(ReservationEvent.HEALTH_UNSUPPORTED,ReservationEvent.HEALTH_FAILED)}
+                if(generation==epoch){review=prepared.review;ready?.invoke(prepared.review);readUnavailable=prepared.health in setOf(ReservationEvent.HEALTH_UNSUPPORTED,ReservationEvent.HEALTH_FAILED)}
             } catch (e: CancellationException) { throw e }
             catch (_: Exception) { if (generation == epoch) prepareFailed = true }
             finally { if (generation == epoch) reading = false }

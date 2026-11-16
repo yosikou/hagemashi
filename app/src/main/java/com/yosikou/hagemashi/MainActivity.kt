@@ -72,6 +72,10 @@ class MainActivity : ComponentActivity() {
         if (healthPrivacy) detailId = null
         setContent {
             var route by rememberSaveable { mutableStateOf("home") }
+            var consentPrompt by rememberSaveable { mutableStateOf(false) }
+            LaunchedEffect(route,app.settings?.consentShownVersion) {
+                if(route=="settings" && app.settings?.let{it.consentShownVersion!=DATA_CONSENT_VERSION}==true)consentPrompt=true
+            }
             LaunchedEffect(goalReview) {
                 if(goalReview) { route="goal";detailId=null;goalReview=false;setIntent(Intent(this@MainActivity,MainActivity::class.java)) }
             }
@@ -91,9 +95,11 @@ class MainActivity : ComponentActivity() {
                     val selectedDetail = detailId
                     if (selectedDetail != null) AnswerDetailScreen(selectedDetail, details) { closeDetail() }
                     else if (healthPrivacy) HealthPrivacyScreen { healthPrivacy = false }
+                    else if(consentPrompt) ConsentScreen(app,privacy={healthPrivacy=true},close={consentPrompt=false})
                     else when (route) {
-                        "home" -> HomeScreen(app, model, { route = it }, { route = "manual" }, { detailId = it })
+                        "home" -> HomeScreen(app, model, { route = it }, { route = if(app.settings?.let(::hasDataConsent)==true) "manual" else "consent" }, { detailId = it })
                         "backup" -> BackupScreen(backup,app,model,{route=it}) { route="settings" }
+                        "consent" -> ConsentScreen(app,privacy={healthPrivacy=true}) { route="settings" }
                         "settings" -> SettingsMenu({ route = it }) { route = "home" }
                         "connection" -> ConnectionScreen(model, { route = "settings" }) {
                             runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://chatgpt.com/settings/usage"))) }
@@ -105,7 +111,7 @@ class MainActivity : ComponentActivity() {
                         "reservation-diagnostics" -> if(diagnosticUi()) ReservationDiagnosticScreen { route = "settings" } else SettingsMenu({route=it}){route="home"}
                         "probes" -> if(diagnosticUi()) ProbeScreen(probes) { route = "settings" } else SettingsMenu({route=it}){route="home"}
                         "dummy-generation" -> if(diagnosticUi()) DiagnosticGenerationScreen(model){route="settings"} else SettingsMenu({route=it}){route="home"}
-                        "manual" -> ManualGenerationScreen(manual, model, app.settings, lifecycle, openDetail = { detailId = it }) { route = "home"; app.refresh() }
+                        "manual", "manual-review" -> ManualGenerationScreen(manual, model, app.settings, lifecycle, autoStart=route=="manual", consent={route="consent"}, openDetail = { detailId = it }) { route = "home"; app.refresh() }
                         else -> app.settings?.let { cfg -> when (route) {
                             "language" -> LanguageSettings(app,cfg) { route="settings" }
                             "units" -> WeightUnitSettings(app, cfg) { route = "settings" }
@@ -265,6 +271,7 @@ private fun visibilityText(visibility: AppVisibility): Int = when (visibility) {
 }
 
 internal fun failureText(failure: Failure): Int = when (failure) {
+    Failure.CONSENT -> R.string.consent_required
     Failure.NETWORK -> R.string.error_network
     Failure.PROTOCOL -> R.string.error_protocol
     Failure.IDENTITY -> R.string.error_identity

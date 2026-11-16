@@ -275,7 +275,7 @@
     <string name="weight_generation_rule">Input weight and target weight use %1$s. Use %1$s for weight in the full response too. Never include measurement or target values in notification text.</string>
     <string name="output_language_rule">Write both short and full in the application language %1$s, even if custom persona instructions use another language. Keep JSON keys short and full unchanged.</string>
     <string name="maintain_prompt">The goal is maintenance after reaching the target. Do not assume further weight loss is desired; support manageable habits.</string>
-    <string name="health_privacy_body">Health Connect supplies weight, body fat and steps with dates, periods and sources. This read-only screen sends nothing. Manual generation sends the reviewed goal, persona, shared instructions and available health data to OpenAI using your connected ChatGPT account only after confirmation. Enabled morning/evening generation sends the current settings and available data at scheduled times; without background read permission, health data is unavailable. Previous responses are never sent.\n\nResponses and the data used are encrypted on this device with Android Keystore protection and excluded from backup. Health data, prompts, responses and credentials are not included in diagnostic logs. Normal manual generation sends no notification. Scheduled notifications contain only safe short text and open the saved response. Revoke Health Connect access at any time in its permissions. Missing records are never guessed or replaced with zero.</string>
+    <string name="health_privacy_body">The health read screen does not send to OpenAI. Health Connect permissions can be revoked in its settings at any time. Without background read permission, automatic generation treats health data as unavailable.\n\nAnswers and data used are encrypted locally with Android Keystore and can be deleted from history. They are excluded from Android automatic backup. Only if you explicitly create an encrypted backup with history are answers and used data exported to your chosen location. Manage or delete shared backup files at that location.\n\nDiagnostics contain no measurements, sent content, answers or credentials. Notifications show a short text without measurements and open the matching saved answer. See OpenAI’s privacy policy for its handling of information already sent.</string>
     <string name="persona_share_scope">Share only a name and prompt as JSON. Shared instructions, goals, connections, health data and history are excluded.</string>
     <string name="persona_export">Export this persona</string>
     <string name="persona_import">Import a persona</string>
@@ -337,4 +337,20 @@
     <string name="backup_fault_settings">Fail after staging settings</string>
     <string name="backup_fault_history">Fail after staging history</string>
     <string name="backup_fault_commit">Fail just before commit</string>
+    <string name="consent_title">Data sent to OpenAI</string>
+    <string name="consent_accept">I agree</string>
+    <string name="consent_later">Do not send now</string>
+    <string name="consent_revoke">Withdraw consent to send to OpenAI</string>
+    <string name="consent_stop_auto">Stop automatic generation</string>
+    <string name="consent_privacy">Privacy policy</string>
+    <string name="consent_active">Consent is active</string>
+    <string name="consent_inactive">No current consent; consent is required</string>
+    <string name="consent_unknown">Consent cannot be verified. Nothing will be sent.</string>
+    <string name="consent_required">Agree in Settings → Data sent to OpenAI before sending. Stopped automatic generation stays off until you enable it in settings.</string>
+    <string name="manual_create">Create manually</string>
+    <string name="consent_review_optional">Review data to send (optional)</string>
+    <string name="consent_manual_notice">With active consent, Create manually reads and sends data without another confirmation. Normal manual generation sends no notification.</string>
+    <string name="consent_body">hagemashi sends information to OpenAI (api.openai.com), using your connected ChatGPT account, to create encouragement based on your records.\n\n• Available Health Connect weight and body fat records from the last 30 days and daily steps from the last 7 days, measurement times, aggregation periods, data sources and availability. Morning uses records up to the previous local day; evening and manual include the current day up to the read time. Limits may mean only some records are available.\n• Target weight, optional target date, maintenance goal, the selected persona instructions, shared supplement, display language, weight unit and morning/evening/manual instructions. Your selected model is used. Past encouragement is never sent. The persona name is saved with the answer; its prompt is sent as instructions.\n\nAfter you agree, Create manually reads and sends data without asking again. Reviewing the data is optional. If you enable morning/evening automatic generation, each enabled slot reads and sends at approximately its set time, even with the app closed. Automatic generation starts off; agreeing alone does not turn it on.\n\nMissing values are never guessed or replaced with zero. With no health records, generation can use your goal and instructions. Stop automatic generation or withdraw consent in settings at any time. Withdrawal does not recall data already sent. This consent is separate from Health Connect permission and ChatGPT sign-in. See the privacy policy for details.</string>
+    <string name="consent_backup_notice">Consent, presentation state and automatic/slot enable states are not transferred. Times are kept. Consent again on the destination, complete setup, then explicitly enable automatic generation and the slots you want.</string>
+    <string name="consent_openai_policy">OpenAI privacy policy</string>
 </resources>

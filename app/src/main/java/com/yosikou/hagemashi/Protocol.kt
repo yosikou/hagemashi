@@ -26,7 +26,7 @@ internal const val RESOURCE = "https://api.openai.com/v1"
 internal const val DIRECT_SCOPE = "chatgpt.tokens.use.direct"
 internal const val SCOPES = "openid profile email offline_access resource.invoke chatgpt.tokens.use.direct"
 
-internal enum class Failure { NETWORK, PROTOCOL, IDENTITY, STORAGE, DENIED, EXPIRED, PERMISSION, LIMIT, POLICY, SERVER, TIMEOUT }
+internal enum class Failure { NETWORK, PROTOCOL, IDENTITY, STORAGE, DENIED, EXPIRED, PERMISSION, LIMIT, POLICY, SERVER, TIMEOUT, CONSENT }
 
 // Never attach a raw response, URL, exception message or token to a diagnostic.
 internal class Problem(val kind: Failure, val status: Int? = null, val code: String? = null, val network: NetworkFailure? = null,
@@ -318,10 +318,10 @@ internal class Http(private val open: (java.net.URL) -> HttpsURLConnection = { i
             if (text.isBlank()) JSONObject() else JSONObject(text)
         }
 
-    fun generate(body: JSONObject, bearer: String, operation: Operation): String {
+    fun generate(body: JSONObject, bearer: String, operation: Operation, send:((()->Unit)->Unit) = { it() }): String {
         val trace = GenerationTrace(operation::recordGeneration)
         try {
-            return request("$RESOURCE/responses", operation, body.toString(), "application/json", bearer, trace = trace) {
+            return request("$RESOURCE/responses", operation, body.toString(), "application/json", bearer, trace = trace, send = send) {
                 consumeSse(it.bufferedReader(Charsets.UTF_8), operation, trace)
             }
         } catch (e: Exception) {
@@ -331,7 +331,7 @@ internal class Http(private val open: (java.net.URL) -> HttpsURLConnection = { i
     }
 
     private fun <T> request(url: String, operation: Operation, body: String?, contentType: String, bearer: String?,
-        onStatus: ((Int) -> T)? = null, trace: GenerationTrace? = null, read: (InputStream) -> T): T {
+        onStatus: ((Int) -> T)? = null, trace: GenerationTrace? = null, send:((()->Unit)->Unit) = { it() }, read: (InputStream) -> T): T {
         val uri = checkedEndpoint(url)
         operation.check()
         val connection = try { open(uri.toURL()) } catch (e: Exception) {
@@ -351,7 +351,13 @@ internal class Http(private val open: (java.net.URL) -> HttpsURLConnection = { i
                 connection.requestMethod = "POST"
                 connection.doOutput = true
                 connection.setRequestProperty("Content-Type", contentType)
-                connection.outputStream.use { it.write(body.toByteArray(Charsets.UTF_8)) }
+                val encoded=body.toByteArray(Charsets.UTF_8)
+                // Generation bodies must be sent within the consent gate, rather than queued in
+                // HttpURLConnection's default poster buffer until responseCode is requested.
+                if(trace!=null)connection.setFixedLengthStreamingMode(encoded.size)
+                val output=connection.outputStream
+                try { send { output.use { it.write(encoded);it.flush() } } }
+                catch(e:Exception){ connection.disconnect();throw e }
             }
             val status = connection.responseCode
             receivedStatus = status.takeIf { it in 100..599 }

@@ -62,7 +62,7 @@ class ScheduledGenerationService:JobService() {
 
 private fun automaticDue(context:Context,slot:NoticeSlot,version:Long,day:LocalDate):Boolean=synchronized(ReservationSupport.lock) {
     val cfg=SettingsStore(context).read()
-    !cfg.resumeRequired && cfg.automaticGeneration && cfg.goal!=null && cfg.modelId!=null && !goalNeedsReset(cfg,LocalDate.now()) &&
+    canSendData(cfg,if(slot==NoticeSlot.MORNING)GenerationKind.MORNING else GenerationKind.EVENING) && !cfg.resumeRequired && cfg.automaticGeneration && cfg.goal!=null && cfg.modelId!=null && !goalNeedsReset(cfg,LocalDate.now()) &&
         reservationDue(version,day,slot,cfg,Instant.now(),ZoneId.systemDefault(),ReservationSupport.automaticState(context))
 }
 // Return true only to retry within the still-valid local slot. Re-entry always checks the window again.
@@ -88,7 +88,7 @@ private fun executeAutomatic(context:Context,slot:NoticeSlot,version:Long,day:Lo
             operation.check()
             if(!automaticDue(context,slot,version,day))return false
             event(ReservationEvent.CHATGPT_STARTED)
-            val raw=ConnectionRepository(context).generate(slug,prepared.review.instructions,prepared.review.input,operation){if(!automaticDue(context,slot,version,day))throw java.util.concurrent.CancellationException()}
+            val raw=ConnectionRepository(context).generate(slug,prepared.review.instructions,prepared.review.input,operation,beforeRequest={if(!automaticDue(context,slot,version,day))throw java.util.concurrent.CancellationException()},kind=prepared.review.kind,expectedVersion=version)
             event(ReservationEvent.CHATGPT_COMPLETED)
             operation.check()
             if(!automaticDue(context,slot,version,day))return false

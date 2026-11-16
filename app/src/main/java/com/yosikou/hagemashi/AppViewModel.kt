@@ -60,6 +60,8 @@ internal class AppViewModel(application: Application) : AndroidViewModel(applica
             catch (_: Exception) { null }
         }
     } }
+    fun recordConsent(accept:Boolean,completed:(Boolean)->Unit) = saveChange({consentDecision(it,accept)},true,completed)
+    fun markConsentShown() = saveChange({it.copy(consentShownVersion=DATA_CONSENT_VERSION)},false){}
     fun change(transform: (AppSettings) -> AppSettings) = saveChange(transform,true){}
     fun importPersona(persona:Persona,completed:(Boolean)->Unit) = saveChange({appendImportedPersona(it,persona)},false,completed)
     private fun saveChange(transform:(AppSettings)->AppSettings,reschedule:Boolean,completed:(Boolean)->Unit) {

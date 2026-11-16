@@ -19,7 +19,7 @@ internal class SettingsStore(private val context:Context) {
             Persona("numbers",ja.getString(R.string.persona_numbers),ja.getString(R.string.persona_numbers_prompt_v1)),
             Persona("companion",ja.getString(R.string.persona_companion),ja.getString(R.string.persona_companion_prompt_v1)))
         val loaded=decodeSettings(json,target)
-        val localized=translateDefaultPersonas(loaded,known,target)
+        val localized=migrateDataConsent(translateDefaultPersonas(loaded,known,target))
         if(localized!=loaded || !json.has("language"))vault.write(encodeSettings(localized))
         saveLanguage(context,localized.language)
         localized
@@ -28,7 +28,9 @@ internal class SettingsStore(private val context:Context) {
         val vault=CredentialVault(active,"app-settings.v1","hagemashi.settings.v1")
         val target=defaultPersonas(languageContext(context,value.language))
         val known=AppLanguage.entries.filter{it!=AppLanguage.SYSTEM}.flatMap{defaultPersonas(languageContext(context,it))}
-        vault.write(encodeSettings(translateDefaultPersonas(value,known,target)))
+        val migrated=migrateDataConsent(value)
+        val safe=if(hasDataConsent(migrated))migrated else migrated.copy(automaticGeneration=false,resumeAutomatic=false)
+        vault.write(encodeSettings(translateDefaultPersonas(safe,known,target)))
         saveLanguage(context,value.language)
         AnswerNotifications(context).refreshChannel()
     } } }
