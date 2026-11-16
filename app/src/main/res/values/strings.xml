@@ -88,7 +88,7 @@
     <string name="health_steps_aggregation" translatable="false">Health Connectの集計値です。提供元間の重複調整はHealth Connectの設定に従います。</string>
     <string name="health_privacy">健康データの利用目的・プライバシー</string>
     <string name="health_privacy_back">アプリへ戻る</string>
-    <string name="health_privacy_body">Health Connectから体重・体脂肪率・歩数と日時・期間・提供元を読み取ります。この読み取り画面からは送信しません。手動生成は確認後に表示した目標・人格・補足・健康データを接続中のChatGPTアカウントでOpenAIへ送信します。有効にした朝夜の自動生成では設定時刻を目安に現在の設定と取得できたデータを送信します。背景読み取りを許可しない場合は健康データ未取得として生成します。過去の回答は送信しません。\n\n回答と使用データはAndroid Keystoreで保護し端末内に暗号化保存して、端末バックアップには含めません。健康データ・プロンプト・回答・認証情報を診断ログには含めません。通常の手動生成は通知せず、予約通知は安全な短文だけを表示し、保存済みの対応する回答を開きます。Health Connectの権限はいつでも解除できます。欠損は推測せず0で埋めません。</string>
+    <string name="health_privacy_body">健康データの読み取り画面からはOpenAIへ送信しません。Health Connectの権限はいつでもその設定で解除できます。背景読み取りが未許可の場合、自動生成では健康データ未取得として扱います。\n\n回答と使用データはAndroid Keystoreで保護し端末内に暗号化保存します。履歴から削除できます。Androidの自動バックアップには含めません。利用者が履歴付きの暗号化バックアップを作成した場合だけ、回答と使用データを選択した保存先へ出力します。共有したバックアップファイルはその保存先で管理・削除してください。\n\n診断ログには測定値・送信内容・回答・認証情報を含めません。通知には測定値を含まない短文を表示し、対応する保存済み回答を開きます。OpenAIに送信済みの情報の取り扱いはOpenAIのプライバシーポリシーをご確認ください。</string>
     <string name="generation_diagnostic_title" translatable="false">直近の生成診断</string>
     <string name="generation_diagnostic_notice" translatable="false">固定分類と有無だけを記録します。HTTP 200だけでは成功としません。完了イベントの検証と、画面の回答本文を確認してください。コピーにはトークン・プロンプト・回答本文・生の応答は含みません。</string>
     <string name="copy_generation_diagnostic" translatable="false">生成の安全な診断をコピー</string>
@@ -470,4 +470,20 @@
     <string name="backup_fault_settings">設定の準備後に失敗させる</string>
     <string name="backup_fault_history">履歴の準備後に失敗させる</string>
     <string name="backup_fault_commit">確定直前に失敗させる</string>
+    <string name="consent_title">OpenAIへのデータ送信</string>
+    <string name="consent_accept">同意する</string>
+    <string name="consent_later">今は送信しない</string>
+    <string name="consent_revoke">OpenAIへの送信同意を取り消す</string>
+    <string name="consent_stop_auto">自動生成を停止</string>
+    <string name="consent_privacy">プライバシーポリシー</string>
+    <string name="consent_active">送信に同意済み</string>
+    <string name="consent_inactive">送信への同意なし・再同意が必要</string>
+    <string name="consent_unknown">同意状態を確認できません。送信しません。</string>
+    <string name="consent_required">送信には設定の「OpenAIへのデータ送信」で同意してください。停止・取り消し後の自動生成は設定でオンにするまで再開しません。</string>
+    <string name="manual_create">手動で作成</string>
+    <string name="consent_review_optional">送信するデータを確認（任意）</string>
+    <string name="consent_manual_notice">同意が有効な間は、手動で作成を押すとデータを取得して送信します。通常の手動生成では通知しません。</string>
+    <string name="consent_body">hagemashiは、記録に合わせた励ましを作るため、接続中のChatGPTアカウントを使ってOpenAI（api.openai.com）に次の情報を送信します。\n\n・Health Connectから取得できた体重・体脂肪率の記録（直近30日）と日別の歩数（直近7日）、測定日時・集計期間・データ提供元、取得状況。朝は端末の現地日付で前日まで、夜と手動は取得時点までの当日を含む期間です。取得上限などで一部の記録だけの場合もあります。\n・目標体重、任意の目標日、維持目標の指定、選択した人格の名前・プロンプトのうち生成に使う内容、全人格共通の補足、表示言語・体重単位、朝／夜／手動に応じた生成指示。選択したモデルで生成します。過去の励ましは送りません。人格名は回答保存に使い、人格の指示はプロンプトとして送ります。\n\n「同意する」を選ぶと、「手動で作成」の操作で取得したデータを送信します。毎回の確認はありません。データは任意で確認できます。朝・夜の自動生成を設定でオンにすると、各有効枠の設定時刻を目安に、アプリを開いていなくてもデータを取得・送信します。自動生成は初期状態でオフです。同意だけではオンになりません。\n\n欠損は推測せずゼロで補いません。健康データがなくても目標や人格・補足で生成できます。設定からいつでも自動生成を停止し、送信同意を取り消せます。取り消し前に送信済みのデータを回収する操作ではありません。この同意はHealth Connectの権限やChatGPTへのログインとは別です。詳しくはプライバシーポリシーをご覧ください。</string>
+    <string name="consent_backup_notice">同意・説明の表示済み状態・自動生成や朝夜枠の有効状態は引き継ぎません。時刻は保持します。復元先で改めて同意し、準備を確認後、自動生成と使用する枠を設定でオンにしてください。</string>
+    <string name="consent_openai_policy">OpenAIのプライバシーポリシー</string>
 </resources>

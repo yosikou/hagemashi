@@ -91,7 +91,11 @@ internal fun HealthPrivacyScreen(back: () -> Unit) {
     Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(stringResource(R.string.health_privacy), style = MaterialTheme.typography.headlineSmall)
+        Text(stringResource(R.string.consent_body))
         Text(stringResource(R.string.health_privacy_body))
+        Text(stringResource(R.string.consent_backup_notice))
+        val policyContext=androidx.compose.ui.platform.LocalContext.current
+        OutlinedButton(onClick={runCatching{policyContext.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("https://openai.com/policies/privacy-policy/")))}}){Text(stringResource(R.string.consent_openai_policy))}
         OutlinedButton(onClick = back) { Text(stringResource(R.string.health_privacy_back)) }
     }
 }

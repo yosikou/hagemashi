@@ -18,6 +18,7 @@ internal class LoginAttempt(val socket: ServerSocket, val state: String, val non
 internal class ConnectionRepository(context: Context) {
     private val vault = CredentialVault(context)
     private val http = Http()
+    private val sending = DataSending(context)
 
     fun snapshot(): ConnectionSnapshot {
         val root = vault.read()
@@ -141,12 +142,13 @@ internal class ConnectionRepository(context: Context) {
         }
     }
 
-    fun generate(model: String, instructions: String, input: String, operation: Operation, beforeRequest:()->Unit = {}): String {
+    fun generate(model: String, instructions: String, input: String, operation: Operation, beforeRequest:()->Unit = {}, kind:GenerationKind=GenerationKind.MANUAL,expectedVersion:Long?=null): String {
+        sending.check(kind,expectedVersion)
         // Re-fetch account-specific availability for each manual request; never fall back to a hardcoded slug.
         if (models(operation).none { it.slug == model }) throw Problem(Failure.POLICY)
         val session = usableSession(operation)
         val body = generationRequest(model, instructions, input)
-        return operation.step(Stage.GENERATION) { beforeRequest(); http.generate(body, session.getString("access"), operation) }
+        return operation.step(Stage.GENERATION) { beforeRequest(); http.generate(body, session.getString("access"), operation) { write -> sending.write(kind,operation,expectedVersion,write) } }
     }
 
     fun disconnect(operation: Operation): Boolean {

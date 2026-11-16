@@ -69,9 +69,10 @@ internal fun HomeScreen(app: AppViewModel, connection: ConnectionViewModel, sett
                     HomeAction.RESET_GOAL -> R.string.reset_goal
                     HomeAction.CONNECT -> R.string.connect_chatgpt
                     HomeAction.SELECT_AGENT -> R.string.select_agent
-                    HomeAction.GENERATE -> R.string.generate_encouragement
+                    HomeAction.GENERATE -> R.string.manual_create
                 }))
             }
+            OutlinedButton(onClick={if(hasDataConsent(cfg))settings("manual-review")else settings("consent")},enabled=!connection.ui.busy){Text(stringResource(R.string.consent_review_optional))}
             SectionCard {
                 Text(stringResource(R.string.home_weight), style = MaterialTheme.typography.titleMedium)
                 val weight = app.weight
@@ -103,7 +104,7 @@ internal fun SettingsMenu(open: (String) -> Unit, back: () -> Unit) {
     Page(R.string.settings_title, back) {
         listOf(
             R.string.settings_encouragement_group to listOf("goal" to R.string.goal_settings, "units" to R.string.weight_unit_title, "language" to R.string.language_title, "backup" to R.string.backup_title, "agent" to R.string.agent_settings, "personas" to R.string.persona_settings),
-            R.string.settings_connections_group to listOf("connection" to R.string.chatgpt_settings, "health" to R.string.health_settings),
+            R.string.settings_connections_group to listOf("consent" to R.string.consent_title, "connection" to R.string.chatgpt_settings, "health" to R.string.health_settings),
             R.string.notification_settings_title to listOf("notice" to R.string.notification_settings_title),
             R.string.settings_diagnostics_group to listOf("probes" to R.string.open_probes, "reservation-diagnostics" to R.string.reservation_diagnostics, "dummy-generation" to R.string.diagnostic_generation)
         ).forEach { (heading, entries) ->
@@ -235,9 +236,10 @@ internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () 
             Text(stringResource(if(diagnosticUi())R.string.automatic_title else R.string.product_automatic_title),style=MaterialTheme.typography.titleMedium)
             Text(stringResource(if(diagnosticUi())R.string.automatic_notice else R.string.product_automatic_notice))
             Row(verticalAlignment=androidx.compose.ui.Alignment.CenterVertically) {
-                Switch(cfg.automaticGeneration,onCheckedChange={enabled->app.change{it.copy(automaticGeneration=enabled)}},enabled=!app.saving && !cfg.resumeRequired)
+                Switch(cfg.automaticGeneration,onCheckedChange={enabled->app.change{if(!enabled || hasDataConsent(it))it.copy(automaticGeneration=enabled)else it}},enabled=!app.saving && !cfg.resumeRequired && hasDataConsent(cfg))
                 Text(stringResource(R.string.automatic_enabled))
             }
+            if(!hasDataConsent(cfg))Text(stringResource(R.string.consent_required))
             BackgroundHealthPermissionControl()
         }
         var invalid by remember { mutableStateOf(false) }
@@ -283,7 +285,7 @@ internal fun NotificationSettings(app: AppViewModel, cfg: AppSettings, back: () 
     }
     Text(stringResource(R.string.reservation_test_only))
 }
-@Composable private fun SettingsStatus(app: AppViewModel) {
+@Composable internal fun SettingsStatus(app: AppViewModel) {
     Text(stringResource(if (app.failure) R.string.settings_error else if (app.saving) R.string.saving else R.string.settings_saved))
 }
 

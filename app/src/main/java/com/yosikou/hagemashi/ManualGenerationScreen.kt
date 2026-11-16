@@ -18,6 +18,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -27,7 +29,7 @@ import androidx.lifecycle.LifecycleEventObserver
 
 @Composable
 internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection: ConnectionViewModel, settings: AppSettings?,
-    lifecycle: Lifecycle, openDetail: (String) -> Unit, back: () -> Unit) {
+    lifecycle: Lifecycle, autoStart:Boolean=true, consent:()->Unit, openDetail: (String) -> Unit, back: () -> Unit) {
     BackHandler(onBack = back)
     androidx.compose.runtime.LaunchedEffect(Unit) { if (connection.ui.permitted && !connection.ui.modelsLoaded && !connection.ui.busy) connection.loadModels() }
     DisposableEffect(lifecycle) {
@@ -40,11 +42,23 @@ internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection
     val review = model.review
     val busy = model.reading || ui.busy
     val isHealth = ui.answerContext == AnswerContext.HEALTH
+    // Preserve only the launch latch across rotation, never health data or prompts.
+    var started by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    androidx.compose.runtime.LaunchedEffect(autoStart,ui.modelsLoaded,settings) {
+        if(autoStart && !started && settings!=null && hasDataConsent(settings) && ui.permitted && ui.modelsLoaded) {
+            val selected=ui.models.find{it.slug==settings.modelId}
+            if(selected!=null){started=true;model.prepare(selected,settings,connection::generateReviewed)}
+        }
+    }
     Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(stringResource(if(diagnosticUi())R.string.manual_title else R.string.generate_encouragement), style = MaterialTheme.typography.headlineSmall)
         if(diagnosticUi()) Text(stringResource(R.string.build_identifier, BuildConfig.BUILD_IDENTIFIER))
-        Text(stringResource(R.string.manual_notice))
+        Text(stringResource(R.string.consent_manual_notice))
+        if(settings?.let(::hasDataConsent)!=true) {
+            Text(stringResource(R.string.consent_required))
+            OutlinedButton(onClick=consent){Text(stringResource(R.string.consent_title))}
+        }
         if (!ui.permitted) Text(stringResource(R.string.manual_need_connection))
         if (settings == null) Text(stringResource(R.string.settings_error))
         else Text(stringResource(R.string.goal_value_unit, settings.goal?.let { localizedNumber(settings.weightUnit.display(it),LocalAppLocale.current,2) }.orEmpty(), settings.weightUnit.symbol))
@@ -52,14 +66,14 @@ internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection
             if (settings?.modelId != null && (ui.unavailableModel == settings.modelId || (ui.modelsLoaded && ui.models.none { it.slug == settings.modelId }))) Text(stringResource(R.string.agent_unavailable))
             OutlinedButton(onClick = {
                 val selected = connection.ui.models.find { it.slug == settings?.modelId }
-                if (selected != null && settings != null) { connection.clearHealthResult(); model.prepare(selected, settings) }
-            }, enabled = !busy && settings?.goal != null && ui.models.any { it.slug == settings.modelId }) { Text(stringResource(R.string.manual_prepare)) }
+                if (selected != null && settings != null) { connection.clearHealthResult(); model.prepare(selected, settings, if(autoStart) connection::generateReviewed else null) }
+            }, enabled = !busy && settings?.let(::hasDataConsent)==true && settings.goal != null && ui.models.any { it.slug == settings.modelId }) { Text(stringResource(if(autoStart)R.string.manual_create else R.string.manual_prepare)) }
             if (model.reading) Text(stringResource(R.string.health_loading))
             if (model.prepareFailed) Text(stringResource(R.string.manual_prepare_failed))
         } else {
             HorizontalDivider()
             SendReviewContent(review)
-            Button(onClick = { connection.generateReviewed(review) }, enabled = !busy && ui.permitted) {
+            Button(onClick = { connection.generateReviewed(review) }, enabled = !busy && ui.permitted && settings?.let(::hasDataConsent)==true) {
                 Text(stringResource(if (isHealth && ui.failure != null) R.string.manual_retry else R.string.review_generate))
             }
             OutlinedButton(onClick = { connection.clearHealthResult(); model.reset() }, enabled = !busy) {

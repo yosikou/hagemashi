@@ -18,7 +18,7 @@ internal const val BACKUP_MAX_ANSWERS=5000
 internal enum class BackupError { PASSPHRASE, AUTH_OR_DAMAGE, VERSION, FORMAT, TOO_LARGE, READ, WRITE, SAVE }
 internal class BackupProblem(val reason:BackupError):Exception()
 internal data class BackupContents(val settings:AppSettings,val answers:List<SavedEncouragement>,val includesHistory:Boolean)
-private val portableKeys=setOf("goal","goalDate","maintaining","language","weightUnit","modelId","personas","personaId","supplement","morningEnabled","morningTime","eveningEnabled","eveningTime","automaticGeneration")
+private val portableKeys=setOf("goal","goalDate","maintaining","language","weightUnit","modelId","personas","personaId","supplement","morningTime","eveningTime")
 internal fun portableSettings(settings:AppSettings):JSONObject {
     val cfg=if(settings.resumeRequired)settings.copy(morning=settings.morning.copy(enabled=settings.resumeMorning),evening=settings.evening.copy(enabled=settings.resumeEvening),automaticGeneration=settings.resumeAutomatic) else settings
     val json=encodeSettings(cfg)
@@ -31,10 +31,11 @@ internal fun restoredSettings(source:AppSettings,old:AppSettings):AppSettings {
     val epoch=maxOf(counter+1,(java.util.UUID.randomUUID().leastSignificantBits ushr 1).coerceAtMost(Long.MAX_VALUE-4))
     return source.copy(morning=source.morning.copy(enabled=false),evening=source.evening.copy(enabled=false),automaticGeneration=false,testAnswerId=null,
         reservationVersion=epoch,morningVersion=epoch,eveningVersion=epoch,goalCycle=Math.addExact(old.goalCycle,1),
-        resumeRequired=true,resumeMorning=source.morning.enabled,resumeEvening=source.evening.enabled,resumeAutomatic=source.automaticGeneration)
+        resumeRequired=true,resumeMorning=false,resumeEvening=false,resumeAutomatic=false,
+        consentControlsVersion=DATA_CONSENT_VERSION,consentShownVersion=0,consentAcceptedVersion=0)
 }
 internal fun resumeRestoredSettings(cfg:AppSettings):AppSettings=cfg.copy(resumeRequired=false,
-    morning=cfg.morning.copy(enabled=cfg.resumeMorning),evening=cfg.evening.copy(enabled=cfg.resumeEvening),automaticGeneration=cfg.resumeAutomatic,
+    morning=cfg.morning.copy(enabled=cfg.resumeMorning),evening=cfg.evening.copy(enabled=cfg.resumeEvening),automaticGeneration=false,
     resumeMorning=false,resumeEvening=false,resumeAutomatic=false).also{require(it.validTimes())}
 internal fun newBackupAnswers(existingIds:Set<String>,incoming:List<SavedEncouragement>):List<SavedEncouragement> =
     incoming.distinctBy{it.id}.filterNot{it.id in existingIds}
@@ -55,10 +56,11 @@ internal fun decodeBackup(bytes:ByteArray):BackupContents {
         val json=JSONObject(text)
         if(json.opt("formatVersion") !is Number || json.get("formatVersion").toString()!="1")throw BackupProblem(BackupError.VERSION)
         require(json.keys().asSequence().toSet()==setOf("formatVersion","settings","historyIncluded","history"))
-        val cfg=json.getJSONObject("settings");require(cfg.keys().asSequence().toSet()==portableKeys)
+        val cfg=json.getJSONObject("settings");val keys=cfg.keys().asSequence().toSet()
+        require(keys==portableKeys || keys==portableKeys+setOf("morningEnabled","eveningEnabled","automaticGeneration"))
         require(cfg.get("language") is String && cfg.get("weightUnit") is String)
         AppLanguage.valueOf(cfg.getString("language"));WeightUnit.valueOf(cfg.getString("weightUnit"))
-        val full=JSONObject(cfg.toString()).put("schema",2)
+        val full=JSONObject(cfg.toString()).put("schema",2).put("morningEnabled",false).put("eveningEnabled",false).put("automaticGeneration",false)
         val settings=decodeSettings(full,emptyList())
         val array=json.getJSONArray("history");if(array.length()>BACKUP_MAX_ANSWERS)throw BackupProblem(BackupError.TOO_LARGE)
         val answers=(0 until array.length()).map{array.getJSONObject(it).let{value->decodeEncouragement(value.getString("id"),value)}}

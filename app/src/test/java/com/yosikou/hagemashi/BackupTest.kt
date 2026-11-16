@@ -23,7 +23,7 @@ class BackupTest {
             assertEquals(if(include)1 else 0,output.answers.size)
             if(include)assertEquals(encodeEncouragement(answer()).toString(),encodeEncouragement(output.answers.single()).toString())
             val settings=JSONObject(String(bytes,Charsets.UTF_8)).getJSONObject("settings")
-            for(key in listOf("testAnswerId","host","token","key","permissions","morningVersion","eveningVersion","reservationVersion","goalCycle","resumeRequired"))assertFalse(key,settings.has(key))
+            for(key in listOf("testAnswerId","host","token","key","permissions","morningVersion","eveningVersion","reservationVersion","goalCycle","resumeRequired","consentControlsVersion","consentShownVersion","consentAcceptedVersion","automaticGeneration","morningEnabled","eveningEnabled"))assertFalse(key,settings.has(key))
         }
     }
     @Test fun passphraseFileCanBeDecryptedIndependentlyAndDetectsWrongPassphraseAndTampering() {
@@ -55,7 +55,7 @@ class BackupTest {
         assertNull(nextReservation(now,zone,forced,NoticeSlot.MORNING,ledger))
         assertFalse(reservationDue(forced.morningVersion,now.atZone(zone).toLocalDate(),NoticeSlot.MORNING,forced,now,zone,ledger))
         val resumed=resumeRestoredSettings(restarted)
-        assertFalse(resumed.resumeRequired);assertTrue(resumed.morning.enabled);assertTrue(resumed.evening.enabled);assertTrue(resumed.automaticGeneration)
+        assertFalse(resumed.resumeRequired);assertFalse(resumed.morning.enabled);assertFalse(resumed.evening.enabled);assertFalse(resumed.automaticGeneration)
         assertEquals(portableSettings(cfg).toString(),portableSettings(restarted).toString())
     }
     @Test fun everyFailureBeforeTheCommitLeavesTheOriginalGenerationActive() {

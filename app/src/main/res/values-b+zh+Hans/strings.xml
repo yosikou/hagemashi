@@ -275,7 +275,7 @@
     <string name="weight_generation_rule">体重与目标体重统一使用%1$s，全文中的体重也使用%1$s。通知短文不得包含测量值或目标值。</string>
     <string name="output_language_rule">short和full都使用应用语言%1$s，即使自定义人格使用其他语言。JSON键名short和full保持不变。</string>
     <string name="maintain_prompt">达到目标后以维持为主，不默认需要继续减重，鼓励可持续的习惯。</string>
-    <string name="health_privacy_body">Health Connect提供体重、体脂率和步数，以及时间、期间和来源。此读取页面不发送数据。手动生成仅在确认后，通过已连接的ChatGPT账户向OpenAI发送核对过的目标、人格、补充和可用健康数据。启用的早晚预约会在设定时间使用当前设置与可用数据；未获得后台读取权限时，健康数据视为未取得。不会发送过去的回答。\n\n回答及其使用的数据通过Android Keystore保护并在设备内加密保存，不包含在备份中。诊断日志不含健康数据、提示词、回答或认证信息。普通手动生成不发通知。预约通知仅显示安全短文，点按打开对应的已保存回答。可随时在Health Connect中撤销权限。不推测缺失记录，也不填零。</string>
+    <string name="health_privacy_body">健康数据读取页面不会向OpenAI发送信息。随时可在Health Connect设置中撤销权限。没有后台读取权限时，自动生成将健康数据视为未取得。\n\n回答及使用的数据通过Android Keystore在本地加密，可从历史中删除，不包含在Android自动备份中。仅在你明确创建含历史的加密备份时，才导出到所选位置。请在该位置管理或删除分享的备份文件。\n\n诊断不含测量值、发送内容、回答或认证信息。通知显示不含测量值的短文，点按打开对应的已保存回答。已发送信息的处理方式请查看OpenAI隐私政策。</string>
     <string name="persona_share_scope">仅以JSON分享名称和提示词，不包含共用补充、目标、连接、健康数据和历史。</string>
     <string name="persona_export">导出此人格</string>
     <string name="persona_import">导入人格</string>
@@ -337,4 +337,20 @@
     <string name="backup_fault_settings">在准备设置后失败</string>
     <string name="backup_fault_history">在准备历史后失败</string>
     <string name="backup_fault_commit">在提交前失败</string>
+    <string name="consent_title">向OpenAI发送数据</string>
+    <string name="consent_accept">同意</string>
+    <string name="consent_later">暂不发送</string>
+    <string name="consent_revoke">撤回向OpenAI发送数据的同意</string>
+    <string name="consent_stop_auto">停止自动生成</string>
+    <string name="consent_privacy">隐私政策</string>
+    <string name="consent_active">已同意发送</string>
+    <string name="consent_inactive">尚未同意或需要重新同意</string>
+    <string name="consent_unknown">无法确认同意状态。不会发送。</string>
+    <string name="consent_required">发送前请在设置→向OpenAI发送数据中同意。停止自动生成后，需在设置中重新开启才会恢复。</string>
+    <string name="manual_create">手动创建</string>
+    <string name="consent_review_optional">查看要发送的数据（可选）</string>
+    <string name="consent_manual_notice">同意有效时，点按手动创建会读取并发送数据，不再逐次确认。普通手动生成不会发送通知。</string>
+    <string name="consent_body">hagemashi通过已连接的ChatGPT账户向OpenAI（api.openai.com）发送信息，为你的记录生成鼓励。\n\n• Health Connect中可用的最近30天体重、体脂率记录和最近7天每日步数，以及测量时间、汇总期间、数据来源和取得状态。早间使用本地日期前一天为止的记录；晚间和手动包括当天读取时刻为止的记录。取得限制可能导致仅有部分记录。\n• 目标体重、可选目标日期、维持目标、所选人格的指令、共用补充、显示语言、体重单位及早间／晚间／手动指令。使用所选模型。不会发送过去的鼓励。人格名称随回答保存，其提示词作为指令发送。\n\n同意后，点按手动创建会读取并发送数据，不再逐次询问。查看数据是可选操作。若开启早晚自动生成，各有效时段会在设定时间附近读取并发送，即使应用未打开也会执行。自动生成默认关闭，仅同意不会开启。\n\n缺失值不推测、不填零。没有健康记录时也可使用目标和指令生成。随时可在设置中停止自动生成或撤回同意。撤回不会收回已发送的数据。本同意与Health Connect权限及ChatGPT登录相互独立。详情请查看隐私政策。</string>
+    <string name="consent_backup_notice">同意、说明显示状态及自动生成和早晚时段的开启状态不会转移。时间会保留。请在新设备重新同意并完成设置，然后明确开启自动生成和所需时段。</string>
+    <string name="consent_openai_policy">OpenAI隐私政策</string>
 </resources>
