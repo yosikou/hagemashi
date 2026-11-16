@@ -18,6 +18,7 @@ import androidx.compose.ui.res.stringResource
             }else OutlinedButton(onClick={app.recordConsent(false){}},enabled=!app.saving){Text(stringResource(R.string.consent_revoke))}
             OutlinedButton(onClick={app.change{it.copy(automaticGeneration=false,resumeAutomatic=false)}},enabled=cfg!=null && !app.saving){Text(stringResource(R.string.consent_stop_auto))}
             SettingsStatus(app)
+            if(app.failure)OutlinedButton(onClick=app::refresh,enabled=!app.saving){Text(stringResource(R.string.detail_retry))}
         }
     }
 }

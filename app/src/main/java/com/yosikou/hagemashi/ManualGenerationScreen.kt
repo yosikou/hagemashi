@@ -42,7 +42,8 @@ internal fun ManualGenerationScreen(model: ManualGenerationViewModel, connection
     val review = model.review
     val busy = model.reading || ui.busy
     val isHealth = ui.answerContext == AnswerContext.HEALTH
-    var started by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    // Preserve only the launch latch across rotation, never health data or prompts.
+    var started by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     androidx.compose.runtime.LaunchedEffect(autoStart,ui.modelsLoaded,settings) {
         if(autoStart && !started && settings!=null && hasDataConsent(settings) && ui.permitted && ui.modelsLoaded) {
             val selected=ui.models.find{it.slug==settings.modelId}
