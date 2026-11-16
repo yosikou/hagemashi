@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
             var route by rememberSaveable { mutableStateOf("home") }
             var consentPrompt by rememberSaveable { mutableStateOf(false) }
             LaunchedEffect(route,app.settings?.consentShownVersion) {
-                if(route=="settings" && app.settings?.let{it.consentShownVersion!=DATA_CONSENT_VERSION}==true)consentPrompt=true
+                if(route in setOf("settings","goal","units","language","backup","agent","personas","connection","health","notice","probes","reservation-diagnostics","dummy-generation","persona-comparison") && app.settings?.let{it.consentShownVersion!=DATA_CONSENT_VERSION}==true)consentPrompt=true
             }
             LaunchedEffect(goalReview) {
                 if(goalReview) { route="goal";detailId=null;goalReview=false;setIntent(Intent(this@MainActivity,MainActivity::class.java)) }
