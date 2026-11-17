@@ -50,8 +50,10 @@ android {
         manifestPlaceholders["adsMode"] = mode
         manifestPlaceholders["admobAppId"] = appId
         manifestPlaceholders["admobBannerId"] = bannerId
-        val descriptor = tasks.register("generate${name.replaceFirstChar { it.uppercase() }}AdDescriptor") {
-            val target = layout.buildDirectory.dir("generated/ad-config/$name")
+        val variantName = name
+        val title = variantName.replaceFirstChar { it.uppercase() }
+        val target = layout.buildDirectory.dir("generated/ad-config/$variantName")
+        val descriptor = tasks.register("generate${title}AdDescriptor") {
             inputs.properties(mapOf("mode" to mode, "appId" to appId, "bannerId" to bannerId))
             outputs.dir(target)
             doLast {
@@ -61,7 +63,8 @@ android {
                     "privacyGate" to if(mode == "production") "UMP" else "TEST_ONLY")))
             }
         }
-        sourceSets.getByName(name).assets.srcDir(descriptor)
+        sourceSets.getByName(variantName).assets.srcDir(target)
+        tasks.matching { it.name == "merge${title}Assets" }.configureEach { dependsOn(descriptor) }
 
     }
     sourceSets {

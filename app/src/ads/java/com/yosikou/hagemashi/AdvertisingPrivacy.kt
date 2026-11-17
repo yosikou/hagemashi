@@ -15,7 +15,7 @@ import com.google.android.ump.UserMessagingPlatform
 // Only UMP owns ad privacy choices. Never read OpenAI consent, app settings or health records.
 internal class AdvertisingPrivacyController(private val activity:Activity?) {
     private val live=BuildConfig.AD_MODE=="production"
-    private val info=if(live && activity!=null)runCatching{UserMessagingPlatform.getConsentInformation(activity.applicationContext)}.getOrNull() else null
+    private val info=if(live)activity?.let{owner->runCatching{UserMessagingPlatform.getConsentInformation(owner.applicationContext)}.getOrNull()} else null
     var allowed by mutableStateOf(!live);private set
     var busy by mutableStateOf(false);private set
     var failed by mutableStateOf(false);private set
