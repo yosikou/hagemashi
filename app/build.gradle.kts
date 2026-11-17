@@ -50,21 +50,6 @@ android {
         manifestPlaceholders["adsMode"] = mode
         manifestPlaceholders["admobAppId"] = appId
         manifestPlaceholders["admobBannerId"] = bannerId
-        val variantName = name
-        val title = variantName.replaceFirstChar { it.uppercase() }
-        val target = layout.buildDirectory.dir("generated/ad-config/$variantName")
-        val descriptor = tasks.register("generate${title}AdDescriptor") {
-            inputs.properties(mapOf("mode" to mode, "appId" to appId, "bannerId" to bannerId))
-            outputs.dir(target)
-            doLast {
-                val directory = target.get().asFile.apply { mkdirs() }
-                directory.resolve("ad-config.json").writeText(groovy.json.JsonOutput.toJson(mapOf(
-                    "schema" to 1, "mode" to mode, "applicationId" to appId, "bannerUnitId" to bannerId,
-                    "privacyGate" to if(mode == "production") "UMP" else "TEST_ONLY")))
-            }
-        }
-        sourceSets.getByName(variantName).assets.srcDir(target)
-        tasks.matching { it.name == "merge${title}Assets" }.configureEach { dependsOn(descriptor) }
 
     }
     sourceSets {
@@ -92,6 +77,38 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+}
+
+// Register generated assets through the AGP Variant API so packaging AND lint models
+// receive the producing-task dependency (not just an untracked directory).
+abstract class AdDescriptorTask : org.gradle.api.DefaultTask() {
+    @get:org.gradle.api.tasks.OutputDirectory
+    abstract val outputDir: org.gradle.api.file.DirectoryProperty
+    @get:org.gradle.api.tasks.Input
+    abstract val mode: org.gradle.api.provider.Property<String>
+    @get:org.gradle.api.tasks.Input
+    abstract val appId: org.gradle.api.provider.Property<String>
+    @get:org.gradle.api.tasks.Input
+    abstract val bannerId: org.gradle.api.provider.Property<String>
+    @org.gradle.api.tasks.TaskAction
+    fun generate() {
+        val directory = outputDir.get().asFile.apply { mkdirs() }
+        directory.resolve("ad-config.json").writeText(groovy.json.JsonOutput.toJson(mapOf(
+            "schema" to 1, "mode" to mode.get(), "applicationId" to appId.get(), "bannerUnitId" to bannerId.get(),
+            "privacyGate" to if(mode.get() == "production") "UMP" else "TEST_ONLY")))
+    }
+}
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        val selectedMode = if(variant.buildType == "release") releaseAds else "test"
+        val task = tasks.register<AdDescriptorTask>("generate${variant.name.replaceFirstChar { it.uppercase() }}AdDescriptor") {
+            outputDir.set(layout.buildDirectory.dir("generated/ad-config/${variant.name}"))
+            mode.set(selectedMode)
+            appId.set(if(selectedMode == "production") liveAppId else if(selectedMode == "test") demoAppId else "")
+            bannerId.set(if(selectedMode == "production") liveBannerId else if(selectedMode == "test") demoBannerId else "")
+        }
+        variant.sources.assets?.addGeneratedSourceDirectory(task, AdDescriptorTask::outputDir)
     }
 }
 
