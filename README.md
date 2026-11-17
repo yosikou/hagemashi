@@ -3,6 +3,10 @@
 Kotlin / Jetpack Compose の単一Activityアプリです。このブランチは実データでの手動生成に、生成済み回答の検証通知と保存済み詳細画面を追加した検証版です。
 Android 8.0（API 26）以上に対応し、Android Studioは不要です。
 
+## Google Playクローズドテスト用AAB
+
+[アップロード鍵の登録、署名済みAAB、現行API要件、Androidだけの提出・移行手順](docs/play-closed-test-aab.md)。packageはcom.yosikou.hagemashi、初回提出はversionCode2／1.0.1、targetSdk36、テスト広告です。専用アップロード鍵を登録してからClosed test signed AABの成功したArtifactを取得します。診断APK署名とは区別し、Playへのアップロード・配信は利用者が行います。
+
 ## AdMobのビルド設定
 
 [公開用ID・テストAAB・UMP・作成／確認手順](docs/admob-release-config.md)。debug／diagnosticは常にテスト広告。releaseも既定はテスト広告で、`-Phagemashi.releaseAds=production` を明示したreleaseだけ本番IDを使います。`off` はSDKなしです。本番では広告の可否をUMPで確認し、OpenAIの同意は流用しません。公開・本番配信開始は行いません。
@@ -126,7 +130,7 @@ CIで配布するAPKは所有者が登録するActions Secretの同じ診断署�
 | Kotlin / Compose compiler Gradle plugin | 2.2.21 |
 | Compose BOM | 2025.04.01 |
 | Activity Compose | 1.10.1 |
-| compileSdk / targetSdk | 36 / 35 |
+| compileSdk / targetSdk | 36 / 36 |
 | minSdk | 26 |
 | Android SDK Build Tools | 35.0.0 |
 | Health Connect Client | 1.1.0 |
@@ -136,9 +140,11 @@ CIで配布するAPKは所有者が登録するActions Secretの同じ診断署�
 
 確認根拠:
 
+- 2026-11-17に[Google Play公式の対象API要件](https://support.google.com/googleplay/android-developer/answer/11926878)を確認し、一般Androidの新規提出・更新に必要なtarget36を採用。compile36と既存ツールチェーンは維持し、[Android16の挙動変更](https://developer.android.com/about/versions/16/behavior-changes-16)を別途実機で確認します。releaseはR8／リソース縮小を有効化しません。
+
 - 広告有効ビルドで `com.google.android.gms:play-services-ads:25.5.0` を固定。[Google公式導入要件](https://developers.google.com/admob/android/quick-start)と[リリースノート](https://developers.google.com/admob/android/rel-notes)でminSdk24以上・compileSdk35以上を確認し、既存のminSdk26・compileSdk36を維持します。開発ビルドはGoogleデモIDを使います。公開向けの本番IDはrelease限定で明示選択します。UMP4.0.0は[公式要件API21以上](https://developers.google.com/admob/android/privacy)を確認し、既存minSdk26で使用します。ツールチェーンを更新せず、診断版のLintとAPKビルドをCIで検証します。
 
-- [Health Connect導入要件](https://developer.android.com/health-and-fitness/health-connect/get-started)と1.1.0のAAR metadataによりcompileSdk36／AGP8.9.1以上が必要。AGP8.10は[API36まで対応](https://developer.android.com/build/releases/agp-8-10-0-release-notes)するため、既存AGP等を上げずcompileSdkだけ更新しました。targetSdk35・minSdk26は維持しています。Health Connectの実利用はAPI28以上と端末の提供状況に依存します。
+- [Health Connect導入要件](https://developer.android.com/health-and-fitness/health-connect/get-started)と1.1.0のAAR metadataによりcompileSdk36／AGP8.9.1以上が必要。AGP8.10は[API36まで対応](https://developer.android.com/build/releases/agp-8-10-0-release-notes)するため、既存AGP等を上げずcompileSdkだけ更新しました。クローズドテスト提出に向けtargetSdk36へ変更し、minSdk26は維持しています。Health Connectの実利用はAPI28以上と端末の提供状況に依存します。
 
 - [Kotlin公式互換性表](https://github.com/JetBrains/kotlin-web-site/blob/52e6b6cafda7e0542d2166ea7fb62c990ede8a11/docs/topics/gradle/gradle-configure-project.md): Kotlin 2.2.20–2.2.21はGradle 7.6.3–8.14、AGP 7.3.1–8.11.1をサポートします。
 - [AGP 8.10公式リリース情報](https://developer.android.com/build/releases/past-releases/agp-8-10-0-release-notes): Gradle 8.11.1・JDK 17に対応する系列です。公式配布のAGP 8.10.1 JAR内の `VersionCheckPlugin.GRADLE_MIN_VERSION` も8.11.1であることを確認しています。
