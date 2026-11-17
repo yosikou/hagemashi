@@ -3,6 +3,10 @@
 Kotlin / Jetpack Compose の単一Activityアプリです。このブランチは実データでの手動生成に、生成済み回答の検証通知と保存済み詳細画面を追加した検証版です。
 Android 8.0（API 26）以上に対応し、Android Studioは不要です。
 
+## AdMobのテストバナー
+
+[採用SDK・デモID・データ分離・Android確認手順](docs/admob-test-banner.md)。診断版だけで、回答詳細の下部にGoogleのテストバナーを1枠表示します。通常版とreleaseには広告SDKを含めず、OpenAIへの同意を広告への同意に流用しません。
+
 ## OpenAIへのデータ送信同意
 
 [同意・送信直前の制御・更新と復元・Android試験](docs/openai-data-consent.md)。設定の初回表示で説明し、明示的な同意後だけ手動・朝夜の生成を許可します。手動のデータ確認は任意です。更新・復元では自動生成をオフにし、同意と有効状態をバックアップから引き継ぎません。
@@ -125,8 +129,11 @@ CIで配布するAPKは所有者が登録するActions Secretの同じ診断署�
 | Android SDK Build Tools | 35.0.0 |
 | Health Connect Client | 1.1.0 |
 | Coroutine Android（直接宣言） | 1.7.3 |
+| Google Mobile Ads SDK（診断版のみ） | 25.5.0 |
 
 確認根拠:
+
+- 診断版のみ `com.google.android.gms:play-services-ads:25.5.0` を固定。[Google公式導入要件](https://developers.google.com/admob/android/quick-start)と[リリースノート](https://developers.google.com/admob/android/rel-notes)でminSdk24以上・compileSdk35以上を確認し、既存のminSdk26・compileSdk36を維持します。SDKのデモ用アプリIDと適応バナー用テストIDを使い、追加の公開用アカウントは不要です。ツールチェーンを更新せず、診断版のLintとAPKビルドをCIで検証します。
 
 - [Health Connect導入要件](https://developer.android.com/health-and-fitness/health-connect/get-started)と1.1.0のAAR metadataによりcompileSdk36／AGP8.9.1以上が必要。AGP8.10は[API36まで対応](https://developer.android.com/build/releases/agp-8-10-0-release-notes)するため、既存AGP等を上げずcompileSdkだけ更新しました。targetSdk35・minSdk26は維持しています。Health Connectの実利用はAPI28以上と端末の提供状況に依存します。
 
