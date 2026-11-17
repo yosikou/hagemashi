@@ -5,7 +5,8 @@
     <uses-permission android:name="android.permission.ACCESS_ADSERVICES_ATTRIBUTION" tools:node="remove" />
     <uses-permission android:name="android.permission.ACCESS_ADSERVICES_TOPICS" tools:node="remove" />
     <application>
-        <!-- Google's public Android demo ID. Never substitute a production ID in this build. -->
-        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713" />
+        <!-- Build-type-selected ID: debug/diagnostic always use the public demo ID. -->
+        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="${admobAppId}" />
+        <meta-data android:name="com.yosikou.hagemashi.ads.BANNER_UNIT_ID" android:value="${admobBannerId}" />
     </application>
 </manifest>

@@ -1,3 +1,7 @@
+# 後続の公開向け設定
+
+本PRの後続で、debugにもテスト広告を有効化し、releaseは既定test／off／明示productionを選べるよう変更しました。以下の「通常版SDKなし」はPR #19時点の説明です。現行の作成手順は[公開向け設定](admob-release-config.md)を参照してください。
+
 # AdMobテストバナー（診断版のみ）
 
 ## 基点と採用仕様

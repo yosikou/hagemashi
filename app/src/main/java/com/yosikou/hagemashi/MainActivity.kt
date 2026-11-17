@@ -90,6 +90,7 @@ class MainActivity : ComponentActivity() {
             }
             LanguageContent(app.settings?.language ?: savedLanguage(this@MainActivity)) {
             androidx.compose.runtime.CompositionLocalProvider(LocalWeightUnit provides (app.settings?.weightUnit ?: WeightUnit.KG)) {
+            AdvertisingPrivacyHost {
             HagemashiTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     val selectedDetail = detailId
@@ -126,6 +127,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
         }
         }
         }

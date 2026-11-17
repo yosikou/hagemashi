@@ -23,21 +23,22 @@ import com.google.android.gms.ads.RequestConfiguration
 import kotlin.coroutines.resume
 import kotlinx.coroutines.*
 
-private const val TEST_BANNER_UNIT = "ca-app-pub-3940256099942544/9214589741"
 
 // No settings, answers, identifiers, health records or authentication enter this boundary.
 // OpenAI consent is never read by this component and is not advertising consent.
 @Composable internal fun DetailTestBanner() {
+    val privacy=LocalAdvertisingPrivacy.current
+    if(!privacy.requestAllowed())return
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val context=LocalContext.current.applicationContext
         val direction=LocalLayoutDirection.current
         val insets=WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal+WindowInsetsSides.Bottom).asPaddingValues()
         val width=(maxWidth-insets.calculateLeftPadding(direction)-insets.calculateRightPadding(direction)).value.toInt()
-        if(width>0) key(context,width) { TestBannerView(context,width,insets) }
+        if(width>0) key(context,width) { TestBannerView(context,width,insets,privacy) }
     }
 }
 
-@Composable private fun TestBannerView(context:Context,width:Int,insets:PaddingValues) {
+@Composable private fun TestBannerView(context:Context,width:Int,insets:PaddingValues,privacy:AdvertisingPrivacyController) {
     val lifecycle=LocalLifecycleOwner.current.lifecycle
     var ready by remember { mutableStateOf(false) }
     var failed by remember { mutableStateOf(false) }
@@ -45,7 +46,7 @@ private const val TEST_BANNER_UNIT = "ca-app-pub-3940256099942544/9214589741"
     var disposed by remember { mutableStateOf(false) }
     var view by remember { mutableStateOf<AdView?>(null) }
     val size=remember(context,width){runCatching{AdSize.getLargeAnchoredAdaptiveBannerAdSize(context,width)}.getOrNull()}
-    LaunchedEffect(Unit) { ready=TestAdsInitialization.ready(context);if(!ready)failed=true }
+    LaunchedEffect(Unit) { ready=privacy.requestAllowed() && TestAdsInitialization.ready(context);if(!ready)failed=true }
     // Initialization and loading have independent bounded waits; neither delays the answer.
     LaunchedEffect(ready,loaded,failed) {
         if(ready && !loaded && !failed) { delay(45000);failed=true }
@@ -76,7 +77,7 @@ private const val TEST_BANNER_UNIT = "ca-app-pub-3940256099942544/9214589741"
                         val ad=AdView(context)
                         view=ad
                         ad.visibility=View.INVISIBLE
-                        ad.adUnitId=TEST_BANNER_UNIT
+                        ad.adUnitId=BuildConfig.ADMOB_BANNER_UNIT_ID
                         ad.setAdSize(size)
                         ad.adListener=object:AdListener() {
                             override fun onAdLoaded() { if(!disposed && !failed)loaded=true }
@@ -85,7 +86,7 @@ private const val TEST_BANNER_UNIT = "ca-app-pub-3940256099942544/9214589741"
                         container.addView(ad)
                         // Deliberately empty: no keywords, content URL, custom targeting,
                         // extras, publisher ID, app text, health values or credentials.
-                        ad.loadAd(AdRequest.Builder().build())
+                        if(privacy.requestAllowed())ad.loadAd(AdRequest.Builder().build()) else failed=true
                         if(!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))ad.pause()
                     } catch(_:Exception) { failed=true }
                 }

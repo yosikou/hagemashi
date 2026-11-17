@@ -353,4 +353,7 @@
     <string name="consent_body">hagemashi通过已连接的ChatGPT账户向OpenAI（api.openai.com）发送信息，为你的记录生成鼓励。\n\n• Health Connect中可用的最近30天体重、体脂率记录和最近7天每日步数，以及测量时间、汇总期间、数据来源和取得状态。早间使用本地日期前一天为止的记录；晚间和手动包括当天读取时刻为止的记录。取得限制可能导致仅有部分记录。\n• 目标体重、可选目标日期、维持目标、所选人格的指令、共用补充、显示语言、体重单位及早间／晚间／手动指令。使用所选模型。不会发送过去的鼓励。人格名称随回答保存，其提示词作为指令发送。\n\n同意后，点按手动创建会读取并发送数据，不再逐次询问。查看数据是可选操作。若开启早晚自动生成，各有效时段会在设定时间附近读取并发送，即使应用未打开也会执行。自动生成默认关闭，仅同意不会开启。\n\n缺失值不推测、不填零。没有健康记录时也可使用目标和指令生成。随时可在设置中停止自动生成或撤回同意。撤回不会收回已发送的数据。本同意与Health Connect权限及ChatGPT登录相互独立。详情请查看隐私政策。</string>
     <string name="consent_backup_notice">同意、说明显示状态及自动生成和早晚时段的开启状态不会转移。时间会保留。请在新设备重新同意并完成设置，然后明确开启自动生成和所需时段。</string>
     <string name="consent_openai_policy">OpenAI隐私政策</string>
+    <string name="ads_privacy_options">广告隐私选项</string>
+    <string name="ads_privacy_unavailable">无法确认广告请求条件，不会加载广告。仍可阅读回答。</string>
+    <string name="ads_privacy_retry">重新检查广告请求条件</string>
 </resources>
