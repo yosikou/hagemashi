@@ -32,6 +32,11 @@ android {
         }
     }
 
+    sourceSets {
+        getByName("debug").java.srcDir("src/noAds/java")
+        getByName("release").java.srcDir("src/noAds/java")
+    }
+
     defaultConfig {
         applicationId = "com.yosikou.hagemashi"
         minSdk = 26
@@ -59,6 +64,7 @@ kotlin {
 }
 
 dependencies {
+    add("diagnosticImplementation", "com.google.android.gms:play-services-ads:25.5.0")
     implementation("androidx.health.connect:connect-client:1.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation(platform("androidx.compose:compose-bom:2025.04.01"))

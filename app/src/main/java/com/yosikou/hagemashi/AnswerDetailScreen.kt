@@ -9,6 +9,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -30,37 +32,44 @@ internal fun AnswerDetailScreen(id: String, model: AnswerDetailViewModel, back: 
     DisposableEffect(Unit) { onDispose { model.close() } }
     val context = LocalContext.current
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission(), model::permissionResult)
-    Page(R.string.detail_title, back, titleText=model.answer?.takeIf{it.id==id}?.let{
-        answerTitle(it,stringResource(R.string.notification_fallback),stringResource(R.string.detail_title))
-    }) {
-        if (model.loading) Text(stringResource(R.string.loading))
-        if(model.deleted) Text(stringResource(R.string.history_deleted))
-        if (model.loadFailed) {
-            Text(stringResource(R.string.detail_load_failed))
-            OutlinedButton(onClick = { model.load(id) }) { Text(stringResource(R.string.detail_retry)) }
-        }
-        model.answer?.takeIf { it.id == id }?.let { answer ->
-            SavedAnswerContent(answer)
-            if(diagnosticUi()) SectionCard {
-                Text(stringResource(R.string.notification_test_title), style = MaterialTheme.typography.titleMedium)
-                Text(stringResource(R.string.notification_test_notice))
-                OutlinedButton(onClick = {
-                    if (Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                        model.awaitPermission(answer.id)
-                        runCatching { permission.launch(Manifest.permission.POST_NOTIFICATIONS) }.onFailure { model.permissionResult(false) }
-                    } else model.testNotification(answer.id)
-                }, enabled = !model.notifying) { Text(stringResource(R.string.notification_test)) }
-                if (model.noticeId == id && model.notice != NoticeState.IDLE) Text(stringResource(when (model.notice) {
-                    NoticeState.POSTED -> R.string.notification_posted
-                    NoticeState.PERMISSION_DENIED -> R.string.notification_denied
-                    NoticeState.DISABLED -> R.string.notification_disabled
-                    NoticeState.FAILED -> R.string.notification_failed
-                    else -> R.string.notification_sending
-                }))
-                OutlinedButton(onClick = { runCatching { context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)) } }) {
-                    Text(stringResource(R.string.notification_settings))
+    Column(Modifier.fillMaxSize()) {
+        Box(Modifier.weight(1f)) {
+            Page(R.string.detail_title, back, titleText=model.answer?.takeIf{it.id==id}?.let{
+                answerTitle(it,stringResource(R.string.notification_fallback),stringResource(R.string.detail_title))
+            }) {
+                if (model.loading) Text(stringResource(R.string.loading))
+                if(model.deleted) Text(stringResource(R.string.history_deleted))
+                if (model.loadFailed) {
+                    Text(stringResource(R.string.detail_load_failed))
+                    OutlinedButton(onClick = { model.load(id) }) { Text(stringResource(R.string.detail_retry)) }
+                }
+                model.answer?.takeIf { it.id == id }?.let { answer ->
+                    SavedAnswerContent(answer)
+                    if(diagnosticUi()) SectionCard {
+                        Text(stringResource(R.string.notification_test_title), style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.notification_test_notice))
+                        OutlinedButton(onClick = {
+                            if (Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                                model.awaitPermission(answer.id)
+                                runCatching { permission.launch(Manifest.permission.POST_NOTIFICATIONS) }.onFailure { model.permissionResult(false) }
+                            } else model.testNotification(answer.id)
+                        }, enabled = !model.notifying) { Text(stringResource(R.string.notification_test)) }
+                        if (model.noticeId == id && model.notice != NoticeState.IDLE) Text(stringResource(when (model.notice) {
+                            NoticeState.POSTED -> R.string.notification_posted
+                            NoticeState.PERMISSION_DENIED -> R.string.notification_denied
+                            NoticeState.DISABLED -> R.string.notification_disabled
+                            NoticeState.FAILED -> R.string.notification_failed
+                            else -> R.string.notification_sending
+                        }))
+                        OutlinedButton(onClick = { runCatching { context.startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)) } }) {
+                            Text(stringResource(R.string.notification_settings))
+                        }
+                    }
                 }
             }
+        }
+        if(model.answer?.id==id && !model.loading && !model.deleted && !model.loadFailed) {
+            key(id) { DetailTestBanner() }
         }
     }
 }
