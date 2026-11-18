@@ -2,6 +2,8 @@ package com.yosikou.hagemashi
 
 import android.graphics.Bitmap
 import android.content.Intent
+import android.content.ContentValues
+import android.provider.MediaStore
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.lifecycle.ViewModelProvider
@@ -13,7 +15,6 @@ import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.File
 import java.time.Instant
 import java.time.LocalDate
 import java.util.TimeZone
@@ -59,15 +60,23 @@ class StorePhoneScreenshotsTest {
             "今日の予定に合わせて、できそうなことから始めましょう。無理なく続ける気持ちが、これからの力になります。",full,"架空データ",true,
             strings.getString(R.string.persona_numbers),rows,GenerationKind.MORNING))
         store.save(latest)
-        val output=requireNotNull(context.getExternalFilesDir("store-screenshots"))
-        output.mkdirs()
         fun text(id:Int)=strings.getString(id)
         fun capture(name:String) {
             compose.waitForIdle()
             instrumentation.waitForIdleSync()
             val image=requireNotNull(instrumentation.uiAutomation.takeScreenshot())
             assertEquals(1080,image.width);assertEquals(1920,image.height)
-            File(output,name).outputStream().use { assertTrue(image.compress(Bitmap.CompressFormat.PNG,100,it)) }
+            // UTP uninstalls the target after instrumentation. Public Pictures survives that
+            // cleanup; these four files contain only this test's explicitly fictional data.
+            val values=ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME,name)
+                put(MediaStore.Images.Media.MIME_TYPE,"image/png")
+                put(MediaStore.Images.Media.RELATIVE_PATH,"Pictures/hagemashi-store")
+                put(MediaStore.Images.Media.IS_PENDING,1)
+            }
+            val uri=requireNotNull(context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,values))
+            requireNotNull(context.contentResolver.openOutputStream(uri)).use { assertTrue(image.compress(Bitmap.CompressFormat.PNG,100,it)) }
+            context.contentResolver.update(uri,ContentValues().apply {put(MediaStore.Images.Media.IS_PENDING,0)},null,null)
             image.recycle()
         }
         // closeDetail() intentionally resets to a component-only Intent. Use that same

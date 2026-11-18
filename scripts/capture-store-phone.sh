@@ -15,6 +15,6 @@ adb shell svc data disable
 capture_result=0
 ./gradlew --no-daemon --no-configuration-cache :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.yosikou.hagemashi.StorePhoneScreenshotsTest -Pandroid.testInstrumentationRunnerArguments.storeScreenshots=true || capture_result=$?
 # Retain already captured images for diagnosis even if the test fails; do not hide its result.
-adb pull /sdcard/Android/data/com.yosikou.hagemashi/files/store-screenshots/. dist/store-phone/ || true
+adb pull /sdcard/Pictures/hagemashi-store/. dist/store-phone/ || true
 test "$capture_result" -eq 0
 test "$(find dist/store-phone -name '*.png' | wc -l)" -ge 2
