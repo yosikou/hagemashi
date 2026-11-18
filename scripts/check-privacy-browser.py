@@ -1,6 +1,6 @@
 """CI-only Chromium checks; no browser dependency in the app or policy page."""
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 root=Path(__file__).resolve().parents[1]
 url=(root/'docs/privacy.html').as_uri()
 output=root/'build/privacy-preview'
@@ -15,6 +15,8 @@ with sync_playwright() as p:
   page.goto(url+'#ja')
   for lang in ('ja','en','fr','de','hi','zh-Hans'):
    page.locator('nav a[href="#'+lang+'"]').click()
+   # hashchange runs asynchronously after the click, so wait for the requested article.
+   expect(page.locator('article[lang="'+lang+'"]').first).to_be_visible()
    assert page.locator('article:visible').count()==1
    assert page.locator('article:visible').get_attribute('lang')==lang
    assert page.locator('article:visible section').count()==10
