@@ -28,6 +28,7 @@ class AabSignatureTest(unittest.TestCase):
             source = root / "unsigned.aab"
             with zipfile.ZipFile(source, "w") as z:
                 z.writestr("base/dex/classes.dex", b"synthetic payload")
+                z.writestr("META-INF/source.properties", b"synthetic metadata")
             signed = root / "signed.aab"
             result = command((["jarsigner"] if shutil.which("jarsigner") else ["java", "-m", "jdk.jartool/sun.security.tools.jarsigner.Main"]) + ["-keystore", str(key), "-storepass:env", "SYNTHETIC_PASSWORD",
                               "-signedjar", str(signed), str(source), "fixture"])

@@ -59,6 +59,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: hagemashi-closed-test-signed-aab
+          overwrite: true
           path: |
             dist/hagemashi-closed-test-testads.aab
             dist/aab-verification.json
@@ -72,6 +73,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: closed-test-aab-readiness
+          overwrite: true
           path: unsigned-aab-readiness.json
           if-no-files-found: error
           retention-days: 14

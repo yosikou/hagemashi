@@ -16,6 +16,7 @@ spec = importlib.util.spec_from_file_location("ad_artifact", ROOT / "ad-artifact
 ad = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(ad)
 ANDROID = "{http://schemas.android.com/apk/res/android}"
+PHASE = "START"
 
 
 def tool(*args):
@@ -26,8 +27,11 @@ def tool(*args):
 
 
 def verify(args):
+    global PHASE
     path = Path(args.aab)
+    PHASE = "BUNDLETOOL_VALIDATE"
     tool("validate", "--bundle=" + str(path))
+    PHASE = "MANIFEST_IDENTITY"
     manifest = ET.fromstring(tool("dump", "manifest", "--bundle=" + str(path), "--module=base"))
     if manifest.attrib.get("package") != "com.yosikou.hagemashi":
         raise ValueError("Unexpected package")
@@ -39,7 +43,9 @@ def verify(args):
     application = manifest.find("application")
     if application is None or application.attrib.get(ANDROID + "debuggable", "false") != "false":
         raise ValueError("Release is debuggable")
+    PHASE = "TEST_ADS"
     ad.inspect(path, "test")
+    PHASE = "PAYLOAD_AND_COMPONENTS"
     libraries = []
     with zipfile.ZipFile(path) as z:
         if z.testzip() is not None:
@@ -68,6 +74,7 @@ def verify(args):
                     if header[0] == 1 and header[-1] < 16384:
                         raise ValueError("Native library is not 16 KB aligned")
                 libraries.append(name)
+    PHASE = "BUNDLE_CONFIG"
     config_text = tool("dump", "config", "--bundle=" + str(path))
     config = json.loads(config_text)
     dimensions = config.get("optimizations", {}).get("splitsConfig", {}).get("splitDimension", [])
@@ -75,6 +82,7 @@ def verify(args):
         raise ValueError("Language splitting must remain disabled")
     if libraries and "PAGE_ALIGNMENT_16K" not in config_text:
         raise ValueError("Bundle packaging is not 16 KB aligned")
+    PHASE = "UPLOAD_SIGNATURE"
     if args.certificate:
         result = subprocess.run(["java", str(ROOT / "VerifyAabSignature.java"), str(path), args.certificate],
                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
@@ -101,6 +109,6 @@ if __name__ == "__main__":
     args = p.parse_args()
     try:
         verify(args)
-    except Exception as e:
+    except Exception:
         # No certificate, payload, secret or arbitrary tool exception is printed on failure.
-        sys.exit("Closed-test AAB verification failed. Check the configured identity, SDK, components and signature.")
+        sys.exit("Closed-test AAB verification failed at fixed stage: " + PHASE)
