@@ -356,4 +356,5 @@
     <string name="ads_privacy_options">विज्ञापन गोपनीयता विकल्प</string>
     <string name="ads_privacy_unavailable">विज्ञापन की अनुमति जाँची नहीं जा सकी। विज्ञापन लोड नहीं होंगे। उत्तर पढ़ सकते हैं।</string>
     <string name="ads_privacy_retry">विज्ञापन अनुमति फिर जाँचें</string>
+    <string name="privacy_open_failed">ब्राउज़र नहीं खुला। ब्राउज़र सेटिंग जाँचकर फिर कोशिश करें।</string>
 </resources>

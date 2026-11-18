@@ -102,6 +102,7 @@ internal fun HomeScreen(app: AppViewModel, connection: ConnectionViewModel, sett
 @Composable
 internal fun SettingsMenu(open: (String) -> Unit, back: () -> Unit) {
     Page(R.string.settings_title, back) {
+        PrivacyPolicyButton()
         AdvertisingPrivacyOptions()
         listOf(
             R.string.settings_encouragement_group to listOf("goal" to R.string.goal_settings, "units" to R.string.weight_unit_title, "language" to R.string.language_title, "backup" to R.string.backup_title, "agent" to R.string.agent_settings, "personas" to R.string.persona_settings),

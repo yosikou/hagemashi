@@ -96,11 +96,11 @@ class MainActivity : ComponentActivity() {
                     val selectedDetail = detailId
                     if (selectedDetail != null) AnswerDetailScreen(selectedDetail, details) { closeDetail() }
                     else if (healthPrivacy) HealthPrivacyScreen { healthPrivacy = false }
-                    else if(consentPrompt) ConsentScreen(app,privacy={healthPrivacy=true},close={consentPrompt=false})
+                    else if(consentPrompt) ConsentScreen(app,close={consentPrompt=false})
                     else when (route) {
                         "home" -> HomeScreen(app, model, { route = it }, { route = if(app.settings?.let(::hasDataConsent)==true) "manual" else "consent" }, { detailId = it })
                         "backup" -> BackupScreen(backup,app,model,{route=it}) { route="settings" }
-                        "consent" -> ConsentScreen(app,privacy={healthPrivacy=true}) { route="settings" }
+                        "consent" -> ConsentScreen(app) { route="settings" }
                         "settings" -> SettingsMenu({ route = it }) { route = "home" }
                         "connection" -> ConnectionScreen(model, { route = "settings" }) {
                             runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://chatgpt.com/settings/usage"))) }

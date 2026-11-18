@@ -3,6 +3,10 @@
 Kotlin / Jetpack Compose の単一Activityアプリです。このブランチは実データでの手動生成に、生成済み回答の検証通知と保存済み詳細画面を追加した検証版です。
 Android 8.0（API 26）以上に対応し、Android Studioは不要です。
 
+## プライバシーポリシー
+
+[6言語のポリシー本文](docs/privacy.html)と[実装との照合・公式資料・GitHub Pages設定・Android確認手順](docs/privacy-policy-review.md)。公開予定URLは `https://yosikou.github.io/hagemashi/privacy.html` です。設定、OpenAI送信同意、Health Connectの説明画面から同じページを開きます。Pagesの有効化・公開・PRのマージは利用者の確認後に行います。公開用問い合わせ先は `yosikou.createapp@gmail.com` です。
+
 ## Google Playクローズドテスト用AAB
 
 [アップロード鍵の登録、署名済みAAB、現行API要件、Androidだけの提出・移行手順](docs/play-closed-test-aab.md)。packageはcom.yosikou.hagemashi、初回提出はversionCode2／1.0.1、targetSdk36、テスト広告です。専用アップロード鍵を登録してからClosed test signed AABの成功したArtifactを取得します。診断APK署名とは区別し、Playへのアップロード・配信は利用者が行います。

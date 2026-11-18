@@ -356,4 +356,5 @@
     <string name="ads_privacy_options">广告隐私选项</string>
     <string name="ads_privacy_unavailable">无法确认广告请求条件，不会加载广告。仍可阅读回答。</string>
     <string name="ads_privacy_retry">重新检查广告请求条件</string>
+    <string name="privacy_open_failed">无法打开浏览器。请检查浏览器设置后重试。</string>
 </resources>
