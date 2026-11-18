@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-erHCakG+UcwdwJtDC4vpl/kYADsc53cHRLsbAqZnrVQ='; base-uri 'none'; form-action 'none'">
+<meta name="description" content="Privacy policy for hagemashi - AI体重管理. 日本語 / English / Français / Deutsch / हिन्दी / 简体中文">
+<title>Privacy policy | hagemashi - AI体重管理</title>
+<style>
+:root {color-scheme:light dark;font-family:system-ui,sans-serif;line-height:1.8;}
+* {box-sizing:border-box;}
+body {margin:0;background:#faf8ff;color:#23212b;}
+main {max-width:54rem;margin:auto;padding:1.25rem;}
+header {padding-block:1rem;}
+h1 {font-size:clamp(1.5rem,5vw,2rem);line-height:1.4;}
+h2 {font-size:1.5rem;} h3 {font-size:1.13rem;}
+p,li,a,h1,h2,h3 {overflow-wrap:anywhere;}
+nav {display:flex;flex-wrap:wrap;gap:.5rem;margin-block:1rem;}
+nav a {display:inline-flex;align-items:center;min-height:44px;padding:.4rem .85rem;border:1px solid #756688;border-radius:1.5rem;}
+a {color:#514074;text-underline-offset:.2em;} a[aria-current] {background:#514074;color:white;}
+a:focus-visible {outline:3px solid #b66b00;outline-offset:3px;}
+article {padding-top:.5rem;} section {margin-block:1.5rem;padding:1rem;border:1px solid #ded6e8;border-radius:1rem;background:#fff;}
+p {margin-block:.7rem;} .revision {color:#5d5567;} .identity {font-size:.95rem;}
+[hidden] {display:none!important;}
+@media(prefers-color-scheme:dark) {body{background:#1b1821;color:#f2ecf6;}section{background:#25202d;border-color:#51465f;}a{color:#dbc0ff;}a[aria-current]{background:#dbc0ff;color:#231931;}.revision{color:#ccc0d6;}}
+@media(max-width:380px) {main{padding:.85rem;}section{padding:.85rem;}}
+</style>
+</head><body><main>
+<header><h1>hagemashi - AI体重管理</h1><p class="identity">Android: com.yosikou.hagemashi</p>
+<nav aria-label="Language / 言語">
+<a href="#ja" lang="ja" hreflang="ja">日本語</a>
+<a href="#en" lang="en" hreflang="en">English</a>
+<a href="#fr" lang="fr" hreflang="fr">Français</a>
+<a href="#de" lang="de" hreflang="de">Deutsch</a>
+<a href="#hi" lang="hi" hreflang="hi">हिन्दी</a>
+<a href="#zh-Hans" lang="zh-Hans" hreflang="zh-Hans">简体中文</a>
+</nav></header>
+<article id="ja" lang="ja" data-title="プライバシーポリシー" aria-labelledby="ja-title"><h2 id="ja-title">プライバシーポリシー</h2><p class="revision"><time datetime="2026-11-18">改定日：2026年11月18日</time></p>
+<section data-section="scope" aria-labelledby="ja-scope"><h3 id="ja-scope">対象と目的</h3>
+<p>本ポリシーは「hagemashi - AI体重管理」（Androidパッケージ：com.yosikou.hagemashi）に適用します。開発者は、記録に合った励ましの作成、端末内の設定・履歴の表示、利用者が有効にした通知のために情報を扱います。</p>
+<p>アプリの健康データ・設定・回答・認証情報を保存する開発者独自のサーバーはありません。ただし、生成時はOpenAI、広告有効版ではGoogle、利用者が選ぶバックアップ保存先ではその提供者が、それぞれ情報を処理します。外部サービスを含め「すべて端末内で処理する」アプリではありません。</p>
+</section>
+<section data-section="health" aria-labelledby="ja-health"><h3 id="ja-health">Health Connectから読む情報</h3>
+<p>要求する健康権限はREAD_WEIGHT（体重）、READ_BODY_FAT（体脂肪率）、READ_STEPS（歩数）、READ_HEALTH_DATA_IN_BACKGROUND（背景読み取り）です。許可された項目だけを読み取り、測定日時、日別歩数の集計期間、データ提供元のアプリ識別子、取得状況も扱います。健康記録の書き込み・削除は行いません。</p>
+<p>生成には体重・体脂肪率の直近30日と歩数の直近7日を使います。朝は現地日付の前日まで、夜と手動は取得時点までの当日を含みます。健康データ確認画面は体重・体脂肪率の直近7日と当日の歩数を表示します。権限や記録の制限により一部のみの場合があります。記録なし・未許可をゼロや推測値で補いません。</p>
+</section>
+<section data-section="openai" aria-labelledby="ja-openai"><h3 id="ja-openai">OpenAIへの送信とChatGPT接続</h3>
+<p>接続には外部ブラウザでSign in with ChatGPTを使います。アプリがパスワードを集めることはありません。確認済みのアカウント識別子、名前、メール、登録ID、端末ごとの不透明なホストID、認証トークン等を接続維持に使います。この連携でChatGPTの過去の会話やメモリを読み取りません。</p>
+<p>送信先はOpenAI（認証はauth.openai.com、モデル一覧・生成はapi.openai.com）です。生成には取得できた上記健康データと日時・期間・提供元・取得状況、目標体重、任意の目標日、維持目標の指示、人格プロンプト、共通の補足、表示言語、体重単位、朝・夜・手動の指示と選択モデルを送ります。人格名は回答の表示・保存に使い、人格の指示をプロンプトとして送ります。過去の励ましは次の生成に送りません。通信先には接続に必要なIPアドレス等も伝わります。</p>
+<p>OpenAI側の処理にはSIWCの条件、利用するアカウント・サービスに適用される規約やプライバシー条件が関係します。アプリはstore=falseでリクエストしますが、これだけでログを含む一切の保持や学習利用がないとは保証しません。このSIWC経路の具体的な保持期間・学習利用への設定の適用範囲は確認できていません。下記のOpenAI公式情報を確認し、不明点はOpenAIへお問い合わせください。通常のAPIキー向け条件をそのまま適用する説明はしません。</p>
+</section>
+<section data-section="timing" aria-labelledby="ja-timing"><h3 id="ja-timing">送信するタイミングと同意</h3>
+<p>健康データ確認画面を開くだけではOpenAIに送りません。設定で送信に明示的に同意した後、「手動で作成」の操作で生成用データを取得・送信します。生成ごとの同意操作はなく、送信内容は任意で確認できます。健康データがない場合も目標・人格・補足で生成できます。</p>
+<p>朝・夜の自動生成は初期状態でオフです。同意後に利用者が有効にした枠だけ、設定時刻を目安に、画面を開いていなくても取得・送信します。OSの制限で遅延・未実行となる場合があります。通信失敗時は当日の有効時間内で再試行し、朝は夜の有効枠までに打ち切り、翌日に持ち越しません。時刻を変更して再予約すると同日でも新しい生成が行われる場合があります。</p>
+</section>
+<section data-section="local" aria-labelledby="ja-local"><h3 id="ja-local">端末内保存と通知</h3>
+<p>目標、言語・単位、モデル・人格と補足、同意、通知設定、接続情報、生成済み回答の短文・全文・生成日時・生成時の人格名と使用データを端末内に保存します。設定・認証・回答内容・予約状態はAES-GCMで暗号化し、鍵はAndroid Keystoreで管理します。Androidの自動バックアップ・端末移行の対象から除外しています。</p>
+<p>すべてのファイルを暗号化する構成ではありません。言語の起動用コピー、履歴のID・生成日時・削除済みIDの索引、予約診断の処理段階・日時・ビルド情報等はアプリ専用領域の暗号化されていないメタデータです。診断は直近最大128件に制限し、測定値・送信内容・回答本文・認証情報や生の応答を含めません。自動で開発者へ送信しません。</p>
+<p>通知には具体的な測定値・目標値を含まない短文を使い、不適切な短文は固定文に置き換えます。通知タップは当時の回答と使用データを開きます。通常の手動生成は通知しません。ロック画面の表示はAndroidの通知設定に従います。</p>
+</section>
+<section data-section="backup" aria-labelledby="ja-backup"><h3 id="ja-backup">バックアップと人格の共有</h3>
+<p>利用者が明示的に作るバックアップには設定と、選択した場合だけ履歴・生成時の使用データを含めます。利用者のパスフレーズからPBKDF2-HMAC-SHA256で鍵を導出し、AES-GCMで暗号化・改ざん検知します。保存先はAndroidのファイル選択で端末やGoogle Drive等から選び、選んだ提供者がファイルを保管します。開発者はパスフレーズを預からず、紛失した場合は復号できません。</p>
+<p>認証トークン・端末鍵・権限・実行待ち予約・送信同意・説明の表示済み状態・自動生成の有効状態は引き継ぎません。復元後は再同意と利用者の再開操作が必要です。人格1人のエクスポートは名前とプロンプトだけの暗号化されていないJSONです。入力した個人情報がプロンプトにあれば、その内容もファイルに含まれます。</p>
+</section>
+<section data-section="ads" aria-labelledby="ja-ads"><h3 id="ja-ads">Google AdMob</h3>
+<p>広告有効版はGoogle Mobile Ads SDK 25.5.0を使い、回答詳細の下部にバナーを表示します。開発・検証用APKとクローズドテストAABはGoogleのテストIDです。本番広告は公開向けビルドで明示的に有効にした場合だけ使います。広告なしビルドには広告SDKを含めません。</p>
+<p>Health Connectのデータを広告配信・ターゲティングに使いません。体重・体脂肪率・歩数・目標・人格プロンプト・補足・回答・ChatGPT認証情報をSDKや広告リクエストに渡しません。広告リクエストにこれらのキーワードや独自パラメーターを付けません。</p>
+<p>Googleの説明ではSDKはIP（おおまかな位置の推定に利用可能）、利用・操作情報、診断情報、端末やアカウントの識別子等を自動収集・共有し、広告・分析・不正防止に使います。本実装は広告ID等の権限を削除し、パーソナライズを無効に設定していますが、他のSDK情報の収集がなくなるわけではありません。テスト広告もオフライン処理ではありません。</p>
+<p>本番広告はUMP 4.0.0で地域等に応じた広告条件を確認できた場合だけリクエストし、必要な広告のプライバシー設定を設定画面に表示します。OpenAIへの同意を広告の同意として使いません。Google側の保持・削除・権利についてはGoogleのポリシーを参照してください。</p>
+</section>
+<section data-section="deletion" aria-labelledby="ja-deletion"><h3 id="ja-deletion">保存期間・削除・同意の取り消し</h3>
+<p>設定と履歴に自動削除期限は設けていません。履歴は個別または確認付きの一括削除ができ、回答と使用データのファイルを削除します。設定・人格・接続やHealth Connectの元記録は残り、削除済みID等のメタデータも残ります。カスタム人格は個別削除、初期人格は個別リセットができます。アプリ内に全設定を一括削除する機能はありません。</p>
+<p>設定の「自動生成を停止」は自動送信のみを止め、有効な同意があれば手動生成を続けられます。「OpenAIへの送信同意を取り消す」は新しい手動・自動送信を止めます。送信直前にも同意を確認しますが、送信済みの情報や処理中の外部データを回収・削除する操作ではありません。Health Connectの権限はその設定で取り消せます。</p>
+<p>ChatGPTの接続解除はサーバーへのセッション失効を試み、成功確認の有無にかかわらず端末内のアクセス・更新・IDトークンを消します。失効確認ができない場合はその旨を案内します。再接続用のアカウント・登録ID・ホストID、アプリの設定・履歴、ブラウザのログインは残ります。ChatGPT設定での接続管理も別途利用してください。</p>
+<p>端末内の設定・履歴・接続情報・診断等をまとめて除くには、Android設定でアプリのストレージを消去するかアンインストールします。ファイルの削除は安全な物理消去を保証しません。Health Connectの元データ、外部保存先のバックアップ・人格JSON、OpenAI・Google側の情報は消えません。各保存先で別途削除・権利行使を行ってください。バックアップを復元すると、以前削除した履歴が再び加わる場合があります。</p>
+</section>
+<section data-section="site" aria-labelledby="ja-site"><h3 id="ja-site">このページ・問い合わせ・改定</h3>
+<p>このページはGitHub Pagesで配信します。本文・言語切替に外部フォント、広告、解析、ログイン、Cookieやブラウザへの設定保存は使いません。ページ取得時にはGitHubがIP等の通信情報を処理します。外部リンクを開いた先ではその提供者のポリシーが適用されます。</p>
+<p>問い合わせ先：<a href="mailto:yosikou.createapp@gmail.com">yosikou.createapp@gmail.com</a>（hagemashi開発者）。問い合わせで送ったメールアドレス・内容は対応に使い、メール提供者も処理します。認証情報や不要な健康記録を送らないでください。問い合わせメールは対応に必要な間保管し、削除の相談は同じ窓口で受け付けます。</p>
+<p>変更時はこのページと改定日を更新します。送信先・目的・データ項目の重要な変更は同意文面の版を更新し、再同意まで送信を止めます。法令遵守やストア審査の通過を保証するものではありません。</p>
+</section>
+<section data-section="resources"><h3>外部サービスの公式情報</h3><ul><li><a href="https://developers.openai.com/siwc/token-sharing-open-source" rel="noreferrer">Sign in with ChatGPT</a></li><li><a href="https://openai.com/policies/sign-in-with-chatgpt-terms/" rel="noreferrer">SIWC Terms</a></li><li><a href="https://help.openai.com/en/articles/20001542-using-your-chatgpt-plan-in-other-apps-and-sites" rel="noreferrer">ChatGPT plan in other apps</a></li><li><a href="https://openai.com/policies/privacy-policy/" rel="noreferrer">OpenAI Privacy Policy</a></li><li><a href="https://privacy.openai.com/" rel="noreferrer">OpenAI Privacy Portal</a></li><li><a href="https://developers.google.com/admob/android/privacy/play-data-disclosure" rel="noreferrer">Google Mobile Ads SDK — data disclosure</a></li><li><a href="https://policies.google.com/privacy" rel="noreferrer">Google Privacy Policy</a></li><li><a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" rel="noreferrer">GitHub Privacy Statement</a></li></ul></section></article>
+<article id="en" lang="en" data-title="Privacy policy" aria-labelledby="en-title"><h2 id="en-title">Privacy policy</h2><p class="revision"><time datetime="2026-11-18">Last revised: 18 November 2026</time></p>
+<section data-section="scope" aria-labelledby="en-scope"><h3 id="en-scope">Scope and purposes</h3>
+<p>This policy covers “hagemashi - AI体重管理” (Android package com.yosikou.hagemashi). The developer processes information to create encouragement based on your records, show local settings and history, and deliver notifications you enable.</p>
+<p>The developer runs no proprietary server storing the app’s health data, settings, answers or credentials. However, OpenAI processes generation requests, Google processes information in ad-enabled builds, and your chosen backup provider stores exported files. Processing is not entirely on your device.</p>
+</section>
+<section data-section="health" aria-labelledby="en-health"><h3 id="en-health">Health Connect information</h3>
+<p>The requested health permissions are READ_WEIGHT (weight), READ_BODY_FAT (body fat percentage), READ_STEPS (steps), and READ_HEALTH_DATA_IN_BACKGROUND (background reading). Only authorized categories are read, including measurement times, daily step periods, source app identifiers and retrieval status. The app does not write or delete Health Connect records.</p>
+<p>Generation uses the last 30 days of weight and body fat records and 7 days of daily steps. Morning excludes the current local date; evening and manual requests include today up to retrieval. The health inspection screen shows 7 days of weight/body fat and today’s steps. Permissions and record availability can limit results. Missing or unauthorized data is never filled with zero or guesses.</p>
+</section>
+<section data-section="openai" aria-labelledby="en-openai"><h3 id="en-openai">OpenAI requests and ChatGPT connection</h3>
+<p>Sign in with ChatGPT opens an external browser. The app does not collect your password. Verified account ID, name, email, registration ID, an opaque per-installation host ID and authentication tokens support the connection. This integration does not read your existing ChatGPT conversations or memories.</p>
+<p>OpenAI receives requests at auth.openai.com for authentication and api.openai.com for models and generation. Generation sends available health records, times, periods, source identifiers and retrieval status; target weight, optional target date, maintenance instructions, persona prompt, shared supplement, display language, weight unit, morning/evening/manual instructions and chosen model. Persona names are used to display and save answers; persona instructions are sent as prompts. Previous encouragements are not included in later requests. Connection information such as your IP address also reaches the service.</p>
+<p>OpenAI processing is subject to SIWC conditions and the terms and privacy rules applicable to your account and service. Requests use store=false, which does not guarantee absence of all retention, logs or training use. The specific retention period and scope of training controls for this SIWC route have not been established. Consult the official OpenAI resources below and contact OpenAI if unclear. Standard API-key conditions are not assumed to apply unchanged.</p>
+</section>
+<section data-section="timing" aria-labelledby="en-timing"><h3 id="en-timing">When information is sent and consent</h3>
+<p>Viewing health records alone sends nothing to OpenAI. After explicit consent in settings, “Create manually” retrieves and sends generation data. There is no consent dialog for every generation; you can optionally inspect the data. Without health records, generation can still use your goal, persona and supplement.</p>
+<p>Automatic morning/evening generation is off by default. After consent, only slots you enable retrieve and send data around their scheduled local times, even with the app off screen. OS restrictions can delay or prevent execution. Communication failures may retry within the same day’s valid window; morning retries stop by an enabled evening slot and never carry into the next day. Changing a time and rescheduling can create a new answer on the same day.</p>
+</section>
+<section data-section="local" aria-labelledby="en-local"><h3 id="en-local">Local storage and notifications</h3>
+<p>Your device stores goals, language/unit, model/personas/supplement, consent and notification settings, connection information, and saved short/full answers with creation time, original persona name and used data. Settings, credentials, answer content and reservation state use AES-GCM encryption with keys managed by Android Keystore. They are excluded from Android automatic backup and device transfer.</p>
+<p>Not every file is encrypted. A bootstrap language copy, history IDs/times/deleted-ID index and reservation diagnostics such as stages, times and build information are unencrypted metadata in app-private storage. Diagnostics retain at most 128 recent events, excluding measurements, sent content, answers, credentials and raw responses. They are not automatically sent to the developer.</p>
+<p>Notifications use short text without specific measurements or target values, replacing unsuitable text with a fixed message. Tapping opens that saved answer and its data. Normal manual generation does not notify. Android notification settings control lock-screen display.</p>
+</section>
+<section data-section="backup" aria-labelledby="en-backup"><h3 id="en-backup">Backups and persona sharing</h3>
+<p>Only explicitly created backups export settings and, if selected, history including the data used. PBKDF2-HMAC-SHA256 derives a key from your passphrase; AES-GCM encrypts and detects tampering. Android’s file picker lets you choose local storage or a provider such as Google Drive, which stores the file. The developer does not hold your passphrase and cannot decrypt without it.</p>
+<p>Tokens, device keys, permissions, pending reservations, sending consent, explanation-seen state and automatic-generation enablement are not transferred. Restore requires new consent and explicit resumption. Single-persona export is unencrypted JSON containing only its name and prompt. Personal information you put in a prompt is therefore included in that file.</p>
+</section>
+<section data-section="ads" aria-labelledby="en-ads"><h3 id="en-ads">Google AdMob</h3>
+<p>Ad-enabled builds use Google Mobile Ads SDK 25.5.0 for a banner at the bottom of answer details. Development/test APKs and closed-test AABs use Google test IDs. Production ads require explicit enablement in a public-release build. Ad-free builds do not include the ads SDK.</p>
+<p>Health Connect information is not used for ad delivery or targeting. Weight, body fat, steps, goals, persona prompts, supplements, answers and ChatGPT credentials are not passed to the SDK or ad requests, including as keywords or custom parameters.</p>
+<p>Google describes automatic SDK collection/sharing of IP (which can indicate approximate location), interactions, diagnostics and device/account identifiers for ads, analytics and fraud prevention. This app removes advertising-ID-related permissions and disables personalization, but other SDK collection may still occur. Test ads also involve network processing.</p>
+<p>Production requests require the UMP 4.0.0 privacy check; required ad privacy options appear in settings. OpenAI consent is not reused as ad consent. Consult Google’s policy for its retention, deletion and rights controls.</p>
+</section>
+<section data-section="deletion" aria-labelledby="en-deletion"><h3 id="en-deletion">Retention, deletion and withdrawing consent</h3>
+<p>Settings and history have no automatic expiry. Individual or confirmed bulk history deletion removes answer and used-data files, retaining settings, personas, connection, source Health Connect records and metadata such as deleted IDs. Custom personas can be deleted and built-in personas reset individually. There is no in-app reset of all settings.</p>
+<p>“Stop automatic generation” stops automatic sending only; manual generation remains available with valid consent. “Withdraw consent to send to OpenAI” stops new manual and automatic requests. Consent is checked immediately before sending, but withdrawal does not recall or delete data already sent or processed externally. Revoke Health Connect permissions in its settings.</p>
+<p>Disconnecting ChatGPT attempts server session revocation and removes local access, refresh and ID tokens whether or not revocation is confirmed. An unconfirmed revocation is reported. Account/registration mapping and host ID for reconnection, app settings/history and browser login remain. Manage the connection separately in ChatGPT settings as needed.</p>
+<p>To remove local settings, history, connection information and diagnostics together, clear app storage in Android settings or uninstall. File deletion does not guarantee physical secure erasure. Source Health Connect data, exported backups/persona JSON and data held by OpenAI/Google remain; manage deletion and rights separately with each provider. Restoring an older backup can reintroduce deleted history.</p>
+</section>
+<section data-section="site" aria-labelledby="en-site"><h3 id="en-site">This page, contact and changes</h3>
+<p>GitHub Pages serves this page. Its text and language switching use no external fonts, ads, analytics, login, cookies or saved browser preferences. GitHub processes connection information such as IP addresses when serving the page. External links are subject to the destination provider’s policy.</p>
+<p>Contact the hagemashi developer at <a href="mailto:yosikou.createapp@gmail.com">yosikou.createapp@gmail.com</a>. Your email address and message are used to answer your inquiry and are also processed by the mail provider. Do not send credentials or unnecessary health records. Correspondence is retained as needed to handle inquiries; request deletion at the same address.</p>
+<p>Changes update this page and revision date. Material changes to recipients, purposes or sent fields update the consent version and stop sending until renewed consent. This policy does not guarantee legal compliance or store approval.</p>
+</section>
+<section data-section="resources"><h3>Official service resources</h3><ul><li><a href="https://developers.openai.com/siwc/token-sharing-open-source" rel="noreferrer">Sign in with ChatGPT</a></li><li><a href="https://openai.com/policies/sign-in-with-chatgpt-terms/" rel="noreferrer">SIWC Terms</a></li><li><a href="https://help.openai.com/en/articles/20001542-using-your-chatgpt-plan-in-other-apps-and-sites" rel="noreferrer">ChatGPT plan in other apps</a></li><li><a href="https://openai.com/policies/privacy-policy/" rel="noreferrer">OpenAI Privacy Policy</a></li><li><a href="https://privacy.openai.com/" rel="noreferrer">OpenAI Privacy Portal</a></li><li><a href="https://developers.google.com/admob/android/privacy/play-data-disclosure" rel="noreferrer">Google Mobile Ads SDK — data disclosure</a></li><li><a href="https://policies.google.com/privacy" rel="noreferrer">Google Privacy Policy</a></li><li><a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" rel="noreferrer">GitHub Privacy Statement</a></li></ul></section></article>
+<article id="fr" lang="fr" data-title="Politique de confidentialité" aria-labelledby="fr-title"><h2 id="fr-title">Politique de confidentialité</h2><p class="revision"><time datetime="2026-11-18">Dernière révision : 18 novembre 2026</time></p>
+<section data-section="scope" aria-labelledby="fr-scope"><h3 id="fr-scope">Portée et finalités</h3>
+<p>Cette politique concerne « hagemashi - AI体重管理 » (package Android com.yosikou.hagemashi). Le développeur traite les informations pour créer des encouragements adaptés aux relevés, afficher les réglages et l’historique locaux et envoyer les notifications activées.</p>
+<p>Le développeur ne dispose pas de serveur propre stockant les données de santé, réglages, réponses ou identifiants de connexion de l’application. Cependant OpenAI traite les demandes de génération, Google des informations dans les versions avec publicité, et le fournisseur choisi conserve les sauvegardes exportées. Tout le traitement ne reste donc pas sur l’appareil.</p>
+</section>
+<section data-section="health" aria-labelledby="fr-health"><h3 id="fr-health">Informations de Health Connect</h3>
+<p>Les autorisations demandées sont READ_WEIGHT (poids), READ_BODY_FAT (masse grasse), READ_STEPS (pas) et READ_HEALTH_DATA_IN_BACKGROUND (lecture en arrière-plan). Seules les catégories autorisées sont lues, avec dates de mesure, périodes des pas quotidiens, identifiants des applications sources et état de récupération. Aucun relevé Health Connect n’est écrit ou supprimé.</p>
+<p>La génération utilise les 30 derniers jours de poids et de masse grasse et 7 jours de pas quotidiens. Le matin exclut la date locale actuelle ; le soir et le mode manuel incluent aujourd’hui jusqu’à la lecture. L’écran de consultation montre 7 jours de poids/masse grasse et les pas du jour. Autorisations et disponibilité peuvent limiter les résultats. Une absence ou un refus n’est jamais remplacé par zéro ou une estimation.</p>
+</section>
+<section data-section="openai" aria-labelledby="fr-openai"><h3 id="fr-openai">Envoi à OpenAI et connexion ChatGPT</h3>
+<p>La connexion Sign in with ChatGPT s’ouvre dans un navigateur externe. L’application ne collecte pas votre mot de passe. Identifiant de compte vérifié, nom, e-mail, identifiant d’inscription, identifiant opaque de l’installation et jetons servent à maintenir la connexion. Cette intégration ne lit pas vos anciennes conversations ou souvenirs ChatGPT.</p>
+<p>OpenAI reçoit les demandes sur auth.openai.com pour l’authentification et api.openai.com pour les modèles et la génération. Sont envoyés les relevés disponibles, dates, périodes, sources et états ; poids cible, date cible facultative, consignes de maintien, prompt de personnalité, complément commun, langue, unité, consignes matin/soir/manuelles et modèle choisi. Le nom de personnalité sert à afficher et enregistrer les réponses ; ses instructions sont envoyées comme prompt. Les encouragements précédents ne sont pas réenvoyés. Des informations de connexion telles que l’adresse IP parviennent aussi au service.</p>
+<p>Le traitement par OpenAI dépend des conditions SIWC et des règles applicables au compte et au service. Les demandes utilisent store=false, sans garantie d’absence de toute conservation, de journaux ou d’entraînement. La durée précise et la portée des contrôles d’entraînement pour ce parcours SIWC ne sont pas établies. Consultez les ressources officielles ci-dessous et OpenAI en cas de doute. Les conditions des clés API classiques ne sont pas supposées identiques.</p>
+</section>
+<section data-section="timing" aria-labelledby="fr-timing"><h3 id="fr-timing">Moment de l’envoi et consentement</h3>
+<p>Consulter les relevés n’envoie rien à OpenAI. Après consentement explicite dans les réglages, « Créer manuellement » lit et envoie les données. Aucun accord supplémentaire n’est demandé à chaque génération ; leur consultation préalable reste facultative. Sans relevés, l’objectif, la personnalité et le complément peuvent suffire.</p>
+<p>La génération automatique matin/soir est désactivée par défaut. Après consentement, seuls les créneaux activés lisent et envoient les données vers l’heure locale prévue, même hors écran. Le système peut retarder ou empêcher l’exécution. Les échecs réseau peuvent être réessayés le même jour dans la période valide ; le matin s’arrête au créneau du soir activé, sans report au lendemain. Modifier l’heure et reprogrammer peut produire une nouvelle réponse le même jour.</p>
+</section>
+<section data-section="local" aria-labelledby="fr-local"><h3 id="fr-local">Stockage local et notifications</h3>
+<p>L’appareil conserve objectifs, langue/unité, modèle/personnalités/complément, consentement, notifications, connexion et réponses courtes/intégrales avec date de création, nom de personnalité d’origine et données utilisées. Réglages, identifiants de connexion, contenu des réponses et état des réservations sont chiffrés en AES-GCM avec Android Keystore. Ils sont exclus de la sauvegarde automatique et du transfert Android.</p>
+<p>Tous les fichiers ne sont pas chiffrés. Copie de langue au démarrage, index des identifiants/dates/identifiants supprimés et diagnostics de réservation (étapes, dates, version) sont des métadonnées non chiffrées dans l’espace privé. Les diagnostics gardent au plus 128 événements récents, sans mesures, contenu envoyé, réponses, identifiants de connexion ou réponses réseau brutes. Aucun envoi automatique au développeur.</p>
+<p>Les notifications emploient un texte court sans mesures ni objectifs chiffrés ; un texte inadapté est remplacé par un message fixe. Un appui ouvre la réponse et ses données enregistrées. La génération manuelle normale ne notifie pas. L’écran verrouillé dépend des réglages Android.</p>
+</section>
+<section data-section="backup" aria-labelledby="fr-backup"><h3 id="fr-backup">Sauvegardes et partage de personnalités</h3>
+<p>Une sauvegarde créée explicitement exporte les réglages et, sur option, l’historique avec les données utilisées. PBKDF2-HMAC-SHA256 dérive la clé de votre phrase secrète ; AES-GCM chiffre et détecte les modifications. Le sélecteur Android propose l’appareil ou un fournisseur tel que Google Drive, qui conserve le fichier. Le développeur ne détient pas votre phrase secrète et ne peut déchiffrer sans elle.</p>
+<p>Jetons, clés de l’appareil, autorisations, réservations en attente, consentement, état d’affichage de l’explication et activation automatique ne sont pas transférés. La restauration impose un nouveau consentement et une reprise explicite. L’export d’une personnalité est un JSON non chiffré contenant uniquement nom et prompt ; les informations personnelles inscrites dans ce prompt y figurent aussi.</p>
+</section>
+<section data-section="ads" aria-labelledby="fr-ads"><h3 id="fr-ads">Google AdMob</h3>
+<p>Les versions avec publicité utilisent Google Mobile Ads SDK 25.5.0 pour une bannière au bas du détail. Les APK de développement/test et AAB de test fermé utilisent les identifiants de test Google. La publicité réelle nécessite une activation explicite dans une version de publication. Les versions sans publicité n’intègrent pas ce SDK.</p>
+<p>Les données Health Connect ne servent ni à diffuser ni à cibler la publicité. Poids, masse grasse, pas, objectifs, prompts, compléments, réponses et identifiants ChatGPT ne sont pas transmis au SDK ou aux demandes, y compris comme mots-clés ou paramètres personnalisés.</p>
+<p>Google décrit une collecte et un partage automatiques d’IP (pouvant indiquer une position approximative), interactions, diagnostics et identifiants d’appareil/compte pour publicité, analyse et lutte antifraude. L’application retire les autorisations liées à l’identifiant publicitaire et désactive la personnalisation ; d’autres collectes du SDK restent possibles. Les annonces de test utilisent aussi le réseau.</p>
+<p>Les demandes réelles exigent la vérification UMP 4.0.0 ; les options publicitaires requises apparaissent dans les réglages. Le consentement OpenAI ne vaut pas consentement publicitaire. Consultez Google pour sa conservation, sa suppression et l’exercice des droits.</p>
+</section>
+<section data-section="deletion" aria-labelledby="fr-deletion"><h3 id="fr-deletion">Conservation, suppression et retrait</h3>
+<p>Réglages et historique n’expirent pas automatiquement. La suppression individuelle ou globale confirmée de l’historique efface fichiers de réponse et données utilisées, mais conserve réglages, personnalités, connexion, relevés Health Connect et métadonnées comme les identifiants supprimés. Les personnalités personnalisées peuvent être supprimées et les initiales réinitialisées individuellement. Il n’existe pas d’effacement global des réglages dans l’application.</p>
+<p>« Arrêter la génération automatique » arrête seulement l’envoi automatique ; le manuel reste possible avec un consentement valide. Retirer le consentement OpenAI bloque les nouveaux envois manuels et automatiques. Le consentement est revérifié juste avant l’envoi, sans rappeler ni effacer les données déjà envoyées ou traitées à l’extérieur. Les autorisations Health Connect se révoquent dans ses réglages.</p>
+<p>La déconnexion ChatGPT tente de révoquer la session sur le serveur et supprime les jetons locaux d’accès, de renouvellement et d’identité, même sans confirmation. L’absence de confirmation est signalée. Association compte/inscription, identifiant d’installation, réglages, historique et session du navigateur restent. Gérez aussi la connexion dans les réglages ChatGPT si nécessaire.</p>
+<p>Pour retirer ensemble réglages, historique, connexion et diagnostics locaux, effacez le stockage de l’application dans Android ou désinstallez-la. Effacer des fichiers ne garantit pas un effacement physique sécurisé. Les sources Health Connect, sauvegardes/JSON exportés et données OpenAI/Google restent à gérer séparément auprès de chaque fournisseur. Restaurer une ancienne sauvegarde peut réintroduire un historique supprimé.</p>
+</section>
+<section data-section="site" aria-labelledby="fr-site"><h3 id="fr-site">Cette page, contact et modifications</h3>
+<p>GitHub Pages héberge cette page. Texte et choix de langue ne dépendent ni de polices externes, publicité, analyse, connexion, cookies ni de préférences sauvegardées dans le navigateur. GitHub traite les informations de connexion, dont l’IP, pour la servir. Les liens externes suivent la politique du destinataire.</p>
+<p>Contact : <a href="mailto:yosikou.createapp@gmail.com">yosikou.createapp@gmail.com</a> (développeur de hagemashi). Votre e-mail et votre message servent à répondre ; le fournisseur de messagerie les traite aussi. N’envoyez pas de secrets de connexion ou de relevés inutiles. Les échanges sont gardés le temps nécessaire au traitement ; demandez leur suppression à cette adresse.</p>
+<p>Les modifications mettent à jour cette page et sa date. Un changement important de destinataire, finalité ou données impose une nouvelle version du consentement et suspend l’envoi jusqu’au nouvel accord. Cette politique ne garantit ni conformité juridique ni approbation du magasin.</p>
+</section>
+<section data-section="resources"><h3>Informations officielles des services</h3><ul><li><a href="https://developers.openai.com/siwc/token-sharing-open-source" rel="noreferrer">Sign in with ChatGPT</a></li><li><a href="https://openai.com/policies/sign-in-with-chatgpt-terms/" rel="noreferrer">SIWC Terms</a></li><li><a href="https://help.openai.com/en/articles/20001542-using-your-chatgpt-plan-in-other-apps-and-sites" rel="noreferrer">ChatGPT plan in other apps</a></li><li><a href="https://openai.com/policies/privacy-policy/" rel="noreferrer">OpenAI Privacy Policy</a></li><li><a href="https://privacy.openai.com/" rel="noreferrer">OpenAI Privacy Portal</a></li><li><a href="https://developers.google.com/admob/android/privacy/play-data-disclosure" rel="noreferrer">Google Mobile Ads SDK — data disclosure</a></li><li><a href="https://policies.google.com/privacy" rel="noreferrer">Google Privacy Policy</a></li><li><a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" rel="noreferrer">GitHub Privacy Statement</a></li></ul></section></article>
+<article id="de" lang="de" data-title="Datenschutzerklärung" aria-labelledby="de-title"><h2 id="de-title">Datenschutzerklärung</h2><p class="revision"><time datetime="2026-11-18">Stand: 18. November 2026</time></p>
+<section data-section="scope" aria-labelledby="de-scope"><h3 id="de-scope">Geltungsbereich und Zwecke</h3>
+<p>Diese Erklärung gilt für „hagemashi - AI体重管理“ (Android-Paket com.yosikou.hagemashi). Der Entwickler verarbeitet Informationen, um zu Ihren Aufzeichnungen passende Ermutigungen zu erstellen, lokale Einstellungen und Verlauf anzuzeigen und aktivierte Benachrichtigungen zuzustellen.</p>
+<p>Der Entwickler betreibt keinen eigenen Server zur Speicherung der Gesundheitsdaten, Einstellungen, Antworten oder Zugangsdaten der App. OpenAI verarbeitet jedoch Generierungsanfragen, Google Informationen in werbeaktiven Versionen und Ihr gewählter Sicherungsanbieter exportierte Dateien. Die Verarbeitung findet nicht ausschließlich auf Ihrem Gerät statt.</p>
+</section>
+<section data-section="health" aria-labelledby="de-health"><h3 id="de-health">Informationen aus Health Connect</h3>
+<p>Angefordert werden READ_WEIGHT (Gewicht), READ_BODY_FAT (Körperfettanteil), READ_STEPS (Schritte) und READ_HEALTH_DATA_IN_BACKGROUND (Hintergrundlesen). Gelesen werden nur erlaubte Kategorien, einschließlich Messzeiten, Zeiträumen täglicher Schritte, Kennungen der Quell-Apps und Abrufstatus. Health-Connect-Einträge werden weder geschrieben noch gelöscht.</p>
+<p>Für die Generierung dienen Gewicht/Körperfett der letzten 30 Tage und tägliche Schritte der letzten 7 Tage. Morgens ist das aktuelle lokale Datum ausgeschlossen; abends und manuell ist heute bis zum Abruf enthalten. Die Gesundheitsübersicht zeigt 7 Tage Gewicht/Körperfett sowie heutige Schritte. Berechtigungen und Verfügbarkeit können den Umfang beschränken. Fehlende oder nicht erlaubte Daten werden nicht durch Null oder Vermutungen ersetzt.</p>
+</section>
+<section data-section="openai" aria-labelledby="de-openai"><h3 id="de-openai">Übermittlung an OpenAI und ChatGPT-Verbindung</h3>
+<p>Sign in with ChatGPT öffnet einen externen Browser. Die App erfasst Ihr Passwort nicht. Verifizierte Kontokennung, Name, E-Mail, Registrierungskennung, undurchsichtige Installationskennung und Authentifizierungstoken dienen der Verbindung. Diese Integration liest keine bisherigen ChatGPT-Gespräche oder Erinnerungen.</p>
+<p>Empfänger ist OpenAI: auth.openai.com für Authentifizierung, api.openai.com für Modelle und Generierung. Übermittelt werden verfügbare Gesundheitsdaten samt Zeiten, Zeiträumen, Quellen und Abrufstatus; Zielgewicht, optionales Zieldatum, Hinweise zum Halten, Persönlichkeits-Prompt, gemeinsame Ergänzung, Sprache, Gewichtseinheit, Morgen-/Abend-/manuelle Anweisungen und Modell. Persönlichkeitsnamen dienen Anzeige und Speicherung; ihre Anweisungen werden als Prompt gesendet. Frühere Ermutigungen werden nicht erneut mitgesendet. Auch Verbindungsdaten wie Ihre IP-Adresse erreichen den Dienst.</p>
+<p>OpenAIs Verarbeitung richtet sich nach SIWC und den für Konto und Dienst geltenden Vertrags- und Datenschutzbedingungen. Anfragen nutzen store=false; dies garantiert weder vollständigen Verzicht auf Speicherung und Protokolle noch auf Trainingsnutzung. Konkrete Aufbewahrungsdauer und Geltung der Trainingskontrollen für diesen SIWC-Weg sind nicht geklärt. Beachten Sie die offiziellen Informationen unten und fragen Sie bei OpenAI nach. Bedingungen für gewöhnliche API-Schlüssel werden nicht unverändert vorausgesetzt.</p>
+</section>
+<section data-section="timing" aria-labelledby="de-timing"><h3 id="de-timing">Zeitpunkt der Übermittlung und Einwilligung</h3>
+<p>Die reine Einsicht in Gesundheitsdaten sendet nichts an OpenAI. Nach ausdrücklicher Einwilligung in den Einstellungen ruft „Manuell erstellen“ Daten ab und sendet sie. Es gibt keine weitere Einwilligung vor jeder Generierung; die Daten können freiwillig eingesehen werden. Ohne Gesundheitsdaten sind Ziel, Persönlichkeit und Ergänzung nutzbar.</p>
+<p>Automatische Morgen-/Abendgenerierung ist zunächst aus. Nach Einwilligung lesen und senden nur aktivierte Zeitfenster ungefähr zur eingestellten Ortszeit, auch außerhalb des Bildschirms. Das Betriebssystem kann Ausführung verzögern oder verhindern. Netzwerkfehler können innerhalb des gültigen Tagesfensters erneut versucht werden; morgens endet dies spätestens am aktivierten Abendfenster, ohne Übertrag auf den Folgetag. Eine geänderte Uhrzeit mit Neuplanung kann am selben Tag eine neue Antwort erzeugen.</p>
+</section>
+<section data-section="local" aria-labelledby="de-local"><h3 id="de-local">Lokale Speicherung und Benachrichtigungen</h3>
+<p>Das Gerät speichert Ziele, Sprache/Einheit, Modell/Persönlichkeiten/Ergänzung, Einwilligung, Benachrichtigungseinstellungen, Verbindung und Kurz-/Vollantworten mit Erstellungszeit, damaligem Persönlichkeitsnamen und verwendeten Daten. Einstellungen, Zugangsdaten, Antwortinhalt und Reservierungsstatus sind mit AES-GCM und Schlüsseln aus Android Keystore verschlüsselt. Sie sind von automatischer Android-Sicherung und Geräteübertragung ausgeschlossen.</p>
+<p>Nicht alle Dateien sind verschlüsselt. Eine Sprachkopie zum Starten, Verlaufsindex mit IDs/Zeiten/gelöschten IDs und Reservierungsdiagnosen (Schritte, Zeiten, Build) sind unverschlüsselte Metadaten im privaten App-Bereich. Diagnosen behalten höchstens 128 aktuelle Ereignisse, ohne Messwerte, gesendeten Inhalt, Antworten, Zugangsdaten oder rohe Netzwerkantworten. Sie werden nicht automatisch an den Entwickler gesendet.</p>
+<p>Benachrichtigungen verwenden Kurztexte ohne konkrete Mess- oder Zielwerte; ungeeignete Texte werden durch einen festen Text ersetzt. Antippen öffnet die zugehörige gespeicherte Antwort samt Daten. Normale manuelle Generierung benachrichtigt nicht. Android-Einstellungen steuern die Anzeige auf dem Sperrbildschirm.</p>
+</section>
+<section data-section="backup" aria-labelledby="de-backup"><h3 id="de-backup">Sicherungen und Teilen von Persönlichkeiten</h3>
+<p>Nur ausdrücklich erstellte Sicherungen exportieren Einstellungen und optional Verlauf samt verwendeten Daten. PBKDF2-HMAC-SHA256 leitet aus Ihrer Passphrase einen Schlüssel ab; AES-GCM verschlüsselt und erkennt Manipulation. Im Android-Dateidialog wählen Sie Gerätespeicher oder etwa Google Drive; dieser Anbieter speichert die Datei. Der Entwickler kennt Ihre Passphrase nicht und kann ohne sie nicht entschlüsseln.</p>
+<p>Token, Geräteschlüssel, Berechtigungen, ausstehende Reservierungen, Einwilligung, Anzeigezustand der Erklärung und Aktivierung automatischer Generierung werden nicht übertragen. Nach Wiederherstellung sind neue Einwilligung und ausdrückliche Fortsetzung erforderlich. Der Export einer Persönlichkeit ist unverschlüsseltes JSON nur mit Name und Prompt. Persönliche Angaben im Prompt sind damit ebenfalls enthalten.</p>
+</section>
+<section data-section="ads" aria-labelledby="de-ads"><h3 id="de-ads">Google AdMob</h3>
+<p>Werbeaktive Versionen verwenden Google Mobile Ads SDK 25.5.0 für ein Banner unten in Antwortdetails. Entwicklungs-/Test-APKs und AABs für geschlossene Tests nutzen Google-Test-IDs. Echte Werbung erfordert ausdrückliche Aktivierung im Veröffentlichungsbuild. Werbefreie Builds enthalten das Werbe-SDK nicht.</p>
+<p>Health-Connect-Daten werden weder für Werbeauslieferung noch für Zielgruppenbildung verwendet. Gewicht, Körperfett, Schritte, Ziele, Prompts, Ergänzungen, Antworten und ChatGPT-Zugangsdaten gehen nicht an SDK oder Werbeanfragen, auch nicht als Schlüsselwörter oder eigene Parameter.</p>
+<p>Google beschreibt automatische Erfassung/Weitergabe von IP (zur ungefähren Standortbestimmung nutzbar), Interaktionen, Diagnosen und Geräte-/Kontokennungen für Werbung, Analyse und Betrugsabwehr. Die App entfernt Berechtigungen für Werbe-IDs und deaktiviert Personalisierung; andere SDK-Erfassung bleibt möglich. Auch Testwerbung verwendet das Netzwerk.</p>
+<p>Echte Werbeanfragen benötigen die UMP-4.0.0-Datenschutzprüfung; erforderliche Werbeoptionen erscheinen in den Einstellungen. OpenAI-Einwilligung ist keine Werbeeinwilligung. Googles Regeln gelten für dortige Aufbewahrung, Löschung und Rechte.</p>
+</section>
+<section data-section="deletion" aria-labelledby="de-deletion"><h3 id="de-deletion">Aufbewahrung, Löschung und Widerruf</h3>
+<p>Einstellungen und Verlauf laufen nicht automatisch ab. Einzelne oder bestätigte Gesamtlöschung des Verlaufs entfernt Antwortdateien samt verwendeten Daten; Einstellungen, Persönlichkeiten, Verbindung, Health-Connect-Quellen und Metadaten wie gelöschte IDs bleiben. Eigene Persönlichkeiten lassen sich löschen, vorgegebene einzeln zurücksetzen. Die App bietet keine Gesamtlöschung aller Einstellungen.</p>
+<p>„Automatische Generierung stoppen“ stoppt nur automatische Übermittlung; manuell bleibt sie bei gültiger Einwilligung möglich. Der Widerruf der OpenAI-Einwilligung stoppt neue manuelle und automatische Anfragen. Die Prüfung erfolgt unmittelbar vor dem Senden, holt aber bereits übermittelte oder extern verarbeitete Daten nicht zurück und löscht sie nicht. Health-Connect-Rechte können dort widerrufen werden.</p>
+<p>ChatGPT trennen versucht die serverseitige Sitzungsaufhebung und löscht lokale Zugriffs-, Aktualisierungs- und ID-Token auch ohne Bestätigung. Eine unbestätigte Aufhebung wird gemeldet. Konto-/Registrierungszuordnung, Installationskennung, Einstellungen, Verlauf und Browseranmeldung bleiben. Verwalten Sie die Verbindung bei Bedarf zusätzlich in ChatGPT.</p>
+<p>Für gemeinsame Entfernung lokaler Einstellungen, Verlauf, Verbindung und Diagnosen löschen Sie den App-Speicher in Android oder deinstallieren Sie die App. Dateilöschung garantiert keine sichere physische Löschung. Health-Connect-Quellen, exportierte Sicherungen/JSON und Daten bei OpenAI/Google bleiben und müssen separat beim Anbieter verwaltet werden. Eine alte Sicherung kann gelöschten Verlauf erneut hinzufügen.</p>
+</section>
+<section data-section="site" aria-labelledby="de-site"><h3 id="de-site">Diese Seite, Kontakt und Änderungen</h3>
+<p>GitHub Pages liefert diese Seite. Text und Sprachwahl verwenden keine externen Schriften, Werbung, Analyse, Anmeldung, Cookies oder gespeicherten Browsereinstellungen. GitHub verarbeitet beim Abruf Verbindungsinformationen wie die IP. Für externe Links gilt die Richtlinie des jeweiligen Anbieters.</p>
+<p>Kontakt: <a href="mailto:yosikou.createapp@gmail.com">yosikou.createapp@gmail.com</a> (hagemashi-Entwickler). E-Mail-Adresse und Nachricht werden zur Bearbeitung verwendet und auch vom Mailanbieter verarbeitet. Senden Sie keine Zugangsdaten oder unnötigen Gesundheitsdaten. Korrespondenz bleibt so lange wie für die Bearbeitung nötig; Löschung kann an derselben Adresse angefragt werden.</p>
+<p>Änderungen aktualisieren Seite und Datum. Wesentliche Änderungen an Empfängern, Zwecken oder Datenfeldern erfordern eine neue Einwilligungsversion und stoppen die Übermittlung bis zur erneuten Einwilligung. Diese Erklärung garantiert keine Rechtskonformität oder Store-Zulassung.</p>
+</section>
+<section data-section="resources"><h3>Offizielle Informationen der Dienste</h3><ul><li><a href="https://developers.openai.com/siwc/token-sharing-open-source" rel="noreferrer">Sign in with ChatGPT</a></li><li><a href="https://openai.com/policies/sign-in-with-chatgpt-terms/" rel="noreferrer">SIWC Terms</a></li><li><a href="https://help.openai.com/en/articles/20001542-using-your-chatgpt-plan-in-other-apps-and-sites" rel="noreferrer">ChatGPT plan in other apps</a></li><li><a href="https://openai.com/policies/privacy-policy/" rel="noreferrer">OpenAI Privacy Policy</a></li><li><a href="https://privacy.openai.com/" rel="noreferrer">OpenAI Privacy Portal</a></li><li><a href="https://developers.google.com/admob/android/privacy/play-data-disclosure" rel="noreferrer">Google Mobile Ads SDK — data disclosure</a></li><li><a href="https://policies.google.com/privacy" rel="noreferrer">Google Privacy Policy</a></li><li><a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" rel="noreferrer">GitHub Privacy Statement</a></li></ul></section></article>
+<article id="hi" lang="hi" data-title="गोपनीयता नीति" aria-labelledby="hi-title"><h2 id="hi-title">गोपनीयता नीति</h2><p class="revision"><time datetime="2026-11-18">अंतिम संशोधन: 18 नवंबर 2026</time></p>
+<section data-section="scope" aria-labelledby="hi-scope"><h3 id="hi-scope">दायरा और उद्देश्य</h3>
+<p>यह नीति “hagemashi - AI体重管理” (Android पैकेज com.yosikou.hagemashi) पर लागू है। डेवलपर आपके रिकॉर्ड के अनुसार प्रोत्साहन बनाने, स्थानीय सेटिंग और इतिहास दिखाने तथा आपकी सक्षम की गई सूचनाएँ भेजने के लिए जानकारी संसाधित करता है।</p>
+<p>ऐप के स्वास्थ्य डेटा, सेटिंग, उत्तर या लॉगिन जानकारी रखने के लिए डेवलपर का अपना सर्वर नहीं है। फिर भी उत्तर बनाने की माँग OpenAI, विज्ञापन वाली बिल्ड की जानकारी Google और निर्यात की गई फ़ाइल चुना हुआ बैकअप प्रदाता संसाधित करते हैं। पूरा संसाधन केवल डिवाइस पर नहीं होता।</p>
+</section>
+<section data-section="health" aria-labelledby="hi-health"><h3 id="hi-health">Health Connect की जानकारी</h3>
+<p>माँगी गई स्वास्थ्य अनुमतियाँ READ_WEIGHT (वज़न), READ_BODY_FAT (शरीर में वसा प्रतिशत), READ_STEPS (कदम) और READ_HEALTH_DATA_IN_BACKGROUND (पृष्ठभूमि में पढ़ना) हैं। केवल अनुमत श्रेणियाँ पढ़ी जाती हैं, जिनमें माप का समय, दैनिक कदमों की अवधि, स्रोत ऐप की पहचान और प्राप्ति स्थिति शामिल हैं। Health Connect में रिकॉर्ड लिखे या मिटाए नहीं जाते।</p>
+<p>उत्तर बनाने में पिछले 30 दिनों के वज़न और वसा रिकॉर्ड तथा 7 दिनों के दैनिक कदम इस्तेमाल होते हैं। सुबह वर्तमान स्थानीय तारीख शामिल नहीं होती; रात और मैन्युअल में आज के प्राप्ति समय तक का डेटा शामिल होता है। स्वास्थ्य जाँच स्क्रीन 7 दिनों का वज़न/वसा और आज के कदम दिखाती है। अनुमति और उपलब्धता से परिणाम सीमित हो सकते हैं। अनुपलब्ध या अनधिकृत मानों को शून्य या अनुमान से नहीं भरा जाता।</p>
+</section>
+<section data-section="openai" aria-labelledby="hi-openai"><h3 id="hi-openai">OpenAI को भेजना और ChatGPT कनेक्शन</h3>
+<p>Sign in with ChatGPT बाहरी ब्राउज़र में खुलता है। ऐप आपका पासवर्ड एकत्र नहीं करता। सत्यापित खाता पहचान, नाम, ईमेल, पंजीकरण पहचान, इंस्टॉलेशन की अस्पष्ट होस्ट पहचान और प्रमाणीकरण टोकन कनेक्शन के लिए इस्तेमाल होते हैं। यह जुड़ाव आपकी पुरानी ChatGPT बातचीत या मेमोरी नहीं पढ़ता।</p>
+<p>प्राप्तकर्ता OpenAI है: प्रमाणीकरण के लिए auth.openai.com और मॉडल/उत्तर के लिए api.openai.com। उपलब्ध स्वास्थ्य रिकॉर्ड, समय, अवधि, स्रोत, प्राप्ति स्थिति; लक्ष्य वज़न, वैकल्पिक लक्ष्य तारीख, वज़न बनाए रखने के निर्देश, व्यक्तित्व प्रॉम्प्ट, साझा पूरक, भाषा, वज़न इकाई, सुबह/रात/मैन्युअल निर्देश और चुना मॉडल भेजे जाते हैं। व्यक्तित्व नाम उत्तर दिखाने और सहेजने के लिए है; उसके निर्देश प्रॉम्प्ट में भेजे जाते हैं। पिछले प्रोत्साहन अगले अनुरोध में नहीं जाते। IP जैसी कनेक्शन जानकारी भी सेवा को मिलती है।</p>
+<p>OpenAI का संसाधन SIWC की शर्तों और खाते तथा सेवा पर लागू गोपनीयता नियमों पर निर्भर है। अनुरोध में store=false है, लेकिन इससे हर प्रकार के भंडारण, लॉग या प्रशिक्षण उपयोग के अभाव की गारंटी नहीं मिलती। इस SIWC मार्ग की निश्चित अवधारण अवधि और प्रशिक्षण नियंत्रणों का दायरा स्थापित नहीं है। नीचे दिए आधिकारिक स्रोत देखें और संदेह में OpenAI से पूछें। सामान्य API कुंजी की शर्तें ज्यों की त्यों लागू नहीं मानी जातीं।</p>
+</section>
+<section data-section="timing" aria-labelledby="hi-timing"><h3 id="hi-timing">भेजने का समय और सहमति</h3>
+<p>केवल स्वास्थ्य रिकॉर्ड देखने से OpenAI को कुछ नहीं भेजा जाता। सेटिंग में स्पष्ट सहमति के बाद “मैन्युअल रूप से बनाएँ” डेटा प्राप्त करके भेजता है। हर बार नया सहमति संवाद नहीं आता; भेजने वाला डेटा देखना वैकल्पिक है। स्वास्थ्य रिकॉर्ड न होने पर भी लक्ष्य, व्यक्तित्व और पूरक से उत्तर बन सकता है।</p>
+<p>सुबह/रात का स्वचालित निर्माण शुरू में बंद है। सहमति के बाद केवल आपके सक्षम किए स्लॉट निर्धारित स्थानीय समय के आसपास, स्क्रीन बंद होने पर भी डेटा पढ़कर भेजते हैं। OS इसे देर से चला सकता है या रोक सकता है। संचार विफलता पर उसी दिन की मान्य अवधि में पुनः प्रयास हो सकता है; सुबह का प्रयास सक्षम रात स्लॉट तक रुकता है और अगले दिन नहीं जाता। समय बदलकर फिर निर्धारित करने से उसी दिन नया उत्तर बन सकता है।</p>
+</section>
+<section data-section="local" aria-labelledby="hi-local"><h3 id="hi-local">स्थानीय भंडारण और सूचनाएँ</h3>
+<p>डिवाइस पर लक्ष्य, भाषा/इकाई, मॉडल/व्यक्तित्व/पूरक, सहमति, सूचना सेटिंग, कनेक्शन और छोटे/पूरे उत्तर, निर्माण समय, उस समय का व्यक्तित्व नाम तथा प्रयुक्त डेटा सहेजे जाते हैं। सेटिंग, लॉगिन जानकारी, उत्तर सामग्री और आरक्षण स्थिति AES-GCM से एन्क्रिप्ट हैं; कुंजी Android Keystore में रहती है। ये Android के स्वतः बैकअप और डिवाइस ट्रांसफ़र से बाहर हैं।</p>
+<p>हर फ़ाइल एन्क्रिप्ट नहीं है। आरंभ की भाषा प्रति, इतिहास ID/समय/हटाए गए ID का सूचकांक और आरक्षण निदान (चरण, समय, बिल्ड) ऐप के निजी स्थान में बिना एन्क्रिप्शन का मेटाडेटा हैं। निदान में अधिकतम 128 हाल की घटनाएँ रहती हैं; माप, भेजी सामग्री, उत्तर, लॉगिन जानकारी या कच्चे नेटवर्क उत्तर नहीं होते। ये अपने आप डेवलपर को नहीं भेजे जाते।</p>
+<p>सूचनाओं के छोटे पाठ में ठोस माप या लक्ष्य मान नहीं होते; अनुपयुक्त पाठ स्थिर संदेश से बदलता है। टैप करने पर उसी समय का सहेजा उत्तर और डेटा खुलता है। सामान्य मैन्युअल निर्माण सूचना नहीं भेजता। लॉक स्क्रीन का प्रदर्शन Android सूचना सेटिंग पर निर्भर है।</p>
+</section>
+<section data-section="backup" aria-labelledby="hi-backup"><h3 id="hi-backup">बैकअप और व्यक्तित्व साझा करना</h3>
+<p>केवल स्पष्ट रूप से बनाए बैकअप में सेटिंग और चुने जाने पर इतिहास व प्रयुक्त डेटा निर्यात होता है। पासफ़्रेज़ से PBKDF2-HMAC-SHA256 कुंजी बनाता है; AES-GCM एन्क्रिप्शन और छेड़छाड़ जाँच करता है। Android फ़ाइल चयन से स्थानीय स्थान या Google Drive जैसे प्रदाता को चुनते हैं, जो फ़ाइल रखता है। डेवलपर आपका पासफ़्रेज़ नहीं रखता और उसके बिना डिक्रिप्ट नहीं कर सकता।</p>
+<p>टोकन, डिवाइस कुंजी, अनुमतियाँ, लंबित आरक्षण, भेजने की सहमति, विवरण दिखने की स्थिति और स्वचालित निर्माण की सक्रिय स्थिति नहीं जातीं। पुनर्स्थापना के बाद नई सहमति और स्पष्ट पुनःआरंभ ज़रूरी है। एक व्यक्तित्व का निर्यात केवल नाम और प्रॉम्प्ट वाला बिना एन्क्रिप्शन का JSON है। प्रॉम्प्ट में लिखी निजी जानकारी भी उस फ़ाइल में रहेगी।</p>
+</section>
+<section data-section="ads" aria-labelledby="hi-ads"><h3 id="hi-ads">Google AdMob</h3>
+<p>विज्ञापन वाली बिल्ड उत्तर विवरण के नीचे बैनर के लिए Google Mobile Ads SDK 25.5.0 इस्तेमाल करती है। विकास/परीक्षण APK और बंद परीक्षण AAB में Google परीक्षण ID हैं। वास्तविक विज्ञापन केवल प्रकाशन बिल्ड में स्पष्ट रूप से सक्षम होने पर होते हैं। विज्ञापन रहित बिल्ड में विज्ञापन SDK नहीं है।</p>
+<p>Health Connect डेटा विज्ञापन दिखाने या लक्ष्यीकरण में इस्तेमाल नहीं होता। वज़न, वसा, कदम, लक्ष्य, प्रॉम्प्ट, पूरक, उत्तर या ChatGPT लॉगिन जानकारी SDK या विज्ञापन अनुरोध में नहीं दी जाती, न ही कीवर्ड या कस्टम पैरामीटर के रूप में।</p>
+<p>Google के अनुसार SDK विज्ञापन, विश्लेषण और धोखाधड़ी रोकने हेतु IP (जिससे अनुमानित स्थान पता चल सकता है), उपयोग, निदान और डिवाइस/खाता पहचान अपने आप एकत्र/साझा करता है। ऐप विज्ञापन ID संबंधी अनुमतियाँ हटाता और वैयक्तिकरण बंद करता है; अन्य SDK संग्रह फिर भी संभव है। परीक्षण विज्ञापन भी नेटवर्क का उपयोग करते हैं।</p>
+<p>वास्तविक विज्ञापन अनुरोध के लिए UMP 4.0.0 गोपनीयता जाँच ज़रूरी है; आवश्यक विज्ञापन विकल्प सेटिंग में दिखते हैं। OpenAI सहमति विज्ञापन सहमति नहीं है। Google की अवधारण, मिटाने और अधिकार संबंधी नीति देखें।</p>
+</section>
+<section data-section="deletion" aria-labelledby="hi-deletion"><h3 id="hi-deletion">अवधारण, मिटाना और सहमति वापस लेना</h3>
+<p>सेटिंग और इतिहास अपने आप समाप्त नहीं होते। व्यक्तिगत या पुष्टि के बाद पूरे इतिहास को मिटाने से उत्तर और प्रयुक्त डेटा फ़ाइलें हटती हैं; सेटिंग, व्यक्तित्व, कनेक्शन, Health Connect के मूल रिकॉर्ड और हटाए ID जैसा मेटाडेटा रहता है। कस्टम व्यक्तित्व मिटा सकते हैं और शुरुआती व्यक्तित्व अलग-अलग रीसेट कर सकते हैं। ऐप में सभी सेटिंग एक साथ मिटाने का विकल्प नहीं है।</p>
+<p>“स्वचालित निर्माण रोकें” केवल स्वतः भेजना रोकता है; मान्य सहमति पर मैन्युअल उपयोग जारी है। OpenAI सहमति वापस लेना नए मैन्युअल और स्वचालित अनुरोध रोकता है। भेजने से तुरंत पहले सहमति जाँची जाती है, पर पहले भेजा या बाहरी संसाधित डेटा वापस या मिटाया नहीं जाता। Health Connect की अनुमति उसकी सेटिंग में हटाएँ।</p>
+<p>ChatGPT डिस्कनेक्ट सर्वर सत्र निरस्तीकरण का प्रयास करता और पुष्टि हो या न हो, स्थानीय एक्सेस, रिफ़्रेश और ID टोकन मिटाता है। पुष्टि न होने की सूचना दी जाती है। पुनः जुड़ने के खाता/पंजीकरण संबंध, होस्ट ID, ऐप सेटिंग, इतिहास और ब्राउज़र लॉगिन बने रहते हैं। आवश्यकता पर ChatGPT सेटिंग में भी कनेक्शन सँभालें।</p>
+<p>स्थानीय सेटिंग, इतिहास, कनेक्शन और निदान एक साथ हटाने के लिए Android में ऐप स्टोरेज साफ़ करें या ऐप हटाएँ। फ़ाइल मिटाना सुरक्षित भौतिक मिटाने की गारंटी नहीं है। Health Connect स्रोत, निर्यात बैकअप/JSON और OpenAI/Google का डेटा नहीं मिटता; हर प्रदाता के पास अलग से मिटाने या अधिकार का अनुरोध करें। पुराना बैकअप बहाल करने से मिटा इतिहास फिर जुड़ सकता है।</p>
+</section>
+<section data-section="site" aria-labelledby="hi-site"><h3 id="hi-site">यह पेज, संपर्क और बदलाव</h3>
+<p>यह पेज GitHub Pages पर है। पाठ और भाषा बदलने में बाहरी फ़ॉन्ट, विज्ञापन, विश्लेषण, लॉगिन, कुकी या सहेजी ब्राउज़र पसंद नहीं है। पेज देने पर GitHub IP जैसी कनेक्शन जानकारी संसाधित करता है। बाहरी लिंक पर उस प्रदाता की नीति लागू है।</p>
+<p>संपर्क: <a href="mailto:yosikou.createapp@gmail.com">yosikou.createapp@gmail.com</a> (hagemashi डेवलपर)। आपका ईमेल और संदेश जवाब देने में उपयोग होते हैं और मेल प्रदाता भी उन्हें संसाधित करता है। लॉगिन रहस्य या अनावश्यक स्वास्थ्य रिकॉर्ड न भेजें। पत्राचार आवश्यकता भर रखा जाता है; मिटाने के लिए इसी पते पर पूछें।</p>
+<p>बदलाव पर पेज और संशोधन तारीख बदलते हैं। प्राप्तकर्ता, उद्देश्य या डेटा में महत्वपूर्ण बदलाव पर सहमति संस्करण बदलेगा और नई सहमति तक भेजना रुकेगा। यह नीति कानूनी अनुपालन या स्टोर मंज़ूरी की गारंटी नहीं है।</p>
+</section>
+<section data-section="resources"><h3>सेवाओं की आधिकारिक जानकारी</h3><ul><li><a href="https://developers.openai.com/siwc/token-sharing-open-source" rel="noreferrer">Sign in with ChatGPT</a></li><li><a href="https://openai.com/policies/sign-in-with-chatgpt-terms/" rel="noreferrer">SIWC Terms</a></li><li><a href="https://help.openai.com/en/articles/20001542-using-your-chatgpt-plan-in-other-apps-and-sites" rel="noreferrer">ChatGPT plan in other apps</a></li><li><a href="https://openai.com/policies/privacy-policy/" rel="noreferrer">OpenAI Privacy Policy</a></li><li><a href="https://privacy.openai.com/" rel="noreferrer">OpenAI Privacy Portal</a></li><li><a href="https://developers.google.com/admob/android/privacy/play-data-disclosure" rel="noreferrer">Google Mobile Ads SDK — data disclosure</a></li><li><a href="https://policies.google.com/privacy" rel="noreferrer">Google Privacy Policy</a></li><li><a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" rel="noreferrer">GitHub Privacy Statement</a></li></ul></section></article>
+<article id="zh-Hans" lang="zh-Hans" data-title="隐私政策" aria-labelledby="zh-Hans-title"><h2 id="zh-Hans-title">隐私政策</h2><p class="revision"><time datetime="2026-11-18">修订日期：2026年11月18日</time></p>
+<section data-section="scope" aria-labelledby="zh-Hans-scope"><h3 id="zh-Hans-scope">适用范围与目的</h3>
+<p>本政策适用于“hagemashi - AI体重管理”（Android包名：com.yosikou.hagemashi）。开发者处理信息，用于根据记录生成鼓励、显示本机设置和历史，以及发送用户启用的通知。</p>
+<p>开发者没有用于保存本应用健康数据、设置、回答或认证信息的自建服务器。但生成请求由OpenAI处理，含广告版本的信息由Google处理，导出的备份由所选存储服务商保存。因此并非所有处理都在本机完成。</p>
+</section>
+<section data-section="health" aria-labelledby="zh-Hans-health"><h3 id="zh-Hans-health">读取的Health Connect信息</h3>
+<p>申请的健康权限为READ_WEIGHT（体重）、READ_BODY_FAT（体脂肪率）、READ_STEPS（步数）及READ_HEALTH_DATA_IN_BACKGROUND（后台读取）。只读取已授权项目，也处理测量时间、每日步数统计期间、来源应用标识和获取状态。不写入或删除Health Connect记录。</p>
+<p>生成使用最近30天的体重、体脂肪率和最近7天的每日步数。早间不包含本地日期的当天；晚间和手动包含当天截至读取时的记录。健康查看页面显示7天的体重、体脂肪率及当天步数。权限和记录可用性可能限制结果。缺失或未授权不会用零或推测值补全。</p>
+</section>
+<section data-section="openai" aria-labelledby="zh-Hans-openai"><h3 id="zh-Hans-openai">向OpenAI发送及ChatGPT连接</h3>
+<p>通过外部浏览器进行Sign in with ChatGPT。应用不收集密码。经验证的账户标识、姓名、邮箱、注册标识、每次安装的不透明主机标识及认证令牌用于维持连接。此连接不读取已有ChatGPT对话或记忆。</p>
+<p>接收方为OpenAI：认证使用auth.openai.com，模型和生成使用api.openai.com。生成会发送可获取的健康记录、时间、期间、来源和状态；目标体重、可选目标日期、维持指示、人格提示词、共同补充、语言、体重单位、早间／晚间／手动指示和所选模型。人格名称用于回答显示和保存，人格指示作为提示词发送。以往鼓励不会发送到下一次生成。IP地址等连接信息也会到达服务方。</p>
+<p>OpenAI的处理受SIWC条件及账户和服务适用的条款、隐私规定影响。请求使用store=false，但这不保证完全不保留数据、日志或不用于训练。此SIWC路径的具体保留期限及训练控制适用范围尚未确认。请查阅下方官方资料并向OpenAI咨询。不能直接套用一般API密钥方式的条件。</p>
+</section>
+<section data-section="timing" aria-labelledby="zh-Hans-timing"><h3 id="zh-Hans-timing">发送时机与同意</h3>
+<p>仅查看健康记录不会向OpenAI发送信息。在设置中明确同意后，“手动创建”会读取并发送生成数据。每次生成不再重复弹出同意框，可自行查看待发送数据。没有健康记录时也可使用目标、人格和补充生成。</p>
+<p>早晚自动生成默认为关闭。同意后，仅用户启用的时段会在所设本地时间附近读取并发送，即使应用不在屏幕上。系统限制可能延迟或阻止运行。通信失败可在当天有效期间重试；早间最迟到启用的晚间时段为止，不顺延至次日。修改时间重新预约可能在同一天生成新回答。</p>
+</section>
+<section data-section="local" aria-labelledby="zh-Hans-local"><h3 id="zh-Hans-local">本机保存与通知</h3>
+<p>本机保存目标、语言和单位、模型、人格和补充、同意、通知设置、连接信息，以及回答短文、全文、生成时间、当时人格名和使用数据。设置、认证、回答内容及预约状态采用AES-GCM加密，密钥由Android Keystore管理。它们不纳入Android自动备份或设备迁移。</p>
+<p>并非所有文件都加密。启动用语言副本、历史ID与时间及已删除ID索引、预约诊断的阶段、时间和构建信息等，是应用私有空间中未加密的元数据。诊断最多保留最近128条事件，不含测量值、发送内容、回答、认证信息或原始网络响应，不自动发送给开发者。</p>
+<p>通知短文不含具体测量值或目标值，不合适的短文替换为固定文字。点按打开当时保存的回答和数据。正常手动生成不发通知。锁屏显示由Android通知设置控制。</p>
+</section>
+<section data-section="backup" aria-labelledby="zh-Hans-backup"><h3 id="zh-Hans-backup">备份与人格共享</h3>
+<p>仅用户明确创建的备份会导出设置，并在选择时包含历史及使用数据。使用PBKDF2-HMAC-SHA256从口令派生密钥，AES-GCM负责加密和篡改检测。通过Android文件选择器选择本机或Google Drive等服务商，由所选方保存文件。开发者不保管口令，没有口令无法解密。</p>
+<p>认证令牌、设备密钥、权限、待执行预约、发送同意、说明已显示状态及自动生成启用状态不迁移。恢复后需重新同意并明确恢复运行。单个人格导出是仅包含名称和提示词的未加密JSON；提示词中自行输入的个人信息也会进入该文件。</p>
+</section>
+<section data-section="ads" aria-labelledby="zh-Hans-ads"><h3 id="zh-Hans-ads">Google AdMob</h3>
+<p>含广告版本使用Google Mobile Ads SDK 25.5.0，在回答详情底部显示横幅。开发／测试APK及封闭测试AAB使用Google测试ID。仅在发布构建中明确启用时才使用正式广告。不含广告的构建不包含广告SDK。</p>
+<p>Health Connect数据不用于广告投放或定向。体重、体脂肪率、步数、目标、人格提示词、补充、回答及ChatGPT认证信息不会传给SDK或广告请求，也不会作为关键词或自定义参数发送。</p>
+<p>Google说明SDK会为广告、分析和防欺诈自动收集／共享IP（可推测大致位置）、交互、诊断及设备／账户标识。本应用移除广告ID相关权限并关闭个性化，但不代表SDK不再收集其他信息。测试广告同样会联网处理。</p>
+<p>正式广告请求须通过UMP 4.0.0隐私条件检查；必要的广告隐私选项显示在设置中。OpenAI同意不作为广告同意。Google的保留、删除和权利处理请参阅其政策。</p>
+</section>
+<section data-section="deletion" aria-labelledby="zh-Hans-deletion"><h3 id="zh-Hans-deletion">保留期限、删除与撤回同意</h3>
+<p>设置和历史没有自动到期删除期限。单条或确认后的全部历史删除会移除回答及使用数据文件，但保留设置、人格、连接、Health Connect原记录和已删除ID等元数据。自定义人格可删除，初始人格可单独重置。应用内没有一键删除全部设置的功能。</p>
+<p>“停止自动生成”仅停止自动发送；同意有效时仍可手动生成。撤回OpenAI发送同意会阻止新的手动和自动请求。发送前会再次检查，但不能收回或删除已发送或由外部处理的数据。Health Connect权限可在其设置中撤销。</p>
+<p>断开ChatGPT时会尝试撤销服务器会话，无论是否确认成功，都删除本机访问、刷新及ID令牌。无法确认撤销时会提示。重连用账户与注册映射、主机ID、应用设置、历史和浏览器登录仍保留。需要时也请在ChatGPT设置中管理连接。</p>
+<p>要一起移除本机设置、历史、连接和诊断，可在Android设置中清除应用存储或卸载应用。文件删除不保证物理安全擦除。Health Connect来源数据、导出的备份／人格JSON和OpenAI／Google的信息不会删除，需分别向各存储方管理删除或行使权利。恢复旧备份可能重新加入已删除历史。</p>
+</section>
+<section data-section="site" aria-labelledby="zh-Hans-site"><h3 id="zh-Hans-site">本页面、联系与修订</h3>
+<p>本页面由GitHub Pages提供。正文与语言切换不使用外部字体、广告、分析、登录、Cookie或浏览器偏好存储。GitHub提供页面时会处理IP等连接信息。打开外部链接后适用目标服务商政策。</p>
+<p>联系邮箱：<a href="mailto:yosikou.createapp@gmail.com">yosikou.createapp@gmail.com</a>（hagemashi开发者）。联系邮件地址和内容用于回复，邮件服务商也会处理。请勿发送认证秘密或不必要的健康记录。邮件在处理所需期间保留，可通过同一邮箱咨询删除。</p>
+<p>修订时更新本页和日期。发送对象、目的或数据项目有重大变更时，将更新同意版本并暂停发送直至重新同意。本政策不保证法律合规或商店审核通过。</p>
+</section>
+<section data-section="resources"><h3>外部服务官方资料</h3><ul><li><a href="https://developers.openai.com/siwc/token-sharing-open-source" rel="noreferrer">Sign in with ChatGPT</a></li><li><a href="https://openai.com/policies/sign-in-with-chatgpt-terms/" rel="noreferrer">SIWC Terms</a></li><li><a href="https://help.openai.com/en/articles/20001542-using-your-chatgpt-plan-in-other-apps-and-sites" rel="noreferrer">ChatGPT plan in other apps</a></li><li><a href="https://openai.com/policies/privacy-policy/" rel="noreferrer">OpenAI Privacy Policy</a></li><li><a href="https://privacy.openai.com/" rel="noreferrer">OpenAI Privacy Portal</a></li><li><a href="https://developers.google.com/admob/android/privacy/play-data-disclosure" rel="noreferrer">Google Mobile Ads SDK — data disclosure</a></li><li><a href="https://policies.google.com/privacy" rel="noreferrer">Google Privacy Policy</a></li><li><a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" rel="noreferrer">GitHub Privacy Statement</a></li></ul></section></article>
+</main><script>(() => {
+  const articles = [...document.querySelectorAll('article[lang]')];
+  const links = [...document.querySelectorAll('nav a')];
+  const normalize = tag => {
+    const value = tag.toLowerCase();
+    if (value === 'zh-hans' || value === 'zh' || value === 'zh-cn' || value === 'zh-sg') return 'zh-Hans';
+    const language = value.split('-')[0];
+    return ['ja','en','fr','de','hi'].includes(language) ? language : null;
+  };
+  const update = () => {
+    const requested = normalize(location.hash.slice(1));
+    const selected = requested || (navigator.languages || [navigator.language || 'en']).map(normalize).find(Boolean) || 'en';
+    articles.forEach(article => { article.hidden = article.lang !== selected; });
+    links.forEach(link => {
+      if (link.hash === '#' + selected) link.setAttribute('aria-current','true');
+      else link.removeAttribute('aria-current');
+    });
+    document.documentElement.lang = selected;
+    document.title = articles.find(article => article.lang === selected).dataset.title + ' | hagemashi';
+  };
+  addEventListener('hashchange', update);
+  update();
+})();</script></body></html>

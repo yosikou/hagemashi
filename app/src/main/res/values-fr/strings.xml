@@ -356,4 +356,5 @@
     <string name="ads_privacy_options">Confidentialité des annonces</string>
     <string name="ads_privacy_unavailable">Les conditions publicitaires ne peuvent pas être vérifiées. Aucune annonce ne sera chargée. La réponse reste lisible.</string>
     <string name="ads_privacy_retry">Vérifier à nouveau</string>
+    <string name="privacy_open_failed">Impossible d’ouvrir le navigateur. Vérifiez ses paramètres et réessayez.</string>
 </resources>

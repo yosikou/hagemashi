@@ -489,4 +489,5 @@
     <string name="ads_privacy_options">広告のプライバシー設定</string>
     <string name="ads_privacy_unavailable">広告の利用条件を確認できないため、広告を読み込みません。本文は引き続き読めます。</string>
     <string name="ads_privacy_retry">広告の利用条件を再確認</string>
+    <string name="privacy_open_failed">ブラウザを開けませんでした。ブラウザの設定を確認して、もう一度お試しください。</string>
 </resources>

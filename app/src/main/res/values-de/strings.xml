@@ -356,4 +356,5 @@
     <string name="ads_privacy_options">Datenschutzoptionen für Werbung</string>
     <string name="ads_privacy_unavailable">Werbeberechtigung nicht überprüfbar. Anzeigen werden nicht geladen. Die Antwort bleibt lesbar.</string>
     <string name="ads_privacy_retry">Werbeberechtigung erneut prüfen</string>
+    <string name="privacy_open_failed">Der Browser konnte nicht geöffnet werden. Prüfen Sie die Browsereinstellungen und versuchen Sie es erneut.</string>
 </resources>

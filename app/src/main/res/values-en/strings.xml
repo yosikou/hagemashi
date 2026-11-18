@@ -356,4 +356,5 @@
     <string name="ads_privacy_options">Advertising privacy options</string>
     <string name="ads_privacy_unavailable">Ad permission could not be verified. Ads will not load. You can still read the answer.</string>
     <string name="ads_privacy_retry">Check ad permission again</string>
+    <string name="privacy_open_failed">Could not open the browser. Check your browser settings and try again.</string>
 </resources>
