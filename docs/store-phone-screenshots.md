@@ -1,0 +1,11 @@
+# Google Play用の携帯電話スクリーンショット
+
+最新のPR #22（privacy-policy）を基点に、撮影専用ブランチassets/store-phone-screenshotsを作成します。アプリ本体のUI・通信・保存仕様は変更せず、androidTestの撮影手順とActionsだけを追加します。PR #17〜#22に依存し、アプリへのマージは行いません。
+
+Store phone screenshotsワークフローは新しい使い捨てAndroid35エミュレーターで、実装済みのMainActivityを起動します。1080×1920、縦画面、通常版の画面です。画像生成AIでアプリ画面を再現する処理ではありません。
+
+StorePhoneScreenshotsTestはstoreScreenshots=trueの明示指定時だけ、架空の目標・回答・測定値を端末内へ保存します。OpenAIの認証情報は作らず、送信同意も無効、自動生成も無効です。撮影中のエミュレーターはモバイル通信・Wi-Fiをオフにします。架空の回答は表示用の文章で、実際のAIによる生成成功を示す記録ではありません。本文にも架空データの表示例と記載します。
+
+撮影対象：ホーム、回答詳細、履歴、人格一覧。Health Connectへの読み取り権限は付与しないため、ホームの最新体重は未取得表示です。接続状態を偽装しないため、ホームはChatGPT接続を案内する実際の未接続表示になります。回答詳細と履歴は保存済みの架空データを閲覧します。詳細の広告は通信がないため表示しません。
+
+撮影画像はhagemashi-store-phone-screenshots Artifactに保存。合格画像を確認後、Androidで直接ダウンロードできるよう公開用assetsに配置します。撮影用APKは配布しません。このテストは個人データのある端末で実行しないでください。JVM・Lint・本体／UIテストAPKのコンパイルを維持し、撮影用instrumentationの実行結果と通常CIの結果を区別してPRに記録します。
