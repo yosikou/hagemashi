@@ -1,0 +1,31 @@
+{
+  "sourceCommit": "42b2ca8148b6a2468036f51996f03227a6e35785",
+  "fictionalData": true,
+  "device": "Android35 emulator, portrait",
+  "images": [
+    {
+      "file": "01-home.png",
+      "width": 1080,
+      "height": 1920,
+      "format": "PNG RGB 24-bit",
+      "bytes": 184424,
+      "sha256": "eb892060d253e7310f578e82f2c3389d8ec3fe445fcf91a1c492f33e5d5a88a5"
+    },
+    {
+      "file": "03-history.png",
+      "width": 1080,
+      "height": 1920,
+      "format": "PNG RGB 24-bit",
+      "bytes": 187046,
+      "sha256": "feb87d02bdcf8696327ca93d25ca0f5ca24a6a584ab38ae1d92c880f840b6e88"
+    },
+    {
+      "file": "04-personas.png",
+      "width": 1080,
+      "height": 1920,
+      "format": "PNG RGB 24-bit",
+      "bytes": 151590,
+      "sha256": "fee50b0c84d70aa2fd2257281ddafb53e5c5e4add893f5ab9538a1f15bdbf039"
+    }
+  ]
+}
