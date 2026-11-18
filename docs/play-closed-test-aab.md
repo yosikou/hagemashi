@@ -12,7 +12,7 @@ Google Playへのアップロード・テスター配信・公開は利用者が
 
 [Google Play公式要件](https://support.google.com/googleplay/android-developer/answer/11926878)を2026-11-17に確認しました。一般Androidの新規アプリ／更新は2026-08-31以降API36以上が必要で、示された延長期限2026-11-01も経過しています。従来target35では現行の新規提出要件を満たさないため、**targetSdk36**へ更新します。compileSdk36／minSdk26、JDK17・Gradle8.11.1・AGP8.10.1・Kotlin2.2.21等は維持します。
 
-releaseは **minifyEnabled=false／shrinkResources=false** を明示し、R8やリソース削除を新規に有効にしません。認証のJSON・署名検証、Health Connect、JobService／Receiver、通知、履歴・同意の保存処理に削除／難読化を加えません。バンドル内の主要クラスの存在も検査します。ただしコード存在やユニット試験は実機動作の証明ではありません。
+releaseは **minifyEnabled=false／shrinkResources=false** を明示し、R8やリソース削除を新規に有効にしません。認証のJSON・署名検証、Health Connect、JobService／Receiver、通知、履歴・同意の保存処理に削除／難読化を加えません。バンドル内の主要クラスの存在も検査します。アプリ内で選択する6言語が未ダウンロードで欠けないよう、AABのlanguage splitを無効化し、全言語を同梱します。BundleConfigでも無効設定を検査します。ただしコード存在やユニット試験は実機動作の証明ではありません。
 
 [Android16の変更](https://developer.android.com/about/versions/16/behavior-changes-16)ではedge-to-edge、戻る操作、大画面の回転・サイズ変更などが重要です。既存UIはsafeDrawingPaddingとCompose BackHandlerを使い、onBackPressedや固定画面向きに依存していません。固定間隔scheduleAtFixedRateも使わず、予約は既存のAlarmManager／JobSchedulerです。target36での実機レイアウト、ブラウザ復帰、バックグラウンド実行は再確認が必要です。予約時刻は目安で、OSの制限がなくなるとは扱いません。
 

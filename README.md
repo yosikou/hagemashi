@@ -140,7 +140,7 @@ CIで配布するAPKは所有者が登録するActions Secretの同じ診断署�
 
 確認根拠:
 
-- 2026-11-17に[Google Play公式の対象API要件](https://support.google.com/googleplay/android-developer/answer/11926878)を確認し、一般Androidの新規提出・更新に必要なtarget36を採用。compile36と既存ツールチェーンは維持し、[Android16の挙動変更](https://developer.android.com/about/versions/16/behavior-changes-16)を別途実機で確認します。releaseはR8／リソース縮小を有効化しません。
+- 2026-11-17に[Google Play公式の対象API要件](https://support.google.com/googleplay/android-developer/answer/11926878)を確認し、一般Androidの新規提出・更新に必要なtarget36を採用。compile36と既存ツールチェーンは維持し、[Android16の挙動変更](https://developer.android.com/about/versions/16/behavior-changes-16)を別途実機で確認します。releaseはR8／リソース縮小を有効化せず、6言語を保持するためAABの言語分割も無効にします。
 
 - 広告有効ビルドで `com.google.android.gms:play-services-ads:25.5.0` を固定。[Google公式導入要件](https://developers.google.com/admob/android/quick-start)と[リリースノート](https://developers.google.com/admob/android/rel-notes)でminSdk24以上・compileSdk35以上を確認し、既存のminSdk26・compileSdk36を維持します。開発ビルドはGoogleデモIDを使います。公開向けの本番IDはrelease限定で明示選択します。UMP4.0.0は[公式要件API21以上](https://developers.google.com/admob/android/privacy)を確認し、既存minSdk26で使用します。ツールチェーンを更新せず、診断版のLintとAPKビルドをCIで検証します。
 

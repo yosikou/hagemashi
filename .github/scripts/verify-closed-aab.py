@@ -49,7 +49,7 @@ def verify(args):
                 raise ValueError("Incomplete bundle structure")
         info = json.loads(z.read("base/assets/build-info.json"))
         if info != {"sourceCommit": args.commit, "versionCode": args.version_code, "versionName": args.version_name,
-                    "targetSdk": 36, "minSdk": 26, "minifyEnabled": False, "shrinkResources": False}:
+                    "targetSdk": 36, "minSdk": 26, "minifyEnabled": False, "shrinkResources": False, "languageSplitsEnabled": False}:
             raise ValueError("Build metadata mismatch")
         dex = b"".join(z.read(n) for n in z.namelist() if n.startswith("base/dex/") and n.endswith(".dex"))
         for name in ("MainActivity", "ConnectionRepository", "HealthConnectSource", "ScheduledGenerationService",
@@ -68,7 +68,12 @@ def verify(args):
                     if header[0] == 1 and header[-1] < 16384:
                         raise ValueError("Native library is not 16 KB aligned")
                 libraries.append(name)
-    if libraries and "PAGE_ALIGNMENT_16K" not in tool("dump", "config", "--bundle=" + str(path)):
+    config_text = tool("dump", "config", "--bundle=" + str(path))
+    config = json.loads(config_text)
+    dimensions = config.get("optimizations", {}).get("splitsConfig", {}).get("splitDimension", [])
+    if not any(d.get("value") == "LANGUAGE" and d.get("negate") is True for d in dimensions):
+        raise ValueError("Language splitting must remain disabled")
+    if libraries and "PAGE_ALIGNMENT_16K" not in config_text:
         raise ValueError("Bundle packaging is not 16 KB aligned")
     if args.certificate:
         result = subprocess.run(["java", str(ROOT / "VerifyAabSignature.java"), str(path), args.certificate],

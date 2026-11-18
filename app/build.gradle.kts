@@ -81,6 +81,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    bundle {
+        // App-selected locales must work without a Play language-pack download.
+        language { enableSplit = false }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -120,7 +125,7 @@ androidComponents {
             outputDir.set(layout.buildDirectory.dir("generated/ad-config/${variant.name}"))
             buildInfo.set(groovy.json.JsonOutput.toJson(mapOf("sourceCommit" to sourceCommit,
                 "versionCode" to releaseVersionCode, "versionName" to releaseVersionName,
-                "targetSdk" to 36, "minSdk" to 26, "minifyEnabled" to false, "shrinkResources" to false)))
+                "targetSdk" to 36, "minSdk" to 26, "minifyEnabled" to false, "shrinkResources" to false, "languageSplitsEnabled" to false)))
             mode.set(selectedMode)
             appId.set(if(selectedMode == "production") liveAppId else if(selectedMode == "test") demoAppId else "")
             bannerId.set(if(selectedMode == "production") liveBannerId else if(selectedMode == "test") demoBannerId else "")
