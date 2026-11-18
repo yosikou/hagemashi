@@ -7,6 +7,12 @@ plugins {
 // A release-only choice. Debug/diagnostic never inherit this value.
 val releaseAds = providers.gradleProperty("hagemashi.releaseAds").orElse("test").get()
 require(releaseAds in setOf("off", "test", "production")) { "hagemashi.releaseAds must be off, test or production" }
+val releaseVersionCode = providers.gradleProperty("hagemashi.versionCode").orElse("2").get().toIntOrNull() ?: error("Invalid versionCode")
+require(releaseVersionCode in 2..2100000000) { "versionCode must be an integer from 2 to 2100000000" }
+val releaseVersionName = providers.gradleProperty("hagemashi.versionName").orElse("1.0.1").get()
+require(releaseVersionName.matches(Regex("[A-Za-z0-9][A-Za-z0-9._-]{0,49}"))) { "Invalid versionName" }
+val sourceCommit = System.getenv("GITHUB_SHA") ?: "local"
+require(sourceCommit.matches(Regex("[A-Za-z0-9._-]{1,100}")))
 val demoAppId = "ca-app-pub-3940256099942544~3347511713"
 val demoBannerId = "ca-app-pub-3940256099942544/9214589741"
 val liveAppId = "ca-app-pub-3595062014413653~8954573313"
@@ -32,6 +38,11 @@ android {
         }
     }
     buildTypes {
+        getByName("release") {
+            // Preserve verified reflection, JSON and component behavior; no R8/resource shrink change.
+            isMinifyEnabled = false
+            isShrinkResources = false
+        }
         create("diagnostic") {
             initWith(getByName("debug"))
             applicationIdSuffix = ".diagnostic"
@@ -63,11 +74,16 @@ android {
     defaultConfig {
         applicationId = "com.yosikou.hagemashi"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 36
+        versionCode = releaseVersionCode
+        versionName = releaseVersionName
         buildConfigField("String", "BUILD_IDENTIFIER", "\"$buildIdentifier\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    bundle {
+        // App-selected locales must work without a Play language-pack download.
+        language { enableSplit = false }
     }
 
     compileOptions {
@@ -91,9 +107,12 @@ abstract class AdDescriptorTask : org.gradle.api.DefaultTask() {
     abstract val appId: org.gradle.api.provider.Property<String>
     @get:org.gradle.api.tasks.Input
     abstract val bannerId: org.gradle.api.provider.Property<String>
+    @get:org.gradle.api.tasks.Input
+    abstract val buildInfo: org.gradle.api.provider.Property<String>
     @org.gradle.api.tasks.TaskAction
     fun generate() {
         val directory = outputDir.get().asFile.apply { mkdirs() }
+        directory.resolve("build-info.json").writeText(buildInfo.get())
         directory.resolve("ad-config.json").writeText(groovy.json.JsonOutput.toJson(mapOf(
             "schema" to 1, "mode" to mode.get(), "applicationId" to appId.get(), "bannerUnitId" to bannerId.get(),
             "privacyGate" to if(mode.get() == "production") "UMP" else "TEST_ONLY")))
@@ -104,6 +123,9 @@ androidComponents {
         val selectedMode = if(variant.buildType == "release") releaseAds else "test"
         val task = tasks.register<AdDescriptorTask>("generate${variant.name.replaceFirstChar { it.uppercase() }}AdDescriptor") {
             outputDir.set(layout.buildDirectory.dir("generated/ad-config/${variant.name}"))
+            buildInfo.set(groovy.json.JsonOutput.toJson(mapOf("sourceCommit" to sourceCommit,
+                "versionCode" to releaseVersionCode, "versionName" to releaseVersionName,
+                "targetSdk" to 36, "minSdk" to 26, "minifyEnabled" to false, "shrinkResources" to false, "languageSplitsEnabled" to false)))
             mode.set(selectedMode)
             appId.set(if(selectedMode == "production") liveAppId else if(selectedMode == "test") demoAppId else "")
             bannerId.set(if(selectedMode == "production") liveBannerId else if(selectedMode == "test") demoBannerId else "")

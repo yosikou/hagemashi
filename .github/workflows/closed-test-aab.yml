@@ -1,0 +1,82 @@
+name: Closed test signed AAB
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: Unused Play versionCode (greater than all prior uploads)
+        default: '2'
+        required: true
+      version_name:
+        description: User-visible versionName
+        default: '1.0.1'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      RELEASE_VERSION_CODE: ${{ inputs.version_code || '2' }}
+      RELEASE_VERSION_NAME: ${{ inputs.version_name || '1.0.1' }}
+      HAGEMASHI_BUILD_ID: ${{ github.sha }}.${{ github.run_id }}.${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android platforms
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "platforms;android-36" "build-tools;35.0.0"'
+      - uses: gradle/actions/setup-gradle@v5
+      - name: Install verified official bundletool
+        run: python3 .github/scripts/install-bundletool.py
+      - name: Test signing and validation helpers
+        run: python3 -m unittest discover -s .github/scripts -p 'test_*.py'
+      - name: Build test-ad release without optimization changes
+        run: ./gradlew --no-daemon --no-configuration-cache :app:testReleaseUnitTest :app:lintRelease :app:assembleRelease :app:bundleRelease -Phagemashi.releaseAds=test -Phagemashi.versionCode="$RELEASE_VERSION_CODE" -Phagemashi.versionName="$RELEASE_VERSION_NAME"
+      - name: Validate unsigned bundle structure, package, API, version and test ads
+        run: python3 .github/scripts/verify-closed-aab.py --aab app/build/outputs/bundle/release/app-release.aab --version-code "$RELEASE_VERSION_CODE" --version-name "$RELEASE_VERSION_NAME" --commit "$GITHUB_SHA" --report unsigned-aab-readiness.json
+      - name: Restore separate owner-managed upload key
+        id: signing
+        env:
+          UPLOAD_SIGNING_BUNDLE: ${{ secrets.HAGEMASHI_UPLOAD_SIGNING_BUNDLE }}
+        run: python3 .github/scripts/restore-upload-signing.py
+      - name: Sign AAB
+        if: steps.signing.outputs.available == 'true'
+        env:
+          AAB_OUTPUT: dist/hagemashi-closed-test-testads.aab
+        run: python3 .github/scripts/sign-closed-aab.py
+      - name: Verify exact signature and signed bundle
+        if: steps.signing.outputs.available == 'true'
+        run: python3 .github/scripts/verify-closed-aab.py --aab dist/hagemashi-closed-test-testads.aab --version-code "$RELEASE_VERSION_CODE" --version-name "$RELEASE_VERSION_NAME" --commit "$GITHUB_SHA" --certificate "$HAGEMASHI_UPLOAD_SHA256" --report dist/aab-verification.json
+      - name: Upload signed closed-test AAB and public verification (no keystore)
+        if: steps.signing.outputs.available == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: hagemashi-closed-test-signed-aab
+          overwrite: true
+          path: |
+            dist/hagemashi-closed-test-testads.aab
+            dist/aab-verification.json
+            dist/upload-certificate.pem
+          if-no-files-found: error
+          retention-days: 14
+      - name: Record missing key explicitly
+        if: steps.signing.outputs.available != 'true'
+        run: echo 'Upload key not registered. No signed AAB exists; owner must register HAGEMASHI_UPLOAD_SIGNING_BUNDLE and rerun this job.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload readiness report (not an uploadable AAB)
+        uses: actions/upload-artifact@v4
+        with:
+          name: closed-test-aab-readiness
+          overwrite: true
+          path: unsigned-aab-readiness.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Remove private upload key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/hagemashi-upload.p12"
