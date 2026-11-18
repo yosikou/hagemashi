@@ -1,6 +1,7 @@
 package com.yosikou.hagemashi
 
 import android.graphics.Bitmap
+import android.content.Intent
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.lifecycle.ViewModelProvider
@@ -69,7 +70,9 @@ class StorePhoneScreenshotsTest {
             File(output,name).outputStream().use { assertTrue(image.compress(Bitmap.CompressFormat.PNG,100,it)) }
             image.recycle()
         }
-        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+        // closeDetail() intentionally resets to a component-only Intent. Use that same
+        // identity so ActivityScenario continues observing lifecycle events during cleanup.
+        ActivityScenario.launch<MainActivity>(Intent(context,MainActivity::class.java)).use { scenario ->
             compose.waitUntil(15000){compose.onAllNodesWithText(short).fetchSemanticsNodes().isNotEmpty()}
             scenario.onActivity {
                 assertFalse(ViewModelProvider(it)[ConnectionViewModel::class.java].ui.permitted)
